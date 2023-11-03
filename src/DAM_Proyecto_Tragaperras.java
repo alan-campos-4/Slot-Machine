@@ -8,32 +8,32 @@ public class DAM_Proyecto_Tragaperras
 	public static void clearScreen() 
 	{	
 		System.out.println("\n");	//1
-	        System.out.println("\n");
-	        System.out.println("\n");
-	        System.out.println("\n");
-	        System.out.println("\n");	//5
-	        System.out.println("\n");
-	        System.out.println("\n");
-	        System.out.println("\n");
-	        System.out.println("\n");
-	        System.out.println("\n");	//10
-	        System.out.println("\n");
-	        System.out.println("\n");
-	        System.out.println("\n");
-	        System.out.println("\n");
-	        System.out.println("\n");	//15
-	        System.out.println("\n");
-	        System.out.println("\n");
-	        System.out.println("\n");
-	        System.out.println("\n");
-	        System.out.println("\n");	//20
-	        System.out.println("\n");
-	        System.out.println("\n");
-	        System.out.println("\n");
-	        System.out.println("\n");
-	        System.out.println("\n");	//25
-	        System.out.flush();
-	    }
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println("\n");	//5
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println("\n");	//10
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println("\n");	//15
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println("\n");	//20
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println("\n");	//25
+        System.out.flush();
+	}
 
 
     public static boolean check(char[] arr, char value)
@@ -66,37 +66,37 @@ public class DAM_Proyecto_Tragaperras
     	
 	/******************** Declaring variables ********************/
     	
-		int num_Reels = 4;	//Number of spinning reels the machine has
-	 	int numSymbols = 4;	//Number of possible symbols in each reel
-	 	
-    	char[] results = new char[num_Reels];
-    	//Every position is the result of a spinning reel
-    	char[] symbolsFound = new char[num_Reels];
-    	//Every position is a new different symbol found in the results array
-        int[] symbolsRepeated = new int[num_Reels];
-        //symbolsRepeated[a] is the times the symbol in symbolsFound[a] is repeated
-        
-        Scanner input = new Scanner(System.in);
-        char playerInput;	//Input for player interaction
-        
-        int pos_found;		//Position for a new symbol found.
-        int matchIndex;		//Position of the most repeated symbol.
-        int matchCount;		//Times the most repeated symbol appears. Can be 0 if no symbols match.
-        
-        double playerBet;	//Amount of money the player has bet
-        //double win_chance;	//Percentage of winning the maximum prize.
-        //double win_mod;		//Modifier applied to the bet to calculate prize.
-        double win_amount;	//Amount of money the player wins.
-        
-        
-        
-        System.out.print("Do you want to play (y/n): ");
-        playerInput = input.next().charAt(0);
-        System.out.println("\nEnter how much money you want to bet: ");
-        playerBet = input.nextInt();
-        
-	    while (playerInput == 'y'|| playerInput=='Y') 
-	    {
+    	int num_Reels = 4;	//Number of spinning reels the machine has
+    	int numSymbols = 4;	//Number of possible symbols in each reel
+    	
+		char[] results = new char[num_Reels];
+		//Every position is the result of a spinning reel
+		char[] symbolsFound = new char[num_Reels];
+		//Every position is a new different symbol found in the results array
+		int[] symbolsRepeated = new int[num_Reels];
+		//symbolsRepeated[a] is the times the symbol in symbolsFound[a] is repeated
+		
+		Scanner input = new Scanner(System.in);
+		char playerInput;	//Input for player interaction
+		
+		int pos_found;		//Position for a new symbol found.
+		int matchIndex;		//Position of the most repeated symbol.
+		int matchCount;		//Times the most repeated symbol appears. Can be 0 if no symbols match.
+		
+		double playerBet;	//Amount of money the player has bet
+		//double win_chance;	//Percentage of winning the maximum prize.
+		//double win_mod;		//Modifier applied to the bet to calculate prize.
+		double win_amount;	//Amount of money the player wins.
+		
+		
+		
+		System.out.print("Do you want to play (y/n): ");
+		playerInput = input.next().charAt(0);
+		System.out.println("\nEnter how much money you want to bet: ");
+		playerBet = input.nextInt();
+		
+		while (playerInput == 'y'|| playerInput=='Y') 
+		{
             
 	    	
 	/******************** Calculating the results of spinning ********************/
@@ -129,9 +129,9 @@ public class DAM_Proyecto_Tragaperras
             {
                 clearScreen();
 
-                for (int i=0; i<num_Reels; i++) {System.out.print(" _____");}
+                for (int i=0; i<num_Reels; i++)	{System.out.print(" _____");}
                 System.out.print("\n|");
-                for (int i=0; i<num_Reels; i++) {System.out.print("     |");}
+                for (int i=0; i<num_Reels; i++)	{System.out.print("     |");}
                 System.out.print("\n|");
                 for (int i=0; i<num_Reels; i++)
                 {
@@ -158,6 +158,9 @@ public class DAM_Proyecto_Tragaperras
             pos_found = 0;
             matchCount = 0;
             matchIndex = -1;
+            
+            for (int i=0; i<num_Reels; i++) 
+            	{symbolsFound[i]=' '; symbolsRepeated[i]=0;}
             
             for (int i=0; i<num_Reels; i++)
             {
