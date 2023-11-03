@@ -255,8 +255,8 @@ public class DAM_Proyecto_Tragaperras
  * ---- Moved the results generator into the loop
  * ---- Playing again after spinning
  * ---- Enter bet and calculate reward
- * ---- Lever (player input for each step)
- * ---- Display match (most repeated symbol) 
+ * ¬/ Lever (player input for each step)
+ * ¬/ Display match (most repeated symbol) 
  */
 
 
