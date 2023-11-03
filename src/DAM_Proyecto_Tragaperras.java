@@ -6,35 +6,34 @@ public class DAM_Proyecto_Tragaperras
 {
 
 	public static void clearScreen() 
-	{
-		
-        System.out.println("\n");	//1
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println("\n");	//5
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println("\n");	//10
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println("\n");	//15
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println("\n");	//20
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println("\n");	//25
-        System.out.flush();
-    }
+	{	
+		System.out.println("\n");	//1
+	        System.out.println("\n");
+	        System.out.println("\n");
+	        System.out.println("\n");
+	        System.out.println("\n");	//5
+	        System.out.println("\n");
+	        System.out.println("\n");
+	        System.out.println("\n");
+	        System.out.println("\n");
+	        System.out.println("\n");	//10
+	        System.out.println("\n");
+	        System.out.println("\n");
+	        System.out.println("\n");
+	        System.out.println("\n");
+	        System.out.println("\n");	//15
+	        System.out.println("\n");
+	        System.out.println("\n");
+	        System.out.println("\n");
+	        System.out.println("\n");
+	        System.out.println("\n");	//20
+	        System.out.println("\n");
+	        System.out.println("\n");
+	        System.out.println("\n");
+	        System.out.println("\n");
+	        System.out.println("\n");	//25
+	        System.out.flush();
+	    }
 
 
     public static boolean check(char[] arr, char value)
