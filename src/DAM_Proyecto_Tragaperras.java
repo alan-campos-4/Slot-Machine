@@ -99,7 +99,7 @@ public class DAM_Proyecto_Tragaperras
 		{
             
 	    	
-	/******************** Calculating the results of spinning ********************/
+	/*************** Spinning the reels and resetting values ***************/
 	    	
 	    	
 	        for (int index=0; index<num_Reels; index++) 
@@ -119,10 +119,12 @@ public class DAM_Proyecto_Tragaperras
 	                case 9:  results[index]='/';  break;
 	                default: results[index]='_';  break;
 	            }
+	            symbolsFound[index]=' ';
+	            symbolsRepeated[index]=0;
 	        }
 	        
 	        
-	/******************** Display Spinning Reels ********************/ 
+	/*************** Display Spinning Reels ***************/ 
 	        
 	        
             for (int current_reel=0; current_reel<=num_Reels; current_reel++)
@@ -153,14 +155,11 @@ public class DAM_Proyecto_Tragaperras
             }
             
             
-	/******************** Calculating player payout ********************/
+	/*************** Calculating player payout ****************/
             
             pos_found = 0;
             matchCount = 0;
             matchIndex = -1;
-            
-            for (int i=0; i<num_Reels; i++) 
-            	{symbolsFound[i]=' '; symbolsRepeated[i]=0;}
             
             for (int i=0; i<num_Reels; i++)
             {
