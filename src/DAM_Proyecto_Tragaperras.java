@@ -1,7 +1,6 @@
 import java.util.Scanner;
 
 
-
 public class DAM_Proyecto_Tragaperras 
 {
 
@@ -33,33 +32,19 @@ public class DAM_Proyecto_Tragaperras
         System.out.println("\n");
         System.out.println("\n");	//25
 	}
-
-
+	
     public static boolean check(char[] arr, char value)
     {
         for (int element: arr)
         {
-            if (element == value) {return true;}
+            if (element == value) 
+            	{return true;}
         }
         return false;
     }
     
-    public static int indexMaxValue(int[] arr)
-    {
-        int position = 0, maximum = 0;
-        for (int element: arr)
-        {
-            if (arr[element] >= maximum)
-            {
-            	maximum = arr[element]; 
-                position = element;
-            }
-        }
-        return position;
-    }
-
-
-
+    
+    
     public static void main(String[] args)
     {
     	
@@ -80,11 +65,9 @@ public class DAM_Proyecto_Tragaperras
 		
 		int pos_found;		//Position for a new symbol found.
 		int matchIndex;		//Position of the most repeated symbol.
-		int matchCount;		//Times the most repeated symbol appears. Can be 0 if no symbols match.
+		int matchCount;		//Repetitions the most repeated symbol. =0 if no symbols match.
 		
 		double playerBet;	//Amount of money the player has bet
-		//double win_chance;	//Percentage of winning the maximum prize.
-		//double win_mod;		//Modifier applied to the bet to calculate prize.
 		double win_amount;	//Amount of money the player wins.
 		
 		
@@ -98,8 +81,7 @@ public class DAM_Proyecto_Tragaperras
 		{
             
 	    	
-	/*************** Spinning the reels and resetting values ***************/
-	    	
+	/*************** Assigning results and resetting loop values ***************/
 	    	
 	        for (int index=0; index<num_Reels; index++) 
 	        {
@@ -122,9 +104,12 @@ public class DAM_Proyecto_Tragaperras
 	            symbolsRepeated[index]=0;
 	        }
 	        
+            pos_found = 0;
+            matchCount = 0;
+            matchIndex = -1;
+            
 	        
 	/*************** Display Spinning Reels ***************/ 
-	        
 	        
             for (int current_reel=0; current_reel<=num_Reels; current_reel++)
             {
@@ -156,10 +141,6 @@ public class DAM_Proyecto_Tragaperras
             
 	/*************** Calculating player payout ****************/
             
-            pos_found = 0;
-            matchCount = 0;
-            matchIndex = -1;
-            
             for (int i=0; i<num_Reels; i++)
             {
                 if (!check(symbolsFound, results[i]))
@@ -182,33 +163,35 @@ public class DAM_Proyecto_Tragaperras
                 }
             }
             
-            //win_chance = (Math.pow((1/numSymbols), num_Reels))*100;
-            //System.out.printf("\n\nThe chances of winning were %.4f percent.\n\n", win_chance);
-            
-            
             System.out.println();
-	        
             if ( (matchCount==0) || (matchIndex==-1) )
-            {
-            	System.out.println("You got no matches. You lost. gtfo");
-            } 
+            	{System.out.println("You got no matches. You lost.");} 
             else 
             {
-        		System.out.println("You got the "+symbolsFound[matchIndex]+" symbol "+(matchCount+1)+" times.");
+        		System.out.println("You got the "+symbolsFound[matchIndex]+
+        							" symbol "+(matchCount+1)+" times.");
         		
-        		if (matchCount==1)					{win_amount = playerBet*1.0;}
+        		if (matchCount==1)					{win_amount = playerBet;}
         		else if (matchCount==num_Reels-1)	{win_amount = playerBet*100.0;}
         		else if (matchCount<=num_Reels/2)	{win_amount = playerBet*10.0;}
         		else								{win_amount = playerBet*20.0;}
         		        		
         		if (win_amount > playerBet)
-        			{System.out.println("You won "+(win_amount-playerBet)+"€ and now have "+win_amount+"€.\n");}
+    			{
+        			System.out.println("You gained "+(win_amount-playerBet)+"€.");
+        			System.out.println("And now have "+win_amount+" €.");
+    			}
         		else if (win_amount < playerBet)
-                	{System.out.println("You lost "+(playerBet-win_amount)+"€ and now have "+win_amount+"€.\n");}
+                {
+        			System.out.println("You lost "+(playerBet-win_amount)+"€.");
+        			System.out.println("And now have "+win_amount+" €.");
+        		}
         		else //win_amount == playerBet
-        			{System.out.println("You retain the amount of money you had: "+win_amount+" €.\n");}
-                
-                
+        		{
+        			System.out.println("You retain the amount of money you had: ");
+        			System.out.println(win_amount+" €.");
+        		}
+        		System.out.println();
                 System.out.println("Do you want continue playing? (y)");
                 System.out.println("Or do you take your earnings? (n)");
                 System.out.print("    (y/n): ");
@@ -221,46 +204,22 @@ public class DAM_Proyecto_Tragaperras
                 	
                 	System.out.print("Do you want to bet more money? (y/n): ");
                     playerInput = input.next().charAt(0);
+                    
                     if (playerInput == 'y'|| playerInput=='Y')
                     {
                     	win_amount = input.nextInt();
                     	playerBet += win_amount;
                     }
                     else {playerInput = 'y';}
-                    	
+                    
                 	clearScreen();
                 }
                 else
-                {
-                	System.out.println("\n\t  You got "+win_amount+" €");
-                }
-        		
-                
+                	{System.out.println("\n\t You got "+win_amount+" €");}
             }
-            
-            
-            
-            
-            
-            
-            
+
 	    }
-	    
         input.close();
         
-        
-        
-/* TODO
- * 		Clear the terminal
- * ---- Increase price after spinning again
- * ---- Moved the results generator into the loop
- * ---- Playing again after spinning
- * ---- Enter bet and calculate reward
- * ¬/ Lever (player input for each step)
- * ¬/ Display match (most repeated symbol) 
- */
-
-
     }
-	
 }
