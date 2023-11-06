@@ -189,7 +189,7 @@ public class DAM_Proyecto_Tragaperras
             
             System.out.println();
 	        
-            if (matchCount==0)
+            if ( (matchCount==0) || (matchIndex==-1) )
             {
             	System.out.println("You got no matches. You lost. gtfo");
             } 
