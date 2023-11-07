@@ -33,6 +33,20 @@ public class DAM_Proyecto_Tragaperras
         System.out.println("\n");	//25
 	}
 	
+	
+	public static void displayReel(char[] results , int n_reels, int reel)
+	{
+		for (int i=0; i<n_reels; i++)	{System.out.print(" _____");}
+        System.out.print("\n|");
+        for (int i=0; i<n_reels; i++)	{System.out.print("     |");}
+        System.out.print("\n|");
+        for (int i=0; i<n_reels; i++)	{System.out.print((reel>i)? "  "+results[i]+"  |":"     |");}
+        System.out.print("\n|");
+        for (int i=0; i<n_reels; i++)	{System.out.print("_____|");}
+        System.out.println();
+	}
+	
+	
     public static boolean check(char[] arr, char value)
     {
         for (int element: arr)
@@ -50,24 +64,24 @@ public class DAM_Proyecto_Tragaperras
     	
 	/******************** Declaring variables ********************/
     	
-    	int num_Reels = 4;	//Number of spinning reels the machine has
-    	int numSymbols = 4;	//Number of possible symbols in each reel
+    	int num_Reels = 4;	//Number of spinning reels the machine has.
+    	int numSymbols = 4;	//Number of possible symbols in each reel.
     	
 		char[] results = new char[num_Reels];
-		//Every position is the result of a spinning reel
+		//Every position is the result of a spinning reel.
 		char[] symbolsFound = new char[num_Reels];
-		//Every position is a new different symbol found in the results array
+		//Every position is a new different symbol found in the results array.
 		int[] symbolsRepeated = new int[num_Reels];
-		//symbolsRepeated[a] is the times the symbol in symbolsFound[a] is repeated
+		//symbolsRepeated[a] is the times the symbol in symbolsFound[a] is repeated.
 		
 		Scanner input = new Scanner(System.in);
-		char playerInput;	//Input for player interaction
+		char playerInput;	//Input for player interaction.
 		
 		int pos_found;		//Position for a new symbol found.
 		int matchIndex;		//Position of the most repeated symbol.
-		int matchCount;		//Repetitions the most repeated symbol. =0 if no symbols match.
+		int matchCount;		//Repetitions of the most repeated symbol. =0 if no symbols match.
 		
-		double playerBet;	//Amount of money the player has bet
+		double playerBet;	//Amount of money the player has bet.
 		double win_amount;	//Amount of money the player wins.
 		
 		
@@ -115,6 +129,7 @@ public class DAM_Proyecto_Tragaperras
             {
                 clearScreen();
 
+                /*
                 for (int i=0; i<num_Reels; i++)	{System.out.print(" _____");}
                 System.out.print("\n|");
                 for (int i=0; i<num_Reels; i++)	{System.out.print("     |");}
@@ -128,7 +143,10 @@ public class DAM_Proyecto_Tragaperras
                 }
                 System.out.print("\n|");
                 for (int i=0; i<num_Reels; i++) {System.out.print("_____|");}
-                System.out.println();
+                System.out.println();*/
+                
+                displayReel(results, num_Reels, current_reel);
+                
 
                 if (current_reel!=num_Reels)
                 {
