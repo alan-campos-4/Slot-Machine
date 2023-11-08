@@ -26,15 +26,15 @@ public class DAM_Proyecto_Tragaperras
         System.out.println("\n");
         System.out.println("\n");
         System.out.println("\n");	//20
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println("\n");	//25
+        //System.out.println("\n");
+        //System.out.println("\n");
+        //System.out.println("\n");
+        //System.out.println("\n");
+        //System.out.println("\n");	//25
 	}
 	
 	
-	public static void displayReel(char[] arr , int lngth, int reel)
+	public static void displayReels(char[] arr , int lngth, int reel)
 	{
 		for (int i=0; i<lngth; i++)	{System.out.print(" _____");}
         System.out.print("\n|");
@@ -44,6 +44,14 @@ public class DAM_Proyecto_Tragaperras
         System.out.print("\n|");
         for (int i=0; i<lngth; i++)	{System.out.print("_____|");}
         System.out.println();
+	}
+	
+	public static void wait(int ms)
+	{
+		try 
+			{Thread.sleep(ms);} 
+		catch (InterruptedException e) 
+			{Thread.currentThread().interrupt();}
 	}
 	
 	
@@ -115,7 +123,7 @@ public class DAM_Proyecto_Tragaperras
 	                default: results[index]='_';  break;
 	            }
 	            symbolsFound[index]=' ';
-	            //symbolsRepeated[index]=0;
+	            symbolsRepeated[index]=0;
 	        }
 	        
             pos_found = 0;
@@ -129,11 +137,15 @@ public class DAM_Proyecto_Tragaperras
             {
                 clearScreen();
                 
-                displayReel(results, num_Reels, current_reel);
+                displayReels(results, results.length, current_reel);
+                
+                wait(500);
+                
+                System.out.println();
                 
                 if (current_reel!=num_Reels)
                 {
-                    System.out.print((current_reel==0)? "\nStart (p): ":"\nNext reel (p): ");
+                    System.out.print(((current_reel==0)?"Start":"Next reel")+" (p): ");
                     do {playerInput = input.next().charAt(0);}
                     while(playerInput!='p');
                 }
@@ -147,7 +159,7 @@ public class DAM_Proyecto_Tragaperras
                 if (!check(symbolsFound, results[i]))
                 {
                 	symbolsFound[pos_found] = results[i];
-                	
+                	pos_found++;
                     for (int j=0; j<num_Reels; j++)
                     {
                         if ((i!=j) && (results[i]==results[j]))
@@ -160,11 +172,9 @@ public class DAM_Proyecto_Tragaperras
                         	}
                         }
                     }
-                    pos_found++;
                 }
             }
             
-            System.out.println();
             if ( (matchCount==0) || (matchIndex==-1) )
             	{System.out.println("You got no matches. You lost.");} 
             else 
@@ -193,9 +203,7 @@ public class DAM_Proyecto_Tragaperras
         			System.out.println(win_amount+" €.");
         		}
         		System.out.println();
-                System.out.println("Do you want continue playing? (y)");
-                System.out.println("Or do you take your earnings? (n)");
-                System.out.print("    (y/n): ");
+                System.out.print("Do you want continue playing? (y/n): ");
                 playerInput = input.next().charAt(0);
                 
                 
@@ -208,6 +216,7 @@ public class DAM_Proyecto_Tragaperras
                     
                     if (playerInput == 'y'|| playerInput=='Y')
                     {
+                    	System.out.print("How much money do you want to add: ");
                     	win_amount = input.nextInt();
                     	playerBet += win_amount;
                     }
