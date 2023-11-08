@@ -1,7 +1,7 @@
 import java.util.Scanner;
 
 
-public class DAM_Proyecto_Tragaperras 
+public class DAM_Proyecto_Tragaperras
 {
 
 	public static void clearScreen() 
@@ -34,7 +34,7 @@ public class DAM_Proyecto_Tragaperras
 	}
 	
 	
-	public static void displayReels(char[] arr , int lngth, int reel)
+	public static void displayMachine(char[] arr , int lngth, int reel)
 	{
 		for (int i=0; i<lngth; i++)	{System.out.print(" _____");}
         System.out.print("\n|");
@@ -69,28 +69,30 @@ public class DAM_Proyecto_Tragaperras
     
     public static void main(String[] args)
     {
-    	
+    
 	/******************** Declaring variables ********************/
     	
-    	int num_Reels = 4;	//Number of spinning reels the machine has.
-    	int numSymbols = 4;	//Number of possible symbols in each reel.
+    	int nReels = 4;		//Number of spinning reels the machine has.
+    	int NSymbols = 4;	//Number of possible symbols in each reel.
     	
-		char[] results = new char[num_Reels];
-		//Every position is the result of a spinning reel.
-		char[] symbolsFound = new char[num_Reels];
-		//Every position is a new different symbol found in the results array.
-		int[] symbolsRepeated = new int[num_Reels];
-		//symbolsRepeated[a] is the times the symbol in symbolsFound[a] is repeated.
+		char[] results = new char[nReels];
+		//Every position is obtained from one of the spinning reels.
+		char[] symbolsFound = new char[nReels];
+		int[] symbolsRepeated = new int[nReels];
+		//For every position in both arrays:
+		//	symbolsFound: a new different symbol found in the results.
+		//	symbolsRepeated: the times that symbol is repeated in the results.
 		
 		Scanner input = new Scanner(System.in);
 		char playerInput;	//Input for player interaction.
 		
-		int pos_found;		//Position for a new symbol found.
-		int matchIndex;		//Position of the most repeated symbol.
-		int matchCount;		//Repetitions of the most repeated symbol. =0 if no symbols match.
+		int newfoundIndex;	//Position of a new different symbol found in the results.
+		int repeatIndex;	//Position of the most repeated symbol.
+		int repeatCount;	//Times the most repeated symbol is repeated.
 		
 		double playerBet;	//Amount of money the player has bet.
-		double win_amount;	//Amount of money the player wins.
+		double playerBet1;	//Amount of money the player bet in the first game.
+		double winAmount;	//Amount of money the player is awarded.
 		
 		
 		
@@ -98,16 +100,17 @@ public class DAM_Proyecto_Tragaperras
 		playerInput = input.next().charAt(0);
 		System.out.println("\nEnter how much money you want to bet: ");
 		playerBet = input.nextInt();
+		playerBet1 = playerBet;
 		
-		while (playerInput == 'y'|| playerInput=='Y') 
+		while (playerInput=='y'|| playerInput=='Y') 
 		{
             
 	    	
 	/*************** Assigning results and resetting loop values ***************/
 	    	
-	        for (int index=0; index<num_Reels; index++) 
+	        for (int index=0; index<nReels; index++) 
 	        {
-	            int numrand = (int)(Math.random()*numSymbols);
+	            int numrand = (int)(Math.random()*NSymbols);
 	            switch(numrand)
 	            {
 	                case 0:  results[index]='o';  break;
@@ -125,27 +128,27 @@ public class DAM_Proyecto_Tragaperras
 	            symbolsFound[index]=' ';
 	            symbolsRepeated[index]=0;
 	        }
-	        
-            pos_found = 0;
-            matchCount = 0;
-            matchIndex = -1;
+            newfoundIndex = 0;
+            repeatCount = 0;
+            repeatIndex = -1;
             
 	        
 	/*************** Display Spinning Reels ***************/ 
 	        
-            for (int current_reel=0; current_reel<=num_Reels; current_reel++)
+            for (int reelsShown=0; reelsShown<=nReels; reelsShown++)
             {
                 clearScreen();
                 
-                displayReels(results, results.length, current_reel);
+                displayMachine(results, nReels, reelsShown);
+                //displayMachine(results, results.length, reelsShown);
                 
                 wait(500);
                 
                 System.out.println();
                 
-                if (current_reel!=num_Reels)
+                if (reelsShown!=nReels)
                 {
-                    System.out.print(((current_reel==0)?"Start":"Next reel")+" (p): ");
+                    System.out.print(((reelsShown==0)?"Start":"Next reel")+" (p): ");
                     do {playerInput = input.next().charAt(0);}
                     while(playerInput!='p');
                 }
@@ -154,78 +157,83 @@ public class DAM_Proyecto_Tragaperras
             
 	/*************** Calculating player payout ****************/
             
-            for (int i=0; i<num_Reels; i++)
+            for (int i=0; i<nReels; i++)
             {
                 if (!check(symbolsFound, results[i]))
                 {
-                	symbolsFound[pos_found] = results[i];
-                	pos_found++;
-                    for (int j=0; j<num_Reels; j++)
+                	symbolsFound[newfoundIndex] = results[i];
+                	newfoundIndex++;
+                    for (int j=0; j<nReels; j++)
                     {
                         if ((i!=j) && (results[i]==results[j]))
                         {
                         	symbolsRepeated[i]++;
-                        	if (matchCount < symbolsRepeated[i]) 
+                        	if (repeatCount < symbolsRepeated[i]) 
                         	{
-                        		matchCount = symbolsRepeated[i]; 
-                        		matchIndex = i;
+                        		repeatCount = symbolsRepeated[i]; 
+                        		repeatIndex = i;
                         	}
                         }
                     }
                 }
             }
             
-            if ( (matchCount==0) || (matchIndex==-1) )
-            	{System.out.println("You got no matches. You lost.");} 
+            if ( (repeatCount==0) || (repeatIndex==-1) )
+            {
+            	System.out.println("You got no repeates. You lost.");
+            	winAmount = 0;
+            }
             else 
             {
-        		System.out.println("You got the "+symbolsFound[matchIndex]+
-        							" symbol "+(matchCount+1)+" times.");
+        		System.out.println("You got the "+symbolsFound[repeatIndex]+
+        							" symbol "+(repeatCount+1)+" times.\n");
         		
-        		if (matchCount==1)					{win_amount = playerBet;}
-        		else if (matchCount==num_Reels-1)	{win_amount = playerBet*100.0;}
-        		else if (matchCount<=num_Reels/2)	{win_amount = playerBet*10.0;}
-        		else								{win_amount = playerBet*20.0;}
+        		if (repeatCount==1)				{winAmount = playerBet;}
+        		else if (repeatCount==nReels-1)	{winAmount = playerBet*100.0;}
+        		else if (repeatCount<=nReels/2)	{winAmount = playerBet*10.0;}
+        		else							{winAmount = playerBet*20.0;}
         		        		
-        		if (win_amount > playerBet)
+        		if (winAmount > playerBet)
     			{
-        			System.out.println("You gained "+(win_amount-playerBet)+"€.");
-        			System.out.println("And now have "+win_amount+" €.");
+        			System.out.println("You gained "+(winAmount-playerBet)+"€.");
+        			System.out.println("And went from "+playerBet+" to "+winAmount+" €.");
     			}
-        		else if (win_amount < playerBet)
+        		else if (winAmount < playerBet)
                 {
-        			System.out.println("You lost "+(playerBet-win_amount)+"€.");
-        			System.out.println("And now have "+win_amount+" €.");
+        			System.out.println("You lost "+(playerBet-winAmount)+"€.");
+        			System.out.println("And went from "+playerBet+" to "+winAmount+" €.");
         		}
-        		else //win_amount == playerBet
+        		else //winAmount == playerBet
         		{
         			System.out.println("You retain the amount of money you had: ");
-        			System.out.println(win_amount+" €.");
+        			System.out.println(winAmount+" €.");
         		}
         		System.out.println();
                 System.out.print("Do you want continue playing? (y/n): ");
                 playerInput = input.next().charAt(0);
+            }
+            
+            if ( (repeatCount>0) && (playerInput=='y'|| playerInput=='Y') )
+            {
+            	playerBet = winAmount;
+            	
+            	System.out.print("Do you want to bet more money? (y/n): ");
+                playerInput = input.next().charAt(0);
                 
-                
-                if (playerInput == 'y'|| playerInput=='Y')
+                if (playerInput=='y'|| playerInput=='Y')
                 {
-                	playerBet = win_amount;
-                	
-                	System.out.print("Do you want to bet more money? (y/n): ");
-                    playerInput = input.next().charAt(0);
-                    
-                    if (playerInput == 'y'|| playerInput=='Y')
-                    {
-                    	System.out.print("How much money do you want to add: ");
-                    	win_amount = input.nextInt();
-                    	playerBet += win_amount;
-                    }
-                    else {playerInput = 'y';}
-                    
-                	clearScreen();
+                	System.out.print("How much money do you want to add: ");
+                	winAmount = input.nextInt();
+                	playerBet += winAmount;
                 }
-                else
-                	{System.out.println("\n\t You got "+win_amount+" €");}
+                else {playerInput = 'y';}
+                
+            	clearScreen();
+            }
+            else
+            {
+            	System.out.println("\n\t You started with "+playerBet1+" €");
+            	System.out.println("\t And you left with "+winAmount+" €");
             }
 
 	    }
