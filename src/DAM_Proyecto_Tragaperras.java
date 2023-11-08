@@ -34,16 +34,18 @@ public class DAM_Proyecto_Tragaperras
 	}
 	
 	
-	public static void displayMachine(char[] arr , int lngth, int reel)
+	public static void displayMachine(char[] arr, int show)
 	{
-		for (int i=0; i<lngth; i++)	{System.out.print(" _____");}
+		for (int slot=0; slot<arr.length; slot++) {System.out.print(" _____");}
+		
+		System.out.print("\n|");
+		for (int slot=0; slot<arr.length; slot++) {System.out.print("     |");}
+        
+		System.out.print("\n|");
+        for (int slot : arr) {System.out.printf("  %c  |", (show>slot) ? arr[slot] : ' ' );}
+        
         System.out.print("\n|");
-        for (int i=0; i<lngth; i++)	{System.out.print("     |");}
-        System.out.print("\n|");
-        for (int i=0; i<lngth; i++)	{System.out.print((reel>i)? "  "+arr[i]+"  |":"     |");}
-        System.out.print("\n|");
-        for (int i=0; i<lngth; i++)	{System.out.print("_____|");}
-        System.out.println();
+        for (int slot=0; slot<arr.length; slot++) {System.out.print("_____|");}
 	}
 	
 	public static void wait(int ms)
@@ -57,7 +59,7 @@ public class DAM_Proyecto_Tragaperras
 	
     public static boolean check(char[] arr, char value)
     {
-        for (int element: arr)
+        for (int element : arr)
         {
             if (element == value) 
             	{return true;}
@@ -73,7 +75,7 @@ public class DAM_Proyecto_Tragaperras
 	/******************** Declaring variables ********************/
     	
     	int nReels = 4;		//Number of spinning reels the machine has.
-    	int NSymbols = 4;	//Number of possible symbols in each reel.
+    	int nSymbols = 4;	//Number of possible symbols in each reel.
     	
 		char[] results = new char[nReels];
 		//Every position is obtained from one of the spinning reels.
@@ -111,7 +113,7 @@ public class DAM_Proyecto_Tragaperras
 	    	
 	        for (int index=0; index<nReels; index++) 
 	        {
-	            int numrand = (int)(Math.random()*NSymbols);
+	            int numrand = (int)(Math.random()*nSymbols);
 	            switch(numrand)
 	            {
 	                case 0:  results[index]='o';  break;
@@ -126,8 +128,8 @@ public class DAM_Proyecto_Tragaperras
 	                case 9:  results[index]='/';  break;
 	                default: results[index]='_';  break;
 	            }
-	            symbolsFound[index]=' ';
-	            symbolsRepeated[index]=0;
+	            symbolsFound[index] = ' ';
+	            symbolsRepeated[index] = 0;
 	        }
             newfoundIndex = 0;
             repeatCount = 0;
@@ -140,12 +142,11 @@ public class DAM_Proyecto_Tragaperras
             {
                 clearScreen();
                 
-                displayMachine(results, nReels, reelsShown);
-                //displayMachine(results, results.length, reelsShown);
+                displayMachine(results, reelsShown);
                 
                 wait(500);
                 
-                System.out.println();
+                System.out.println("\n");
                 
                 if (reelsShown!=nReels)
                 {
@@ -181,7 +182,7 @@ public class DAM_Proyecto_Tragaperras
             
             if ( (repeatCount==0) || (repeatIndex==-1) )
             {
-            	System.out.println("You got no repeates. You lost.");
+            	System.out.println("You got no repeated symbols. You lost.");
             	winAmount = 0;
             }
             else 
@@ -234,8 +235,8 @@ public class DAM_Proyecto_Tragaperras
             }
             else
             {
-            	System.out.println("\n\t You have spent with "+playerSpent+" €");
-            	System.out.println("\t   And you won "+winAmount+" €");
+            	System.out.println("\n\t You have spent "+playerSpent+" €");
+            	System.out.println("\t   And have won "+winAmount+" €");
             }
 
 	    }
