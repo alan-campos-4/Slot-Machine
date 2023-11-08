@@ -34,15 +34,15 @@ public class DAM_Proyecto_Tragaperras
 	}
 	
 	
-	public static void displayReel(char[] results , int n_reels, int reel)
+	public static void displayReel(char[] arr , int lngth, int reel)
 	{
-		for (int i=0; i<n_reels; i++)	{System.out.print(" _____");}
+		for (int i=0; i<lngth; i++)	{System.out.print(" _____");}
         System.out.print("\n|");
-        for (int i=0; i<n_reels; i++)	{System.out.print("     |");}
+        for (int i=0; i<lngth; i++)	{System.out.print("     |");}
         System.out.print("\n|");
-        for (int i=0; i<n_reels; i++)	{System.out.print((reel>i)? "  "+results[i]+"  |":"     |");}
+        for (int i=0; i<lngth; i++)	{System.out.print((reel>i)? "  "+arr[i]+"  |":"     |");}
         System.out.print("\n|");
-        for (int i=0; i<n_reels; i++)	{System.out.print("_____|");}
+        for (int i=0; i<lngth; i++)	{System.out.print("_____|");}
         System.out.println();
 	}
 	
@@ -115,7 +115,7 @@ public class DAM_Proyecto_Tragaperras
 	                default: results[index]='_';  break;
 	            }
 	            symbolsFound[index]=' ';
-	            symbolsRepeated[index]=0;
+	            //symbolsRepeated[index]=0;
 	        }
 	        
             pos_found = 0;
@@ -128,26 +128,9 @@ public class DAM_Proyecto_Tragaperras
             for (int current_reel=0; current_reel<=num_Reels; current_reel++)
             {
                 clearScreen();
-
-                /*
-                for (int i=0; i<num_Reels; i++)	{System.out.print(" _____");}
-                System.out.print("\n|");
-                for (int i=0; i<num_Reels; i++)	{System.out.print("     |");}
-                System.out.print("\n|");
-                for (int i=0; i<num_Reels; i++)
-                {
-                    if (current_reel>i)
-                        System.out.print("  "+results[i]+"  |");
-                	else 
-                        System.out.print("     |");
-                }
-                System.out.print("\n|");
-                for (int i=0; i<num_Reels; i++) {System.out.print("_____|");}
-                System.out.println();*/
                 
                 displayReel(results, num_Reels, current_reel);
                 
-
                 if (current_reel!=num_Reels)
                 {
                     System.out.print((current_reel==0)? "\nStart (p): ":"\nNext reel (p): ");
@@ -164,7 +147,7 @@ public class DAM_Proyecto_Tragaperras
                 if (!check(symbolsFound, results[i]))
                 {
                 	symbolsFound[pos_found] = results[i];
-                	symbolsRepeated[i] = 0;
+                	
                     for (int j=0; j<num_Reels; j++)
                     {
                         if ((i!=j) && (results[i]==results[j]))
