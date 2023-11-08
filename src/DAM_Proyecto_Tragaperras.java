@@ -42,7 +42,14 @@ public class DAM_Proyecto_Tragaperras
 		for (int slot=0; slot<arr.length; slot++) {System.out.print("     |");}
         
 		System.out.print("\n|");
-        for (int slot : arr) {System.out.printf("  %c  |", (show>slot) ? arr[slot] : ' ' );}
+		for (int slot : arr)
+        	{System.out.print((show>slot) ? "  "+arr[slot]+"  |" : "     |" );}
+		
+        //for (int slot=0; slot<arr.length; slot++)
+		/*{
+			if (show>slot)	{System.out.print("  "+arr[slot]+"  |");}
+			else			{System.out.print("     |");}
+		}*/
         
         System.out.print("\n|");
         for (int slot=0; slot<arr.length; slot++) {System.out.print("_____|");}
@@ -167,7 +174,7 @@ public class DAM_Proyecto_Tragaperras
                 	newfoundIndex++;
                     for (int j=0; j<nReels; j++)
                     {
-                        if ((i!=j) && (results[i]==results[j]))
+                        if ( (i!=j) && (results[i]==results[j]) )
                         {
                         	symbolsRepeated[i]++;
                         	if (repeatCount < symbolsRepeated[i]) 
