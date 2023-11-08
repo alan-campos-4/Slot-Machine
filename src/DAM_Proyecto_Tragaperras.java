@@ -91,7 +91,8 @@ public class DAM_Proyecto_Tragaperras
 		int repeatCount;	//Times the most repeated symbol is repeated.
 		
 		double playerBet;	//Amount of money the player has bet.
-		double playerBet1;	//Amount of money the player bet in the first game.
+		double playerSpent;	//Amount of money the player spent playing the game.
+		double increase;	//Amount of money the player adds to their bet.
 		double winAmount;	//Amount of money the player is awarded.
 		
 		
@@ -100,7 +101,7 @@ public class DAM_Proyecto_Tragaperras
 		playerInput = input.next().charAt(0);
 		System.out.println("\nEnter how much money you want to bet: ");
 		playerBet = input.nextInt();
-		playerBet1 = playerBet;
+		playerSpent = playerBet;
 		
 		while (playerInput=='y'|| playerInput=='Y') 
 		{
@@ -223,8 +224,9 @@ public class DAM_Proyecto_Tragaperras
                 if (playerInput=='y'|| playerInput=='Y')
                 {
                 	System.out.print("How much money do you want to add: ");
-                	winAmount = input.nextInt();
-                	playerBet += winAmount;
+                	increase = input.nextInt();
+                	playerBet += increase;
+                	playerSpent += increase;
                 }
                 else {playerInput = 'y';}
                 
@@ -232,8 +234,8 @@ public class DAM_Proyecto_Tragaperras
             }
             else
             {
-            	System.out.println("\n\t You started with "+playerBet1+" €");
-            	System.out.println("\t And you left with "+winAmount+" €");
+            	System.out.println("\n\t You have spent with "+playerSpent+" €");
+            	System.out.println("\t   And you won "+winAmount+" €");
             }
 
 	    }
