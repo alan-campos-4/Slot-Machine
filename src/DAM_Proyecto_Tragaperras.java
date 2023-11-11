@@ -1,3 +1,4 @@
+import java.util.Objects;
 import java.util.Scanner;
 
 
@@ -100,11 +101,12 @@ public class DAM_Proyecto_Tragaperras
     {
     	for (int element : arr)
         {
-            if (element == value) 
+            if (arr[element] == value)
             	{return element;}
         }
         return -1;
     }
+
 
 
 
@@ -116,8 +118,9 @@ public class DAM_Proyecto_Tragaperras
  *			position in results
  * 		re-spin different reel:	method?
  * 		re-evaluate results:	??!!
- * 
  */
+
+
 
 
     public static void main(String[] args)
@@ -128,7 +131,7 @@ public class DAM_Proyecto_Tragaperras
     	int nReels = 4;		//Number of spinning reels the machine has.
     	int nSymbols = 4;	//Number of possible symbols in each reel.
     	
-		//char[] results = new char[nReels];
+		char[] results = new char[nReels];
 		//Every position is obtained from one of the spinning reels.
 		char[] symbolsFound = new char[nReels];
 		int[] symbolsRepeated = new int[nReels];
@@ -140,9 +143,12 @@ public class DAM_Proyecto_Tragaperras
 		char gameEnter;	//Player input to stop or continue the game.
 		char gameInput;	//Player input for other methods.
 		
+		boolean reroll = false;
 		int newIndex;	//Position of a new different symbol found in the results.
 		int MRS_index;	//Position of the Most Repeated Symbol.
 		int MRS_count;	//Times the Most Repeated Symbol is present in the results.
+		int LRS_index;	//Position of the Least Repeated Symbol
+		int LRS_count;	//Times the Least Repeated Symbol is present in the results.
 		
 		double playerBet;	//Amount of money the player has bet.
 		double playerSpent;	//Amount of money the player spent playing the game.
@@ -156,7 +162,7 @@ public class DAM_Proyecto_Tragaperras
 		System.out.println("In order to play you have to bet an amount of money");
 		System.out.println("and then spin the reels to win a prize:");
 		System.out.println("  if you get the same symbol 3 times or more you win a prize.");
-		System.out.println("  if you get the same symbol 2 times you don't lose or gain money.");
+		System.out.println("  if you get the same symbol 2 times you keep what you bet.");
 		System.out.println("  if you get the same symbol in all reels you win the jackpot.");
 		System.out.println("  if you don't get any repeated symbols you lose.");
 		System.out.println();
@@ -165,7 +171,7 @@ public class DAM_Proyecto_Tragaperras
 		
 		if (gameEnter=='y'|| gameEnter=='Y')
 		{
-			System.out.println("\nEnter how much money you want to bet: ");
+			System.out.print("Enter how much money you want to bet: ");
 			playerBet = input.nextInt();
 			playerSpent = playerBet;
 			
@@ -173,19 +179,17 @@ public class DAM_Proyecto_Tragaperras
 			{
 	            
 		    	
-		/*************** Assigning results and resetting loop values ***************/
+		/*************** Assigning results ***************/
 		    	
 		        for (int index=0; index<nReels; index++) 
 		        {
-		            //assignRandom(results, index, nSymbols);
+		            assignRandom(results, index, nSymbols);
 		            symbolsFound[index] = ' ';
 		            symbolsRepeated[index] = 0;
 		        }
-	            newIndex = 0;
-	            MRS_count = 0;
-	            MRS_index = -1;
 	            
-	            char results[] = {'#','#','@','#'};
+	            
+	            //char results[] = {'#','#','@','#'};
 	            
 		        
 		/*************** Display Spinning Reels ***************/ 
@@ -194,7 +198,6 @@ public class DAM_Proyecto_Tragaperras
 	            {
 	                clearScreen();
 	                
-	                //displayMachine(results, reelsShown);
 	                displayMachine(results, nReels);
 	                
 	                //wait(500);
@@ -211,7 +214,13 @@ public class DAM_Proyecto_Tragaperras
 	            }
 	            
 	            
-		/*************** Calculating player payout ****************/
+		/*************** Calculating player prize ****************/
+	            
+	            newIndex = 0;
+	            MRS_count = 0;
+	            LRS_count = 10;
+	            MRS_index = -1;
+	            LRS_index = -1;
 	            
 	            for (int i=0; i<nReels; i++)
 	            {
@@ -226,9 +235,14 @@ public class DAM_Proyecto_Tragaperras
 	                        	if (symbolsRepeated[newIndex] > MRS_count) 
 	                        	{
 	                        		MRS_count = symbolsRepeated[newIndex]; 
-	                        		MRS_index = newIndex;
+	                        		MRS_index = i;
 	                        	}
 	                        }
+	                        if (symbolsRepeated[newIndex] < LRS_count) 
+                        	{
+                        		LRS_count = symbolsRepeated[newIndex]; 
+                        		LRS_index = i;
+                        	}
 	                    }
 	                    newIndex++;
 	                }
@@ -238,7 +252,8 @@ public class DAM_Proyecto_Tragaperras
 	            {
 	            	System.out.println("You got no repeated symbols. You lost.");
 	            	winAmount = 0;
-	            }
+	            	reroll = false;
+	      		}
 	            else 
 	            {
 	        		System.out.println("You got the "+symbolsFound[MRS_index]+
@@ -252,75 +267,77 @@ public class DAM_Proyecto_Tragaperras
 	        			
 	        			if (gameInput=='y'||gameInput=='Y')
 	        			{
-	        				int diff_index = posOfValue(symbolsRepeated, 1);
-
-	        				int LRS_index = posOfValue(results, symbolsFound[diff_index]);
+	        				assignRandom(results, LRS_index, nSymbols);
+	        				displayMachine(results, nReels);
+	        				System.out.println("\n");
 	        				
-	        				System.out.println("Least found "+results[LRS_index]
-	        						+" in "+LRS_index+" position.");
-	        				
-	        				
-	        				//assignRandom(symbolsFound, indexDiff, nSymbols);
-	        				wait(1000);
-	        				break;
+	        				if (Objects.equals(results[MRS_index], results[LRS_index]))
+	        				{
+	        					MRS_count++;
+	        				}
 	        			}
-	        			winAmount = playerBet*10.0;
+	        			
 	        		}
 	        		
-	        		{
-	        		
-		        		if (MRS_count==2)				{winAmount = playerBet;}
-		        		else if (MRS_count==nReels)		{winAmount = playerBet*100.0;}
-		        		else if (MRS_count<=nReels/2)	{winAmount = playerBet*10.0;}
-		        		else							{winAmount = playerBet*20.0;}
-		        		
-		        		if (winAmount > playerBet)
-		    			{
-		        			System.out.println("You gained "+(winAmount-playerBet)+"€.");
-		        			System.out.println("And went from "+playerBet+" to "+winAmount+" €.");
-		    			}
-		        		else if (winAmount < playerBet)
-		                {
-		        			System.out.println("You lost "+(playerBet-winAmount)+"€.");
-		        			System.out.println("And went from "+playerBet+" to "+winAmount+" €.");
-		        		}
-		        		else //winAmount == playerBet
-		        		{
-		        			System.out.println("You retain the amount of money you had: ");
-		        			System.out.println(winAmount+" €.");
-		        		}
-		        		System.out.println();
-		                System.out.print("Do you want continue playing? (y/n): ");
-		                gameEnter = input.next().charAt(0);
-	        		}
 	            }
+            
 	            
-	            if ( (MRS_count>0 && MRS_count<nReels-1) && (gameEnter=='y'|| gameEnter=='Y') )
-	            {
-	            	playerBet = winAmount;
-	            	
-	            	System.out.print("Do you want to bet more money? (y/n): ");
-	            	gameInput = input.next().charAt(0);
-	                
-	                if (gameInput=='y'|| gameInput=='Y')
+	        	if (MRS_count>1)	
+	        	{
+	        		/*
+	        		
+	        		if you get the same symbol 3 times or more you win a prize.");
+					if you get the same symbol 2 times you keep what you bet.");
+					if you get the same symbol in all reels you win the jackpot.");
+					if you don't get any repeated symbols you lose.");
+	        		
+	        		*/
+	        		if (MRS_count==nReels)			{winAmount = playerBet*100;}
+	        		else if (MRS_count>nReels/2)	{winAmount = playerBet*10;}
+	        		else							{winAmount = playerBet;}
+	        		
+	        		if (winAmount==playerBet)
+	        		{
+	        			System.out.println("You still have "+winAmount+" €.");
+	        		}
+	        		else
 	                {
-	                	System.out.print("How much money do you want to add: ");
-	                	increase = input.nextInt();
-	                	playerBet += increase;
-	                	playerSpent += increase;
-	                }
+	        			System.out.println("You now have "+winAmount+" €.");
+	        		}
+	        		
+	        		System.out.println();
+	                System.out.print("Do you want continue playing? (y/n): ");
+	                gameEnter = input.next().charAt(0);
 	                
-	            	clearScreen();
-	            }
-	            else
-	            {
-	            	if (MRS_count==nReels-1)
-	            		{System.out.println("\n\tYou won the jackpot!!!");}
-	            	System.out.println("\n\t You have spent "+playerSpent+" €");
-	            	System.out.println("\t   And have won "+winAmount+" €");
-	            	
-	            }
-	
+	                if ( (MRS_count<nReels) && (gameEnter=='y'|| gameEnter=='Y') )
+		            {
+		            	playerBet = winAmount;
+		            	
+		            	System.out.print("Do you want to bet more money? (y/n): ");
+		            	gameInput = input.next().charAt(0);
+		                
+		                if (gameInput=='y'|| gameInput=='Y')
+		                {
+		                	System.out.print("How much money do you want to add: ");
+		                	increase = input.nextInt();
+		                	playerBet += increase;
+		                	playerSpent += increase;
+		                }
+		                
+		            	clearScreen();
+		            }
+		            else
+		            {
+		            	if (MRS_count==nReels)
+		            		{System.out.print("\n\tYou won the jackpot!!!");}
+		            	System.out.println("\n\t  You have spent "+playerSpent+" €");
+		            	System.out.println("\t    And have won "+winAmount+" €");
+		            }
+		            
+		            System.out.println("...");
+	        	}
+	            
+	            
 		    }
         	input.close();
     	}
