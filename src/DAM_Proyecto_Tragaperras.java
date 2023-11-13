@@ -269,9 +269,19 @@ public class DAM_Proyecto_Tragaperras
 	            {
 	        		System.out.println("You got the "+MRS+" symbol "+MRS_count+" times.\n");
 	        		
+
+	        		/*Matches in all reels: jackpot. Game Over*/
+	        		if (MRS_count==nReels)
+	        		{
+	        			winAmount = playerBet*100;
+	        			gameEnter = 'n'; //ends loop
+	        			System.out.print("\n\tYou won the jackpot!!!");
+		            	System.out.println("\n\t  You have spent "+playerSpent+" €.");
+		            	System.out.println("\t    And have won "+winAmount+" €.");
+	        		}
 	        		
 	        		/*1 match away from jackpot (reroll)*/
-	        		if (MRS_count==nReels-1)
+	        		else if (MRS_count==nReels-1)
 	        		{
 	        			System.out.println("You are one reel of from the jackpot.");
 	        			System.out.print("Do you want to reroll it? (y/n): ");
@@ -293,17 +303,6 @@ public class DAM_Proyecto_Tragaperras
 	        				}
 	        				else {System.out.println("The new symbol is still different.");}
 	        			}
-	        			
-	        		}
-	        		
-	        		/*Matches in all reels: jackpot. Game Over*/
-	        		else if (MRS_count==nReels)
-	        		{
-	        			winAmount = playerBet*100;
-	        			gameEnter = 'n'; //ends loop
-	        			System.out.print("\n\tYou won the jackpot!!!");
-		            	System.out.println("\n\t  You have spent "+playerSpent+" €.");
-		            	System.out.println("\t    And have won "+winAmount+" €.");
 	        		}
 	        		
 	        		/*Matches between 1 and max*/
@@ -348,8 +347,6 @@ public class DAM_Proyecto_Tragaperras
 			            	System.out.println("\t    And have won "+winAmount+" €.");
 			            }
 		            }
-		        	
-	        		
 	            }
 	            
 		    }
