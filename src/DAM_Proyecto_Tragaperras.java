@@ -16,11 +16,12 @@ public class DAM_Proyecto_Tragaperras
 	
 	static int betMin=20;	//Minimum amount of money the player is allowed to bet
 	static int betMax=100;	//Maximum amount of money the player is allowed to bet
+	static char gameInput;	//Player input for methods apart from stopping the game.
 	
-	static int MRcount;		//Times the Most Repeated Symbol is present in the results.
-	static int LRcount;		//Times the Least Repeated Symbol is present in the results.
-	static int MRindex;		//Position of the Most Repeated Symbol in the results
-	static int LRindex;		//Position of the Least Repeated Symbol in the results
+	static int MRcount;		//Times the Most Repeated symbol is present in the results.
+	static int LRcount;		//Times the Least Repeated symbol is present in the results.
+	static int MRindex;		//Position of the Most Repeated symbol in the results
+	static int LRindex;		//Position of the Least Repeated symbol in the results
 	
 	
 	
@@ -57,6 +58,7 @@ public class DAM_Proyecto_Tragaperras
         System.out.flush();
 	}
 	
+	
 	// Delay the program for a given amount of miliseconds
 	public static void wait(int ms)
 	{
@@ -65,6 +67,7 @@ public class DAM_Proyecto_Tragaperras
 		catch (InterruptedException e) 
 			{Thread.currentThread().interrupt();}
 	}
+	
 	
 	// Assigns a random symbol to the Results in the position given
 	public static void spinReel(int index)
@@ -85,6 +88,7 @@ public class DAM_Proyecto_Tragaperras
         }
 	}
 	
+	
 	// Displays the slot machine with the given number of reels visible
 	public static void displayMachine(int nShown)
 	{
@@ -104,6 +108,7 @@ public class DAM_Proyecto_Tragaperras
         System.out.println("\n");
 	}
 	
+	
 	// Re-rolls the "missing" reel and changes the results accordingly
 	public static void reroll()
 	{
@@ -112,7 +117,7 @@ public class DAM_Proyecto_Tragaperras
 		System.out.println(" but if you fail you will loose all your money.");
 		System.out.print("Do you want to reroll the "+(LRindex+1)+"º reel ? (y/n): ");
 		
-		char gameInput = input.next().charAt(0);
+		gameInput = input.next().charAt(0);
 		if (gameInput=='y' || gameInput=='Y')
 		{
 			spinReel(LRindex);
@@ -131,22 +136,21 @@ public class DAM_Proyecto_Tragaperras
 		}
 	}
 	
+	
 	// Makes sure the amount introduced as a bet is between the limits
 	public static double readBet()
     {
-		System.out.print(" Min "+betMin+", Max "+betMax+": ");
-    	double bet = input.nextDouble();
-    	while (!(bet>=betMin && bet<=betMax))
-		{
-			System.out.println("Invalid amount. Try again.");
+		double bet;
+		do {
 			System.out.print(" Min "+betMin+", Max "+betMax+": ");
-			bet = input.nextDouble();
-		}
-    	return bet;
+	    	bet = input.nextDouble();
+		} while(bet<betMin || bet>betMax);
+		return bet;
     }
     
-	// Returns true if the symbol given exists in symbolsFound
-    public static boolean foundSymbol(char[] arr, char value)
+	
+	// Returns true if the value given exists in the array
+    public static boolean found(char[] arr, char value)
     {
         for (int element : arr)
         {
@@ -166,12 +170,11 @@ public class DAM_Proyecto_Tragaperras
     /******************** Declaring local variables ********************/
     	
     	char[] symbolsFound = new char[nReels];
-    	int[]  symbolsAmount = new int[nReels];
+    	int[] symbolsAmount = new int[nReels];
     	/*For every position in both arrays:
     		symbolsFound: a new different symbol found in the results.
     		symbolsAmount: the times that symbol is present in the results.*/
     	char gameEnter;		//Player input to stop or continue the game.
-    	char gameInput;		//Player input for other uses.
     	double playerBet;	//Amount of money the player has bet.
     	double playerSpent;	//Amount of money the player spent playing the game.
     	double winAmount;	//Amount of money the player is awarded.
@@ -183,8 +186,8 @@ public class DAM_Proyecto_Tragaperras
 		System.out.println("\t Welcome to the slot machine ");
 		System.out.println("In order to play you have to bet an amount of money");
 		System.out.println("and then spin the reels to win a prize:");
-		System.out.println("· >half the reels match : win a prize.");
-		System.out.println("· <half the reels match : keep what you bet.");
+		System.out.println("· More than half the reels match : win a prize.");
+		System.out.println("· Less than half the reels match : keep what you bet.");
 		System.out.println("· Almost all reels match : chance for all or nothing.");
 		System.out.println("· All reels match : jackpot.");
 		System.out.println("· No matches : you lose.");
@@ -193,48 +196,43 @@ public class DAM_Proyecto_Tragaperras
 		System.out.print("Do you want to play? (y/n): ");
 		gameEnter = input.next().charAt(0);
 		
-		if (gameEnter=='y'|| gameEnter=='Y')
+		if (gameEnter=='y' || gameEnter=='Y')
 		{
 			System.out.println("Enter how much money you want to bet.");
 			playerBet = readBet();
 			playerSpent = playerBet;
 			
-			while (gameEnter=='y'|| gameEnter=='Y')
+			while (gameEnter=='y' || gameEnter=='Y')
 			{
 				
 				
 			/*************** Assigning & Display Results ***************/ 
 				
-				/***** Design of the following for loop ***** 
+				/* ***** Design of the following loop ***** 
 				The range of Results[] is (0, n-1) because it is an array.
 				The range of spinReel() is (0, n-1) because 
-				   the input is used to locate a position in the Results array,
-				   and therefore needs to have the same range as an array.
+				   its input is used to locate a position in the Results array.
 				The range of displayMachine() is (0, n) because
-				   the input is used for how many positions of Results are displayed,
-				   the options being any amount allowed by the range of Results, plus none;
-				   making the number of options n-1+1 = n.
+				   its input determines how many positions of Results are displayed:
+				   any amount within the range of Results (1,n) or none at all (0).
 				We can conclude that, for any random position Results[x] 
 				we use spinReel(x) to assign a value and displayMachine(x+1) to display it.
-				If we want to start with an empty machine and end with displaying all reels
-				we must start apply the (0,n-1) range to both functions 
-				and make sure displayMachine() reaches n but spinReel() doesn't.
 				*/
 				for (int reels=0; reels<=nReels; reels++)
 	            {
-	                /*clearScreen();
-	                displayMachine(nReels);
-	                wait(400+reels*50);*/
+	                clear();
+	                displayMachine(reels);
+	                wait(400+reels*50);
 	                
 	                if (reels<nReels)
 	                {
-		                /*do {
+		                do {
 		                    System.out.print(((reels==0)?"Start":"Next reel")+" (p): ");
 		                    gameInput = input.next().charAt(0);
-	                	} while(gameInput!='p');*/
+	                	} while(gameInput!='p');
 		                spinReel(reels);
 	                }
-	            }clear(); displayMachine(nReels);
+	            }//clear(); displayMachine(nReels);
 	            
 				
 			/*************** Resetting the values necessary for the loop ***************/
@@ -244,16 +242,16 @@ public class DAM_Proyecto_Tragaperras
 		            symbolsFound[i] = ' ';
 		            symbolsAmount[i] = 0;
 		        }
+		        newIndex = 0;
 	            MRcount = 0;	LRcount = 10;
 	            MRindex = 0;	LRindex = 0;
-	            newIndex = 0;
 	            
 	            
             /*************** Counting symbols in results ****************/
 	            
 	            for (int i=0; i<nReels; i++)
 	            {
-	                if (!foundSymbol(symbolsFound, Results[i]))
+	                if (!found(symbolsFound, Results[i]))
 	                {
 	                	symbolsFound[newIndex]  = Results[i];
 	                	symbolsAmount[newIndex] = 1;
@@ -264,15 +262,15 @@ public class DAM_Proyecto_Tragaperras
 	                        	symbolsAmount[newIndex]++;
 	                        	if (symbolsAmount[newIndex] > MRcount) 
 	                        	{
-	                            	MRindex = i;
 	                        		MRcount = symbolsAmount[newIndex];
+	                        		MRindex = i;
 	                        	}
 	                        }
 	                    }
 	                    if (symbolsAmount[newIndex] < LRcount) 
                     	{
-                        	LRindex = i;
                     		LRcount = symbolsAmount[newIndex];
+                    		LRindex = i;
                     	}
 	                    newIndex++;
 	                }
@@ -287,12 +285,12 @@ public class DAM_Proyecto_Tragaperras
 				if you get the same symbol in all reels you win the jackpot.
 				if you don't get any repeated symbols you lose.
         		*/
+	            if (MRcount==nReels-1)
+            	{
+            		reroll();
+            	}
 	            
-	            /* check for possibility to reroll before anything
-            	 * in case it results in all or no matches */
-            	if (MRcount==nReels-1) {reroll();}
-            	
-	            if (MRcount==1) /* No matches. Game Over */
+	            if (MRcount==1 || MRcount==0) /* No matches. Game Over */
 	            {
 	            	winAmount = 0;
 	            	gameEnter = 'n';
@@ -300,8 +298,9 @@ public class DAM_Proyecto_Tragaperras
 	            }
 	            else 
 	            {
-	            	System.out.println("You got the "+Results[MRindex]+" symbol "
-        			+MRcount+" times.\n");
+	            	System.out.println("You got the "+Results[MRindex]+" symbol "+MRcount+" times.\n");
+	            	
+	            	
 	            	
 	            	if (MRcount==nReels) /* All matches. Maximum prize & Game Over */
 	            	{
@@ -330,14 +329,14 @@ public class DAM_Proyecto_Tragaperras
 	            		System.out.print("Do you want continue playing? (y/n): ");
 	                    
 	                    gameEnter = input.next().charAt(0);
-	                    if (gameEnter=='y'|| gameEnter=='Y')
+	                    if (gameEnter=='y' || gameEnter=='Y')
 	                    {
 	                    	playerBet = winAmount; //The money won is used in the next loop
 	                    	
 	                    	System.out.print("Do you want to bet more money? (y/n): ");
 	                    	
 	                    	gameInput = input.next().charAt(0);
-	                        if (gameInput=='y'|| gameInput=='Y')
+	                        if (gameInput=='y' || gameInput=='Y')
 	                        {
 	                        	System.out.println("Enter the money do you want to add.");
 	                        	double increase = readBet();
@@ -352,8 +351,8 @@ public class DAM_Proyecto_Tragaperras
 	                    }
 	            	}
 	            }
-
-
+	            
+	            
 			}//While loop
         	System.out.println("...");
     	}//if
