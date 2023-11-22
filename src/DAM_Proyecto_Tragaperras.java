@@ -11,12 +11,17 @@ public class DAM_Proyecto_Tragaperras
 	static int nSymbols=4;	//Number of possible symbols in each reel.
 	
 	static char[] Results = new char[nReels]; //Results of spinning all the reels in the machine
+	static char[] symbolsFound;
+	static int[] symbolsAmount;
+	/*For every position in both arrays:
+		symbolsFound: a new different symbol found in the results.
+		symbolsAmount: the times that symbol is present in the results.*/
 	
 	static Scanner input = new Scanner(System.in);
-	
-	static int betMin=20;	//Minimum amount of money the player is allowed to bet
-	static int betMax=100;	//Maximum amount of money the player is allowed to bet
 	static char gameInput;	//Player input for methods apart from stopping the game.
+	
+	static int betmin=20;	//Minimum amount of money the player is allowed to bet
+	static int betmax=100;	//Maximum amount of money the player is allowed to bet
 	
 	static int MRcount;		//Times the Most Repeated symbol is present in the results.
 	static int LRcount;		//Times the Least Repeated symbol is present in the results.
@@ -59,7 +64,7 @@ public class DAM_Proyecto_Tragaperras
 	}
 	
 	
-	// Delay the program for a given amount of miliseconds
+	// Delay the program for a given amount of mili-seconds
 	public static void wait(int ms)
 	{
 		try 
@@ -69,22 +74,22 @@ public class DAM_Proyecto_Tragaperras
 	}
 	
 	
-	// Assigns a random symbol to the Results in the position given
-	public static void spinReel(int index)
+	// Returns a random symbol to assign to the Results
+	public static char spinReel()
 	{
         switch((int)(Math.random()*nSymbols))
         {
-            case 0:  Results[index]='o';  break;
-            case 1:  Results[index]='!';  break;
-            case 2:  Results[index]='@';  break;
-            case 3:  Results[index]='#';  break;
-            case 4:  Results[index]='$';  break;
-            case 5:  Results[index]='%';  break;
-            case 6:  Results[index]='&';  break;
-            case 7:  Results[index]='~';  break;
-            case 8:  Results[index]='\\'; break;
-            case 9:  Results[index]='/';  break;
-            default: Results[index]='_';  break;
+            case 0:  return 'o';
+            case 1:  return '!';
+            case 2:  return '@';
+            case 3:  return '#';
+            case 4:  return '$';
+            case 5:  return '%';
+            case 6:  return '&';
+            case 7:  return '~';
+            case 8:  return '\\';
+            case 9:  return '/';
+            default: return '_';
         }
 	}
 	
@@ -109,6 +114,43 @@ public class DAM_Proyecto_Tragaperras
 	}
 	
 	
+	// Counts the symbols in the results to find the most and least repeated
+	public static void symbolCount(char[] Results)
+	{
+		// Values need to be reset in every loop
+		symbolsFound = new char[nReels];
+		symbolsAmount = new int[nReels];
+        MRcount = 0; LRcount = 10;
+        MRindex = 0; LRindex = 0;
+		int newPos = 0;
+		
+		for (int i=0; i<Results.length; i++)
+        {
+            if (!found(symbolsFound, Results[i]))
+            {
+            	symbolsFound[newPos] = Results[i];
+            	symbolsAmount[newPos] = 1;
+            	for (int j=0; j<Results.length; j++)
+                {
+                    if ( (i!=j) && (Results[i]==Results[j]) )
+                    	{symbolsAmount[newPos]++;}
+                }
+                if (symbolsAmount[newPos] > MRcount) 
+            	{
+            		MRcount = symbolsAmount[newPos];
+            		MRindex = i;
+            	}
+                if (symbolsAmount[newPos] < LRcount) 
+            	{
+            		LRcount = symbolsAmount[newPos];
+            		LRindex = i;
+            	}
+                newPos++;
+            }
+        }
+	}
+	
+	
 	// Re-rolls the "missing" reel and changes the results accordingly
 	public static void reroll()
 	{
@@ -120,7 +162,7 @@ public class DAM_Proyecto_Tragaperras
 		gameInput = input.next().charAt(0);
 		if (gameInput=='y' || gameInput=='Y')
 		{
-			spinReel(LRindex);
+			Results[LRindex] = spinReel();
 			displayMachine(nReels);
 			
 			if (Objects.equals(Results[MRindex], Results[LRindex]))
@@ -142,9 +184,9 @@ public class DAM_Proyecto_Tragaperras
     {
 		double bet;
 		do {
-			System.out.print(" Min "+betMin+", Max "+betMax+": ");
+			System.out.print(" Min "+betmin+", Max "+betmax+": ");
 	    	bet = input.nextDouble();
-		} while(bet<betMin || bet>betMax);
+		} while(bet<betmin || bet>betmax);
 		return bet;
     }
     
@@ -152,9 +194,9 @@ public class DAM_Proyecto_Tragaperras
 	// Returns true if the value given exists in the array
     public static boolean found(char[] arr, char value)
     {
-        for (int element : arr)
+        for (int element : arr) //array[element] 
         {
-            if (element == value) 
+            if (element == value) //array[element] == value
             	{return true;}
         }
         return false;
@@ -169,16 +211,10 @@ public class DAM_Proyecto_Tragaperras
     
     /******************** Declaring local variables ********************/
     	
-    	char[] symbolsFound = new char[nReels];
-    	int[] symbolsAmount = new int[nReels];
-    	/*For every position in both arrays:
-    		symbolsFound: a new different symbol found in the results.
-    		symbolsAmount: the times that symbol is present in the results.*/
-    	char gameEnter;		//Player input to stop or continue the game.
-    	double playerBet;	//Amount of money the player has bet.
-    	double playerSpent;	//Amount of money the player spent playing the game.
-    	double winAmount;	//Amount of money the player is awarded.
-    	int newIndex;		//Position of new different symbol found in the results
+    	char gameEnter;			//Player input to stop or continue the game.
+    	double playerBet=0;		//Amount of money the player has bet.
+    	double playerSpent=0;	//Amount of money the player spent playing the game.
+    	double winAmount;		//Amount of money the player is awarded.
     	
     	
 	/******************** GAME START ********************/
@@ -230,51 +266,19 @@ public class DAM_Proyecto_Tragaperras
 		                    System.out.print(((reels==0)?"Start":"Next reel")+" (p): ");
 		                    gameInput = input.next().charAt(0);
 	                	} while(gameInput!='p');
-		                spinReel(reels);
+		                Results[reels] = spinReel();
 	                }
 	            }//clear(); displayMachine(nReels);
 	            
 				
 			/*************** Resetting the values necessary for the loop ***************/
 				    	
-		        for (int i=0; i<nReels; i++) 
-		        {
-		            symbolsFound[i] = ' ';
-		            symbolsAmount[i] = 0;
-		        }
-		        newIndex = 0;
-	            MRcount = 0;	LRcount = 10;
-	            MRindex = 0;	LRindex = 0;
+		        
 	            
 	            
             /*************** Counting symbols in results ****************/
 	            
-	            for (int i=0; i<nReels; i++)
-	            {
-	                if (!found(symbolsFound, Results[i]))
-	                {
-	                	symbolsFound[newIndex]  = Results[i];
-	                	symbolsAmount[newIndex] = 1;
-	                    for (int j=0; j<nReels; j++)
-	                    {
-	                        if ( (i!=j) && (Results[i]==Results[j]) )
-	                        {
-	                        	symbolsAmount[newIndex]++;
-	                        	if (symbolsAmount[newIndex] > MRcount) 
-	                        	{
-	                        		MRcount = symbolsAmount[newIndex];
-	                        		MRindex = i;
-	                        	}
-	                        }
-	                    }
-	                    if (symbolsAmount[newIndex] < LRcount) 
-                    	{
-                    		LRcount = symbolsAmount[newIndex];
-                    		LRindex = i;
-                    	}
-	                    newIndex++;
-	                }
-	            }
+	            symbolCount(Results);
 	            
 	            
             /*************** Calculating and displaying prize ****************/
@@ -287,6 +291,7 @@ public class DAM_Proyecto_Tragaperras
         		*/
 	            if (MRcount==nReels-1)
             	{
+	            	System.out.println("You got the "+Results[MRindex]+" symbol "+MRcount+" times.\n");
             		reroll();
             	}
 	            
@@ -299,8 +304,6 @@ public class DAM_Proyecto_Tragaperras
 	            else 
 	            {
 	            	System.out.println("You got the "+Results[MRindex]+" symbol "+MRcount+" times.\n");
-	            	
-	            	
 	            	
 	            	if (MRcount==nReels) /* All matches. Maximum prize & Game Over */
 	            	{
