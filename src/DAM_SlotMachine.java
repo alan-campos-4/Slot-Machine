@@ -2,7 +2,7 @@ import java.util.Objects;
 import java.util.Scanner;
 
 
-public class SlotMachine
+public class DAM_SlotMachine
 {
 	
 	/******************** Declaring global variables ********************/
@@ -84,8 +84,7 @@ public class SlotMachine
 		for (int slot=0; slot<Results.length; slot++) {System.out.print("     |");}
         
 		System.out.print("\n |");
-		for (int slot=0; slot<Results.length; slot++)
-        	{System.out.printf("  %c  |", (nShown>slot) ? slot:' ');}
+		for (int slot=0; slot<Results.length; slot++) {System.out.printf("  %c  |", (nShown>slot) ? Results[slot]:' ');}
 		
         System.out.print("\n |");
         for (int slot=0; slot<Results.length; slot++) {System.out.print("_____|");}
@@ -142,7 +141,7 @@ public class SlotMachine
 		System.out.println(" You can reroll for the chance to get all matches,");
 		System.out.println(" but if you fail you will loose all your money.");
 		
-		gameInput = readChar("Do you want to reroll the "+(LRindex+1)+"º reel ? (y/n): ",'y','n');
+		gameInput = readChar("Do you want to reroll the "+(LRindex+1)+"º reel?",'y','n');
 		if (gameInput=='y' || gameInput=='Y')
 		{
 			char spin; //Make sure the new symbol is not the same
@@ -165,23 +164,26 @@ public class SlotMachine
 	}
 	
 	
-	// Makes sure the character or amount introduced is a valid input.
-	public static double readBet()
+	// Make sure the character or amount introduced is a valid input.
+	public static double readBet(String message)
     {
-		double bet;
-		do {
-			System.out.print(" Min "+betmin+", Max "+betmax+": ");
+		System.out.print(message+" ("+betmin+", "+betmax+"): ");
+		double bet = input.nextDouble();
+		while (bet<betmin || bet>betmax) 
+		{
+			System.out.println("\tInvalid input. Try again.\n");
+			System.out.print(message+" ("+betmin+", "+betmax+"): ");
 	    	bet = input.nextDouble();
-		} while (bet<betmin || bet>betmax);
+		}
 		return bet;
     }
 	public static char readChar(String message, char valid)
 	{
-		System.out.print(message);
+		System.out.print(message+" ("+valid+"): ");
 		char answer = input.next().charAt(0);
 		while (!(answer==valid||answer==Character.toUpperCase(valid)))
 		{
-			//System.out.println(" Invalid input. Try again.");
+			System.out.println("\tInvalid input. Try again.\n");
 			System.out.print(message);
 			answer = input.next().charAt(0);
 		}
@@ -189,12 +191,12 @@ public class SlotMachine
 	}
 	public static char readChar(String message, char valid1, char valid2)
 	{
-		System.out.print(message);
+		System.out.print(message+" ("+valid1+"/"+valid2+"): ");
 		char answer = input.next().charAt(0);
 		while (!(	answer==valid1 || answer==Character.toUpperCase(valid1) ||
 					answer==valid2 || answer==Character.toUpperCase(valid2) ) )
 		{
-			//System.out.println(" Invalid input. Try again.");
+			System.out.println(" Invalid input. Try again.\n");
 			System.out.print(message);
 			answer = input.next().charAt(0);
 		}
@@ -264,12 +266,11 @@ public class SlotMachine
 		System.out.println("· No matches : you lose.");
 		
 		System.out.println();
-		gameEnter = readChar("Do you want to play? (y/n): ",'y','n');
+		gameEnter = readChar("Do you want to play?",'y','n');
 		
 		if (gameEnter=='y' || gameEnter=='Y')
 		{
-			System.out.println("Enter how much money you want to bet.");
-			playerBet = readBet();
+			playerBet = readBet("Enter your bet");
 			playerSpent = playerBet;
 			
 			while (gameEnter=='y' || gameEnter=='Y')
@@ -281,7 +282,7 @@ public class SlotMachine
 				/* ***** Design of the following loop ***** 
 				The range of Results[] is (0, n-1) because it is an array.
 				The range of spinReel() is (0, n-1) because 
-				   its input is used to locate a position in the Results array.
+				   it is used directly with the Results array.
 				The range of displayMachine() is (0, n) because
 				   its input determines how many positions of Results are displayed:
 				   any amount within the range of Results (1,n) or none at all (0).
@@ -295,7 +296,7 @@ public class SlotMachine
 	                wait(400+reels*50);
 	                if (reels<Results.length) 
 	                {
-		                gameInput = readChar(((reels==0) ? "Start":"Next reel")+" (p): ",'p');
+		                gameInput = readChar(((reels==0) ? "Start":"Next reel"),'p');
 		                Results[reels] = spinReel();
 	                }
 	            }
@@ -355,16 +356,15 @@ public class SlotMachine
 	            		
 	            		System.out.println();
 	                    
-	                    gameEnter = readChar("Do you want to continue playing? (y/n): ",'y','n');
+	                    gameEnter = readChar("Do you want to continue playing?",'y','n');
 	                    if (gameEnter=='y' || gameEnter=='Y')
 	                    {
 	                    	playerBet = winAmount; //The money won is used in the next loop
 	                    	
-	                    	gameInput = readChar("Do you want to bet more money? (y/n): ",'y','n');
+	                    	gameInput = readChar("Do you want to bet more money?",'y','n');
 	                        if (gameInput=='y' || gameInput=='Y')
 	                        {
-	                        	System.out.println("Enter the money do you want to add.");
-	                        	double increase = readBet();
+	                        	double increase = readBet("Enter how mcuh you want to add");
 	                        	playerBet += increase; //The money added is used in the next loop
 	                        	playerSpent += increase; //Keeps track of money entered 
 	                        }
