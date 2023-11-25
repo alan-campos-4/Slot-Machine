@@ -7,27 +7,28 @@ public class DAM_SlotMachine
 	
 	/******************** Declaring global variables ********************/
 	
-	static char[] Results;	//Results of spinning all the reels in the machine
-	static char[] symbolsFound;
-	static int[] symbolsAmount;
-	/*For every position in both arrays:
-		symbolsFound: a new different symbol found in the results.
-		symbolsAmount: the times that symbol is present in the results.*/
-	
-	static Scanner input = new Scanner(System.in);
-	static char gameInput;	//Player input for methods apart from stopping the game.
-	static char gameEnter;	//Player input to stop or continue the game.
-	
 	static int nReels=4;	//Number of spinning reels the machine has.
 	static int nSymbols=4;	//Number of possible symbols in each reel.
 	
-	static int betmin=20;	//Minimum amount of money the player can bet in on time
-	static int betmax=100;	//Maximum amount of money the player can bet in on time
+	static char[] Results;		//Results of spinning all the reels in the machine.
+	static char[] symbolsFound;	//Every different symbol found in the results.
+	static int[] symbolsAmount;	//The times every different symbol is present in the results.
 	
 	static int MRcount;		//Times the Most Repeated symbol is present in the results.
 	static int LRcount;		//Times the Least Repeated symbol is present in the results.
 	static int MRindex;		//Position of the Most Repeated symbol in the results
 	static int LRindex;		//Position of the Least Repeated symbol in the results
+	
+	static int betmin=20;	//Minimum amount of money the player can bet in on time
+	static int betmax=100;	//Maximum amount of money the player can bet in on time
+	
+	static int gameLimit=10;		//Maximum amount of games the player is allowed to play.
+	static double winLimit=100000;	//Maximum amount of money the player can win.
+	
+	static char gameInput;	//Player input for methods apart from stopping the game.
+	static char gameEnter;	//Player input to stop or continue the game.
+	static Scanner input = new Scanner(System.in);
+	
 	
 	
 	
@@ -152,7 +153,7 @@ public class DAM_SlotMachine
 			
 			displayMachine(Results.length);
 			
-			if (Objects.equals(Results[MRindex], Results[LRindex]))
+			if (Results[MRindex]==Results[LRindex])
 			{
 				System.out.println("The new symbol is a match.");
 				MRcount = Results.length;
@@ -234,53 +235,56 @@ public class DAM_SlotMachine
 
 
 
+
+
+
     public static void main(String[] args)
     {
     	
     	Results = new char[nReels];
     	
-    	
     /******************** Declaring local variables ********************/
     	
-    	double playerBet=0;		//Amount of money the player has bet.
-    	double playerSpent=0;	//Amount of money the player spent playing the game.
-    	//double playerBet=0;		//Amount of money the player is awarded.
-    	double winLimit=100000;	//Maximum amount of money the player can win
+    	double playerBet=0;		//Amount of money the player currently has as a bet.
+    	double playerSpent=0;	//Amount of money the player has spent playing the game.
+    	int gameCount=0;		//Maximum amount of games the player is allowed to play.
     	
     	
 	/******************** GAME START ********************/
 		
-		System.out.println("\t Welcome to the slot machine ");
-		System.out.println("In order to play you have to bet an amount of money");
-		System.out.println("and then spin the reels to win a prize:");
-		System.out.println("· More than half the reels match : win a prize.");
-		System.out.println("· Less than half the reels match : keep what you bet.");
-		System.out.println("· Almost all reels match : chance for all or nothing.");
-		System.out.println("· All reels match : jackpot.");
-		System.out.println("· No matches : you lose.");
+		System.out.println("\n\t --- Welcome to the SLOT MACHINE --- ");
+		System.out.println("\tBet an some money and try to win a prize!!");
+		displayMachine(0);
+		System.out.println("Game Rules:");
+		System.out.println(" - Every bet has to be between "+betmin+" and "+betmax+" €");
+		System.out.println(" - You can't play more than "+gameLimit+" games.");
+		System.out.println(" - There is a limit to how much you can win ");
+		System.out.println("Prize Rules:");
+		System.out.println(" - More than half the reels match : win a prize.");
+		System.out.println(" - Less than half the reels match : keep what you bet.");
+		System.out.println(" - Almost all reels match : chance for all or nothing.");
+		System.out.println(" - All reels match : jackpot.");
+		System.out.println(" - No matches : you lose.\n");
 		
-		System.out.println();
 		gameEnter = readChar("Do you want to play?",'y','n');
 		
-		if (gameEnter=='y' || gameEnter=='Y')
+		if (gameEnter=='y'||gameEnter=='Y')
 		{
 			playerBet = readBet("Enter your bet");
 			playerSpent = playerBet;
 			
-			while ( (gameEnter=='y' || gameEnter=='Y') && (playerBet < winLimit) )
+			while ((gameEnter=='y'||gameEnter=='Y') && (playerBet<winLimit) && (gameCount<gameLimit))
 			{
 				
 				
-			/*************** Assigning & Display Results ***************/ 
+				/*************** Assigning & Display Results ***************/ 
 				
-				/* ***** Design of the following loop ***** 
-				The range of Results[] is (0, n-1) because it is an array.
-				The range of spinReel() is (0, n-1) because 
-				   it is used directly with the Results array.
-				The range of displayMachine() is (0, n) because
-				   its input determines how many positions of Results are displayed:
-				   any amount within the range of Results (1,n) or none at all (0).
-				We can conclude that, for any random position Results[x] 
+				/*
+				Results[] has (0, n-1) range because it is an array.
+				spinReel() has (0, n-1) range because it is used directly with the Results array.
+				displayMachine() has (0, n) range because it can show 
+				  any amount of positions of Results (1,n) or none at all (0).
+				Due to the design of each function, for any random position Results[x] 
 				we use spinReel(x) to assign a value and displayMachine(x+1) to display it.
 				*/
 				for (int reels=0; reels<=Results.length; reels++)
@@ -296,12 +300,12 @@ public class DAM_SlotMachine
 	            }
 				
 				
-            /*************** Counting symbols in results ****************/
+				/*************** Counting symbols in results ****************/
 	            
 	            symbolCount();
 	            
 	            
-            /*************** Calculating and displaying prize ****************/
+	            /*************** Calculating and displaying prize ****************/
 	            
 	            /*
         		if you get the same symbol 3 times or more you win a prize.
@@ -348,16 +352,17 @@ public class DAM_SlotMachine
         			System.out.println("\t of money that can be awarded.");
         			System.out.println("\t You will recieve that instead.");
         		}
-	            	
-            /*************** Restarting or ending game ***************/
+	            
+            	
+            	/*************** Restarting or ending game ***************/
 	            		
         		if (gameEnter!='n')
         		{
                     gameEnter = readChar("Do you want to continue playing?",'y','n');
-                    if (gameEnter=='y' || gameEnter=='Y')
+                    if (gameEnter=='y'||gameEnter=='Y')
                     {
                     	gameInput = readChar("Do you want to bet more money?",'y','n');
-                        if (gameInput=='y' || gameInput=='Y')
+                        if (gameInput=='y'||gameInput=='Y')
                         {
                         	double increase = readBet("Enter how much you want to add");
                         	playerBet += increase; //The money added is used in the next loop
@@ -371,12 +376,16 @@ public class DAM_SlotMachine
                     		}
                         	playerSpent += increase; //Keeps track of money entered 
                         }
+                        gameCount++;
                     }
                 }
         		System.out.println("\n\t  You have spent "+playerSpent+" €.");
             	System.out.println("\t    And have won "+playerBet+" €.");
             	
-	            
+            	if (gameCount==gameLimit) 
+            	{System.out.println("\n You have reached the maximum amount of games");}
+            	
+            	
 	            
 	            
 			}//While loop
