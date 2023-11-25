@@ -7,9 +7,6 @@ public class DAM_SlotMachine
 	
 	/******************** Declaring global variables ********************/
 	
-	static int nReels=4;	//Number of spinning reels the machine has.
-	static int nSymbols=4;	//Number of possible symbols in each reel.
-	
 	static char[] Results;	//Results of spinning all the reels in the machine
 	static char[] symbolsFound;
 	static int[] symbolsAmount;
@@ -20,13 +17,17 @@ public class DAM_SlotMachine
 	static Scanner input = new Scanner(System.in);
 	static char gameInput;	//Player input for methods apart from stopping the game.
 	
-	static int betmin=20;	//Minimum amount of money the player is allowed to bet
-	static int betmax=100;	//Maximum amount of money the player is allowed to bet
+	static int nReels=4;	//Number of spinning reels the machine has.
+	static int nSymbols=4;	//Number of possible symbols in each reel.
+	
+	static int betmin=20;	//Minimum amount of money the player can bet in on time
+	static int betmax=100;	//Maximum amount of money the player can bet in on time
 	
 	static int MRcount;		//Times the Most Repeated symbol is present in the results.
 	static int LRcount;		//Times the Least Repeated symbol is present in the results.
 	static int MRindex;		//Position of the Most Repeated symbol in the results
 	static int LRindex;		//Position of the Least Repeated symbol in the results
+	
 	
 	
 	
@@ -158,45 +159,36 @@ public class DAM_SlotMachine
 			else 
 			{
 				System.out.println("The new symbol is still different.");
-				MRcount = 1;
+				MRcount = 0;
 			}
 		}
 	}
 	
 	
-	// Make sure the character or amount introduced is a valid input.
+	// Loops until the character or amount introduced is valid.
 	public static double readBet(String message)
     {
-		System.out.print(message+" ("+betmin+", "+betmax+"): ");
+		message += " ("+betmin+", "+betmax+"): ";
+		System.out.print(message);
 		double bet = input.nextDouble();
-		while (bet<betmin || bet>betmax) 
+		while (bet<betmin || bet>betmax)
 		{
-			System.out.println("\tInvalid input. Try again.\n");
-			System.out.print(message+" ("+betmin+", "+betmax+"): ");
+			System.out.println("  Bet must be within the winLimits. Try again.");
+			System.out.print(message);
 	    	bet = input.nextDouble();
 		}
 		return bet;
     }
-	public static char readChar(String message, char valid)
+	public static char readChar(String message, char op1, char op2)
 	{
-		System.out.print(message+" ("+valid+"): ");
+		if (op2==' ')	{message += " ("+op1+"): ";}
+		else			{message += " ("+op1+"/"+op2+"): ";}
+		System.out.print(message);
 		char answer = input.next().charAt(0);
-		while (!(answer==valid||answer==Character.toUpperCase(valid)))
+		while (!(answer==op1 || answer==Character.toUpperCase(op1) ||
+				 answer==op2 || answer==Character.toUpperCase(op2) ))
 		{
-			System.out.println("\tInvalid input. Try again.\n");
-			System.out.print(message);
-			answer = input.next().charAt(0);
-		}
-		return answer;
-	}
-	public static char readChar(String message, char valid1, char valid2)
-	{
-		System.out.print(message+" ("+valid1+"/"+valid2+"): ");
-		char answer = input.next().charAt(0);
-		while (!(	answer==valid1 || answer==Character.toUpperCase(valid1) ||
-					answer==valid2 || answer==Character.toUpperCase(valid2) ) )
-		{
-			System.out.println(" Invalid input. Try again.\n");
+			System.out.println("  Invalid input. Try again.");
 			System.out.print(message);
 			answer = input.next().charAt(0);
 		}
@@ -222,7 +214,7 @@ public class DAM_SlotMachine
             default: return '_';
         }
 	}
-		
+	
 	
 	// Returns true if the value given exists in the array.
     public static boolean found(char[] arr, char value)
@@ -240,18 +232,21 @@ public class DAM_SlotMachine
 
 
 
-
     public static void main(String[] args)
     {
     	
     	Results = new char[nReels];
+    	betmin = 20;
+    	betmax = 100;
+    	
     
     /******************** Declaring local variables ********************/
     	
     	char gameEnter;			//Player input to stop or continue the game.
     	double playerBet=0;		//Amount of money the player has bet.
     	double playerSpent=0;	//Amount of money the player spent playing the game.
-    	double winAmount;		//Amount of money the player is awarded.
+    	double winAmount=0;		//Amount of money the player is awarded.
+    	double winLimit=100000;	//Maximum amount of money the player can win
     	
     	
 	/******************** GAME START ********************/
@@ -273,7 +268,7 @@ public class DAM_SlotMachine
 			playerBet = readBet("Enter your bet");
 			playerSpent = playerBet;
 			
-			while (gameEnter=='y' || gameEnter=='Y')
+			while ( (gameEnter=='y' || gameEnter=='Y') && (winAmount < winLimit) )
 			{
 				
 				
@@ -293,12 +288,12 @@ public class DAM_SlotMachine
 	            {
 	                clear();
 	                displayMachine(reels);
-	                wait(400+reels*50);
 	                if (reels<Results.length) 
 	                {
-		                gameInput = readChar(((reels==0) ? "Start":"Next reel"),'p');
+		                gameInput = readChar(((reels==0) ? "Start":"Next reel"),'p',' ');
 		                Results[reels] = spinReel();
 	                }
+	                wait(400+reels*50);
 	            }
 				
 				
@@ -315,13 +310,16 @@ public class DAM_SlotMachine
 				if you get the same symbol in all reels you win the jackpot.
 				if you don't get any repeated symbols you lose.
         		*/
-	            if (MRcount==Results.length-1)
-            	{
-	            	System.out.println("You got the "+Results[MRindex]+" symbol "+MRcount+" times.\n");
-            		reroll();
-            	}
+	            if (MRcount==Results.length-1) {reroll();}
+            	
 	            
-	            if (MRcount==1 || MRcount==0) /* No matches. Game Over */
+	            if (MRcount==0) /* Lost reroll. Game Over */
+	            {
+	            	winAmount = 0;
+	            	gameEnter = 'n';
+	            	System.out.println("You lost "+playerSpent+" €.");
+	            }
+	            else if (MRcount==1) /* No matches. Game Over */
 	            {
 	            	winAmount = 0;
 	            	gameEnter = 'n';
@@ -335,11 +333,9 @@ public class DAM_SlotMachine
 	            	{
 	            		winAmount = playerBet*100;
 	            		gameEnter = 'n';
-	            		System.out.println("\t You won the jackpot!!");
-	            		System.out.println("\t  You have spent "+playerSpent+" €.");
-    	            	System.out.println("\t    And have won "+winAmount+" €.");
+	            		System.out.println("You won the jackpot!!!");
 	            	}
-	            	else if ( (MRcount>1) && (MRcount<Results.length) )
+	            	else
 	            	{
 	            		if (MRcount>Results.length/2) /* 3 matches: prize*/
 			            {
@@ -351,11 +347,23 @@ public class DAM_SlotMachine
 			    			winAmount = playerBet; 
 			    			System.out.println("You still have "+winAmount+" €.");
 			    		}
+	            	}
+	            	
+	            	System.out.println();
+	            	
+            		if (winAmount > winLimit) /* winLimit exceeded. Maximum prize & Game Over */
+            		{
+            			winAmount = winLimit;
+	            		gameEnter = 'n';
+	            		System.out.println("\t You have exceeded the maximum amount");
+            			System.out.println("\t of money that can be awarded.");
+            			System.out.println("\t You will recieve that instead.");
+            		}
+	            	
+            /*************** Restarting or ending game ***************/
 	            		
-            /*************** Restarting game ***************/
-	            		
-	            		System.out.println();
-	                    
+            		if (gameEnter!='n')
+            		{
 	                    gameEnter = readChar("Do you want to continue playing?",'y','n');
 	                    if (gameEnter=='y' || gameEnter=='Y')
 	                    {
@@ -366,22 +374,31 @@ public class DAM_SlotMachine
 	                        {
 	                        	double increase = readBet("Enter how mcuh you want to add");
 	                        	playerBet += increase; //The money added is used in the next loop
-	                        	playerSpent += increase; //Keeps track of money entered 
+	                        	if (playerBet > winLimit) /* winLimit exceeded. Maximum prize & Game Over */
+	                    		{
+	                    			winAmount = winLimit;
+	        	            		gameEnter = 'n';
+	        	            		System.out.println("\t You have exceeded the maximum amount");
+	                    			System.out.println("\t of money that can be awarded.");
+	                    			System.out.println("\t You will recieve that instead.");
+	                    		}
+	                        	else
+	                        		{playerSpent += increase;} //Keeps track of money entered 
 	                        }
 	                    }
-	                    else
-	                    {
-	                    	System.out.println("\n\t  You have spent "+playerSpent+" €.");
-	    	            	System.out.println("\t    And have won "+winAmount+" €.");
-	                    }
-	            	}
-	            }
+                    }
+            		System.out.println("\n\t  You have spent "+playerSpent+" €.");
+	            	System.out.println("\t    And have won "+winAmount+" €.");
+            	}
+	            
 	            
 	            
 			}//While loop
         	System.out.println("...");
+        	
     	}//if
 		input.close();
+		
     }//Main
     
-}//Class
+}
