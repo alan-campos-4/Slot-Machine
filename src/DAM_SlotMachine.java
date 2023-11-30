@@ -353,14 +353,17 @@ public class DAM_SlotMachine
             		System.out.println("You got the "+Results[MRindex]
             		+" symbol "+MRcount+" times.");
 	            	
-            		if (MRcount>Results.length/2) /* 3 matches: prize*/
+            		if (MRcount==Results.length/2)
+            		{
+            			System.out.println("You still have "+playerBet+" €.");
+            		}
+            		else if (MRcount>Results.length/2) /* 3 matches: prize*/
 		            {
 		    			playerBet *= 10; 
 		    			System.out.println("You now have "+playerBet+" €.");
 		    		}
 		    		else  /* 2 matches: no change*/
 		    		{
-		    			playerBet /= 2;
 		    			System.out.println("You now have "+playerBet+" €.");
 		    		}
             	}
