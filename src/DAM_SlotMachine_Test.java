@@ -1,9 +1,38 @@
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.text.DecimalFormat;
+
 import org.junit.jupiter.api.Test;
+
 
 
 class DAM_SlotMachine_Test 
 {
+
+
+	@Test
+	void menu_Test()
+	{
+		DAM_SlotMachine.menu('Y');
+	}
+
+
+
+/*
+	@Test
+	void compareCharUL_Test()
+	{
+		char ch1 = 'C', ch2 = 'c';
+		//Character chK1 = Character.valueOf(ch1), chK2 = Character.valueOf(ch2);
+		//assertTrue(ch1==ch2);
+		//assertTrue(chK1.equals(chK2));
+		//assertTrue(chK1.compareTo(chK2)==0);
+		//assertTrue(Objects.equals(ch1, ch2));
+		//assertTrue(Character.compare(ch1,ch2)==0);
+		assertTrue(DAM_SlotMachine.compareCharUL(ch1, ch2));
+	}
+
+
 
 
 	@Test
@@ -64,5 +93,5 @@ class DAM_SlotMachine_Test
 		DAM_SlotMachine.reroll();
 	}
 
-
+//*/
 }
