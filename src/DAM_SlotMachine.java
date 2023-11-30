@@ -145,8 +145,8 @@ public class DAM_SlotMachine
 			System.out.println("\nProbability:");
 			DecimalFormat formatter = new DecimalFormat("#0.00");
 			
-			double probAlmost = Math.pow( ((double)1/nSymbols), nReels-1 );
-			double probAll	  = Math.pow( ((double)1/nSymbols), nReels );
+			double probAlmost = Math.pow( ((double)1/nSymbols), nReels-1 );	// (1/x)^n-1
+			double probAll	  = Math.pow( ((double)1/nSymbols), nReels );	// (1/x)^n
 			
 			double probHM = 0;   // (1/x)^3 + (1/x)^4
 			for (int i=1; i<=nReels/2; i++) 
@@ -165,6 +165,7 @@ public class DAM_SlotMachine
 	    	System.out.println(" - > Half \t"+formatter.format(probHM*100)+"%");
 	    	System.out.println(" - <= Half \t"+formatter.format(probHalf*100)+"%");
 	    	System.out.println(" - No match \t"+formatter.format(probNone*100)+"%");
+	    	//System.out.println("Total = "+());
 		}
 	}
 	
@@ -321,7 +322,7 @@ public class DAM_SlotMachine
 		                gameInput = readInput(((reels==0) ? "Start":"Next reel"),'p',' ');
 		                Results[reels] = spinReel();
 	                }
-	                wait(400+reels*50);
+	                //wait(400+reels*50);
 	            }
 				
 				
@@ -343,7 +344,7 @@ public class DAM_SlotMachine
 	            }
 	            else if (MRcount==Results.length) /* All matches. Maximum prize & Game Over */
             	{
-            		playerBet *= 100;
+            		playerBet *= 1000;
             		gameEnter = 'n';
             		System.out.println("You won the jackpot!!!");
             	}
@@ -359,14 +360,25 @@ public class DAM_SlotMachine
 		    		}
 		    		else  /* 2 matches: no change*/
 		    		{
-		    			System.out.println("You still have "+playerBet+" €.");
+		    			playerBet /= 2;
+		    			System.out.println("You now have "+playerBet+" €.");
 		    		}
             	}
+	            gameCount++;
             	
+	            
             	if (playerBet > winLimit) /* Limit exceeded. Maximum prize & Game Over */
         		{
         			playerBet = winLimit;
             		gameEnter = 'n';
+            		System.out.println("\n\t You have reached the maximum amount");
+        			System.out.println("\t of money that can be awarded.");
+        			System.out.println("\t You will recieve that instead.");
+        		}
+            	if (gameCount==gameLimit) 
+        		{
+            		gameEnter = 'n';
+        			System.out.println("\n  You have reached the maximum amount of games.");
         		}
             	
             	
@@ -380,7 +392,7 @@ public class DAM_SlotMachine
                     	gameInput = readInput("Do you want to bet more money?",'y','n');
                         if (gameInput=='y'||gameInput=='Y')
                         {
-                        	double increase = readBet("Enter how much you want to add",0,betmax);
+                        	double increase = readBet("Enter how much you want to add",betmin,betmax);
                         	if (playerBet+increase > winLimit)
                         	{
                         		increase = 0;
@@ -398,19 +410,7 @@ public class DAM_SlotMachine
                         }
                     }
                 }
-        		gameCount++;
         		
-        		
-        		if (gameCount==gameLimit) 
-        		{
-        			System.out.println("\n  You have reached the maximum amount of games.");
-        		}
-        		if (playerBet==winLimit)
-        		{
-            		System.out.println("\n\t You have reached the maximum amount");
-        			System.out.println("\t of money that can be awarded.");
-        			System.out.println("\t You will recieve that instead.");
-        		}
         		
         		
 			}//While loop
