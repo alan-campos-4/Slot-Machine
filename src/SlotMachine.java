@@ -4,7 +4,8 @@ import java.util.InputMismatchException;
 
 
 
-public class DAM_SlotMachine
+
+public class SlotMachine
 {
 
 	/******************** Global variables ********************/
@@ -21,18 +22,18 @@ public class DAM_SlotMachine
 	static int MRindex;		//Position of the Most Repeated symbol in the results
 	static int LRindex;		//Position of the Least Repeated symbol in the results
 	
-	static int betmin=20;		//Minimum amount of money the player can bet in on time
-	static int betmax=200;		//Maximum amount of money the player can bet in on time
+	static int betmin=20;		//Minimum amount of money the player can bet at a time
+	static int betmax=200;		//Maximum amount of money the player can bet at a time
 	static int gameLimit=10;	//Maximum amount of times the player can spin.
 	static int winLimit=10000;	//Maximum amount of money the player can win.
 
 	static char gameInput;	//Player input for methods apart from stopping the game.
 	static char gameEnter;	//Player input to stop or continue the game.
 	static Scanner input = new Scanner(System.in);
-	
-	
-	
-	
+
+
+
+
 	/******************** Declaring methods ********************/
 	
 	// Clear the terminal output.
@@ -58,11 +59,6 @@ public class DAM_SlotMachine
         System.out.println("\n");
         System.out.println("\n");
         System.out.println("\n");	//20
-        //System.out.println("\n");
-        //System.out.println("\n");
-        //System.out.println("\n");
-        //System.out.println("\n");
-        //System.out.println("\n");	//25
         System.out.flush();
 	}
 	
@@ -74,7 +70,6 @@ public class DAM_SlotMachine
 		catch (InterruptedException e) 
 			{Thread.currentThread().interrupt();}
 	}
-	
 	
 	
 	// Returns true if the value given exists in the array.
@@ -152,6 +147,8 @@ public class DAM_SlotMachine
 		return ans;
 		
 	}
+	
+	
 	
 	// Displays the menu with the rules and rewards of the game.
 	public static void menu(char type)
@@ -306,7 +303,7 @@ public class DAM_SlotMachine
 		}
 		System.out.println();
 	}
-	
+
 
 
 
@@ -438,7 +435,7 @@ public class DAM_SlotMachine
         			System.out.println("\t of money that can be awarded.");
         			System.out.println("\t You will recieve that instead.");
         		}
-        	
+        		
 			}
 			
 			
