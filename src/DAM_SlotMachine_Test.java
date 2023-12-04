@@ -1,7 +1,4 @@
 import static org.junit.jupiter.api.Assertions.*;
-
-import java.text.DecimalFormat;
-
 import org.junit.jupiter.api.Test;
 
 
@@ -68,5 +65,5 @@ class DAM_SlotMachine_Test
 		DAM_SlotMachine.reroll();
 	}
 
-//*/
+
 }
