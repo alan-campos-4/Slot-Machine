@@ -8,6 +8,7 @@ import java.util.InputMismatchException;
 public class SlotMachine
 {
 
+
 	/******************** Global variables ********************/
 	
 	static int nReels=4;	//Number of spinning reels the machine has.
@@ -70,8 +71,9 @@ public class SlotMachine
 		catch (InterruptedException e) 
 			{Thread.currentThread().interrupt();}
 	}
-	
-	
+
+
+
 	// Returns true if the value given exists in the array.
 	public static boolean found(char[] arr, char value)
     {
@@ -147,9 +149,9 @@ public class SlotMachine
 		return ans;
 		
 	}
-	
-	
-	
+
+
+
 	// Displays the menu with the rules and rewards of the game.
 	public static void menu(char type)
 	{
@@ -218,7 +220,7 @@ public class SlotMachine
         for (int slot=0; slot<Results.length; slot++) 
         	{System.out.print("_____|");}
        
-        System.out.println();
+        System.out.println("");
 	}
 	
 	// Returns a random symbol to assign to the results.
@@ -308,6 +310,7 @@ public class SlotMachine
 
 
 
+
 	public static void main(String[] args)
 	{
 		
@@ -357,23 +360,23 @@ public class SlotMachine
 	            
             /*************** Calculating and displaying prize ***************/
 	            
-            	if (MRcount==Results.length-1) {reroll();}
+	            if (MRcount==Results.length-1) {reroll();}
 	            
             	if (MRcount==1)
 	            {
 	            	playerBet = 0;
 	            	gameEnter = 'n';
-	            	System.out.println("You got no matches. You lost "+playerSpent+" €.");
+	            	System.out.println("\nYou got no matches. You lost "+playerSpent+" €.");
 	            }
 	            else if (MRcount==Results.length)
             	{
             		playerBet *= 1000;
             		gameEnter = 'n';
-            		System.out.println("You won the jackpot!!!");
+            		System.out.println("\nYou won the jackpot!!!");
             	}
             	else
             	{
-            		System.out.println("You got the "+Results[MRindex]+" symbol "+MRcount+" times.");
+            		System.out.println("\nYou got the "+Results[MRindex]+" symbol "+MRcount+" times.");
 	            	
             		if (MRcount>Results.length/2)
 		            {
@@ -385,23 +388,20 @@ public class SlotMachine
 		    			playerBet *= 0.5; 
 		    			System.out.println("You now have "+playerBet+" €.");
 		    		}
-		    		else {System.out.println("You now have "+playerBet+" €.");}
+		    		else 
+		    			{System.out.println("You still have "+playerBet+" €.");}
             	}
 	            gameCount++;
             	
             	
             /*************** Restarting or ending game ***************/
 	            
-	            if (playerBet > winLimit)
-        		{
-        			playerBet = winLimit;
-            		gameEnter = 'n';
-        		}
-            	if (gameCount==gameLimit) 
+	            if (gameCount==gameLimit) 
         		{
             		gameEnter = 'n';
         			System.out.println("\n  You have reached the maximum amount of games.");
         		}
+            	
         		if (gameEnter!='n')
         		{
                     gameEnter = readInput("Do you want to continue playing?",'y','n');
@@ -429,12 +429,16 @@ public class SlotMachine
                         }
                     }
                 }
-        		if (playerBet==winLimit)
+        		
+        		if (playerBet > winLimit)
         		{
+        			playerBet = winLimit;
+            		gameEnter = 'n';
         			System.out.println("\n\t You have reached the maximum amount");
         			System.out.println("\t of money that can be awarded.");
         			System.out.println("\t You will recieve that instead.");
         		}
+        		
         		
 			}
 			
