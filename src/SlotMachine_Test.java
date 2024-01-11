@@ -51,6 +51,7 @@ class SlotMachine_Test
 	@Test
 	void reroll_Test()
 	{
+		SlotMachine.Results = new char[SlotMachine.nReels];
 		int nReels = SlotMachine.Results.length;
 		char sym1, sym2;
 		
