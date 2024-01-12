@@ -10,37 +10,45 @@ class SlotMachine_Test
 	@Test
 	void found_Test() 
 	{
-		char[] arr = {'#','-','@','l','E'};
-		assertTrue(SlotMachine.found(arr, '@'));
-		assertTrue(SlotMachine.found(arr, '-'));
-		assertTrue(SlotMachine.found(arr, '#'));
-		assertTrue(SlotMachine.found(arr, 'E'));
-		assertFalse(SlotMachine.found(arr, 'e'));
-		assertFalse(SlotMachine.found(arr, 'L'));
+		SlotMachine.Symbol s1 = new SlotMachine.Symbol('#');
+		SlotMachine.Symbol s2 = new SlotMachine.Symbol('-');
+		SlotMachine.Symbol s3 = new SlotMachine.Symbol('@');
+		SlotMachine.Symbol s4 = new SlotMachine.Symbol('l');
+		SlotMachine.Symbol s5 = new SlotMachine.Symbol('E');
+		SlotMachine.Symbol[] arr = {s1, s2, s3, s4, s5};
+		
+		assertTrue(SlotMachine.exists(arr, '@'));
+		assertTrue(SlotMachine.exists(arr, '-'));
+		assertTrue(SlotMachine.exists(arr, '#'));
+		assertTrue(SlotMachine.exists(arr, 'E'));
+		assertFalse(SlotMachine.exists(arr, 'e'));
+		assertFalse(SlotMachine.exists(arr, 'L'));
 	}
 
 
 
 
 	@Test
-	void symbolCount_Test()
+	void countSymbolsFound_Test()
 	{
 		int len = SlotMachine.nReels;
 		
-		char[] arr = {'@','E','@','E','-','@'};
+		char[] arr = {'@','E','E','@','E','-','@','@'};
 		SlotMachine.Results = new char[arr.length];
-		for (int i=0; i<arr.length; i++)
-			{SlotMachine.Results[i] = arr[i];}
-			
-		SlotMachine.symbolCount();
-		assertTrue(SlotMachine.Results[SlotMachine.MRindex]=='@');
-		assertTrue(SlotMachine.MRindex==0);
-		assertTrue(SlotMachine.MRcount==3);
-		assertTrue(SlotMachine.Results[SlotMachine.LRindex]=='-');
-		assertTrue(SlotMachine.LRindex==4);
-		assertTrue(SlotMachine.LRcount==1);
-		assertFalse(SlotMachine.MRindex==1);
-		assertFalse(SlotMachine.LRindex==0);
+		
+		for (int i=0; i<arr.length; i++) {SlotMachine.Results[i] = arr[i];}
+		
+		SlotMachine.countSymbolsFound();
+		assertTrue(SlotMachine.Results[SlotMachine.MRS.getP()]=='@');
+		assertTrue(SlotMachine.MRS.getS()=='@');
+		assertTrue(SlotMachine.MRS.getC()==4);
+		assertTrue(SlotMachine.MRS.getP()==0);
+		assertTrue(SlotMachine.Results[SlotMachine.LRS.getP()]=='-');
+		assertTrue(SlotMachine.LRS.getS()=='-');
+		assertTrue(SlotMachine.LRS.getC()==1);
+		assertTrue(SlotMachine.LRS.getP()==5);
+		assertFalse(SlotMachine.MRS.getP()==3);
+		assertFalse(SlotMachine.LRS.getP()==6);
 		
 		SlotMachine.Results = new char[len];
 	}
@@ -62,7 +70,7 @@ class SlotMachine_Test
 			{SlotMachine.Results[i] = sym1;}
 		SlotMachine.Results[(int)(Math.random()*nReels)] = sym2;
 		
-		SlotMachine.symbolCount();
+		SlotMachine.countSymbolsFound();
 		SlotMachine.displayMachine(nReels);
 		SlotMachine.reroll();
 	}

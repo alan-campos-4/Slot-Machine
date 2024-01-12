@@ -9,21 +9,43 @@ import java.util.InputMismatchException;
 public class SlotMachine
 {
 
+	public static class Symbol //Symbol found in the Results
+	{
+		private char sym;	//Symbol character
+		private int count;	//Amount of times it appears in Results
+		private int pos;	//Position it has in Results
+		
+		public Symbol()
+			{sym=' '; count=-1; pos=-1;}
+		public Symbol(char s)
+			{sym = s; count=-1; pos=-1;}
+		public Symbol(int c, int p)
+			{sym=' '; count=c;  pos=p;}
+		
+		public char getS()	{return sym;}
+		public int getC()	{return count;}
+		public int getP()	{return pos;}
+	}
+	
+	public static Symbol[] createSymbolArray() 
+	{
+		Symbol[] symArray = new Symbol[Results.length];
+	    for (int i=0; i<symArray.length; i++)
+	    	{symArray[i] = new Symbol();}
+
+	    return symArray;
+	}
+	
 	static Scanner input = new Scanner(System.in);
-	static char gameInput;		//Player input for methods apart from stopping the game.
-	static char gameEnter;		//Player input to stop or continue the game.
+	static char gameEnter;		//Player input for stopping or continuing the game.
+	static char gameInput;		//Player input for reading a character within the game.
 	
 	static int nReels=4;		//Number of spinning reels the machine has.
-	static int nSymbols=4;		//Number of possible symbols in each reel.
+	static int nSymbols=4;		//Number of possible symbol in each reel.
 	
-	static char[] Results;		//Results of spinning all the reels in the machine.
-	static char[] symbolsFound;	//Every different symbol found in the results.
-	static int[] symbolsAmount;	//The times every different symbol is present in the results.
-	
-	static int MRcount;			//Times the Most Repeated symbol is present in the results.
-	static int LRcount;			//Times the Least Repeated symbol is present in the results.
-	static int MRindex;			//Position of the Most Repeated symbol in the results.
-	static int LRindex;			//Position of the Least Repeated symbol in the results.
+	static char[] Results;		//Array of the results of spinning all the reels in the machine.
+	static Symbol MRS;			//Most Repeated Symbol in the results
+	static Symbol LRS;			//Least Repeated Symbol in the results
 	
 	static int betmin=20;		//Minimum amount of money the player can bet at a time.
 	static int betmax=100;		//Maximum amount of money the player can bet at a time.
@@ -74,14 +96,13 @@ public class SlotMachine
 
 
 	// Returns true if the value given exists in the array.
-	public static boolean found(char[] arr, char value)
+	public static boolean exists(Symbol[] arr, char value)
     {
-        for (char element : arr)
-        {
-            if (element == value)
-            	{return true;}
-        }
-        return false;
+		for (int i=0; i<arr.length; i++)
+		{
+			if (arr[i].sym==value) {return true;}
+		}
+		return false;
     }
 	
 	
@@ -212,7 +233,7 @@ public class SlotMachine
 	}	
 	
 	
-	// Returns a random symbol to assign to the results.
+	// Returns a random character to assign to the results.
 	public static char spinReel()
 	{
         switch((int)(Math.random()*nSymbols))
@@ -233,39 +254,32 @@ public class SlotMachine
 	
 	
 	// Counts the symbols in the results to find the most and least repeated.
-	public static void symbolCount()
+	public static void countSymbolsFound()
 	{
-		symbolsFound = new char[Results.length];
-		symbolsAmount = new int[Results.length];
-        MRcount = 0; LRcount = Results.length;
-        MRindex = 0; LRindex = 0;
+		Symbol[] Found = createSymbolArray(); //Every different symbol found in the results.
+        MRS = new Symbol(0,0);
+        LRS = new Symbol(Results.length,0);
         int i, j;	//Positions working with Results
-		int pos=0;	//Position working with symbolsFound and symbolsAmount
-		
+		int pos=0;	//Position working with Found
+        
 		for (i=0; i<Results.length; i++)
-        {
-            if (!found(symbolsFound, Results[i]))
+		{
+			if (!(exists(Found, Results[i])) && (pos<=Results.length))
             {
-            	symbolsFound[pos] = Results[i];
-            	symbolsAmount[pos] = 1;
-            	for (j=0; j<Results.length; j++)
+				Found[pos].sym = Results[i];
+				Found[pos].pos = i;
+				Found[pos].count = 1;
+				for (j=0; j<Results.length; j++)
                 {
                     if ( (i!=j) && (Results[i]==Results[j]) )
-                    	{symbolsAmount[pos]++;}
+                    	{Found[pos].count++;}
                 }
-                if (symbolsAmount[pos] > MRcount)
-            	{
-            		MRcount = symbolsAmount[pos];
-            		MRindex = i;
-            	}
-                if (symbolsAmount[pos] < LRcount)
-            	{
-            		LRcount = symbolsAmount[pos];
-            		LRindex = i;
-            	}
+                if (Found[pos].count > MRS.count) {MRS = Found[pos];}
+                if (Found[pos].count < LRS.count) {LRS = Found[pos];}
                 pos++;
             }
-        }
+		}
+
 	}	
 	
 	
@@ -276,26 +290,30 @@ public class SlotMachine
 		System.out.println(" You can reroll for the chance to get all matches,");
 		System.out.println(" but if you fail you will loose all your money.");
 		
-		gameInput = readInput("Do you want to reroll the "+(LRindex+1)+"º reel?",'y','n');
+		gameInput = readInput("Do you want to reroll the "+(LRS.pos+1)+"º reel?",'y','n');
 		if (gameInput=='y' || gameInput=='Y')
 		{
-			Results[LRindex] = spinReel();
+			Results[LRS.pos] = spinReel();
 			
 			displayMachine(Results.length);
 			
-			if (Results[MRindex]==Results[LRindex])
+			if (Results[MRS.pos]==Results[LRS.pos])
 			{
 				System.out.println("\nThe new symbol is a match.");
-				MRcount = Results.length;
+				MRS.pos = Results.length;
 			}
 			else 
 			{
 				System.out.println("\nThe new symbol is still different.");
-				MRcount = 1;
+				MRS.pos = 1;
 			}
 		}
 		System.out.println();
 	}
+
+
+
+
 
 
 
@@ -318,7 +336,7 @@ public class SlotMachine
 			showMenu(gameEnter);
 			
 			System.out.println("The machine has "+nReels+" reels and "+nSymbols+" symbols.");
-			gameInput = readInput("Do you want to change the numbers?",'y','n');
+			gameInput = readInput("Do you want to change these numbers?",'y','n');
 			if (gameInput=='y'||gameInput=='Y')
 			{
 				nReels = (int)readNum("Set the number of reels",4,8);
@@ -329,6 +347,7 @@ public class SlotMachine
 			
 			playerBet = readNum("Enter your bet",betmin,betmax);
 			playerSpent = playerBet;
+			
 			
 			do {
 				
@@ -347,22 +366,22 @@ public class SlotMachine
 	            gameCount++;
 				
 				
-			/********** Finds most and least repeated symbols **********/
+			/********** Finds most and least repeated symbol **********/
 	            
-	            symbolCount();
+	            countSymbolsFound();
 	            
 	            
             /********** Calculates and displays the player's prize **********/
 	            
-	            if (MRcount==Results.length-1) {reroll();}
+	            if (MRS.count==Results.length-1) {reroll();}
 	            
-            	if (MRcount==1)
+            	if (MRS.count==1)
 	            {
 	            	playerBet = 0;
 	            	gameEnter = 'n';
 	            	System.out.println("You got no matches.");
 	            }
-	            else if (MRcount==Results.length)
+	            else if (MRS.count==Results.length)
             	{
             		playerBet *= 1000;
             		gameEnter = 'n';
@@ -370,14 +389,14 @@ public class SlotMachine
             	}
             	else
             	{
-            		System.out.println("You got the "+Results[MRindex]+" symbol "+MRcount+" times.");
+            		System.out.println("You got the "+MRS.sym+" symbol "+MRS.count+" times.");
 	            	
-            		if (MRcount>Results.length/2)
+            		if (MRS.count>Results.length/2)
 		            {
 		    			playerBet *= 10; 
 		    			System.out.println("You have gained money and now have "+playerBet+" €.");
 		    		}
-		    		else if (MRcount<Results.length/2)
+		    		else if (MRS.count<Results.length/2)
 		            {
 		    			playerBet *= 0.5; 
 		    			System.out.println("You have lost money and now have "+playerBet+" €.");
@@ -427,7 +446,7 @@ public class SlotMachine
                         	playerBet += increase;
                         	playerSpent += increase;
                     		System.out.println("\nYour bet is now "+playerBet+" €.");
-                    		wait(1000);
+                    		wait(1200);
                         }
                     }
                 }
