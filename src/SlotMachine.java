@@ -1,13 +1,34 @@
 import java.util.Scanner;
-import java.text.DecimalFormat;
+//import java.text.DecimalFormat;
 import java.util.InputMismatchException;
 
 
 
 
+//Possible classes: symbol, player, machine
 
 public class SlotMachine
 {
+
+
+	static Scanner input = new Scanner(System.in);
+	static char gameEnter;		//Player input for stopping or continuing the game.
+	static char gameInput;		//Player input for reading a character within the game.
+	
+	static int nReels=4;		//Number of spinning reels the machine has.
+	static int nSymbols=4;		//Number of possible symbol in each reel.
+	
+	static char[] Results;		//Array of the results of spinning all the reels in the machine.
+	static Symbol MRS;			//Most Repeated Symbol in the results
+	static Symbol LRS;			//Least Repeated Symbol in the results
+	
+	static int betmin=20;		//Minimum amount of money the player can bet at a time.
+	static int betmax=100;		//Maximum amount of money the player can bet at a time.
+	static int gameLimit=10;	//Maximum amount of times the player can spin the reels.
+	static int winLimit=10000;	//Maximum amount of money the player can win.
+
+
+
 
 	public static class Symbol //Symbol found in the Results
 	{
@@ -26,31 +47,8 @@ public class SlotMachine
 		public int getC()	{return count;}
 		public int getP()	{return pos;}
 	}
-	
-	public static Symbol[] createSymbolArray() 
-	{
-		Symbol[] symArray = new Symbol[Results.length];
-	    for (int i=0; i<symArray.length; i++)
-	    	{symArray[i] = new Symbol();}
 
-	    return symArray;
-	}
-	
-	static Scanner input = new Scanner(System.in);
-	static char gameEnter;		//Player input for stopping or continuing the game.
-	static char gameInput;		//Player input for reading a character within the game.
-	
-	static int nReels=4;		//Number of spinning reels the machine has.
-	static int nSymbols=4;		//Number of possible symbol in each reel.
-	
-	static char[] Results;		//Array of the results of spinning all the reels in the machine.
-	static Symbol MRS;			//Most Repeated Symbol in the results
-	static Symbol LRS;			//Least Repeated Symbol in the results
-	
-	static int betmin=20;		//Minimum amount of money the player can bet at a time.
-	static int betmax=100;		//Maximum amount of money the player can bet at a time.
-	static int gameLimit=10;	//Maximum amount of times the player can spin the reels.
-	static int winLimit=10000;	//Maximum amount of money the player can win.
+
 
 
 
@@ -174,7 +172,7 @@ public class SlotMachine
 		System.out.println(" - Less than half the reels match : lose some money.");
 		System.out.println(" - Half of the reels match : keep your bet.");
 		System.out.println(" - No matches : you lose.\n");
-		
+		/*
 		if (type=='Y' || type=='N')
 		{
 			System.out.println("Probability:");
@@ -206,26 +204,28 @@ public class SlotMachine
 	    	System.out.println(" - < Half \t"+formatter.format(probLH*100)+" %");
 	    	System.out.println(" - = Half \t"+formatter.format(probHalf*100)+" %");
 	    	System.out.println(" - No match \t"+formatter.format(probNone*100)+" % \n");
-		}
+		}*/
 	}
 	
 	
 	// Displays the slot machine with the given number of reels visible.
 	public static void displayMachine(int nShown)
 	{
-		System.out.print("  ");
+		String space = "\t";
+		
+		System.out.print(space);
 		for (int slot=0; slot<Results.length; slot++) 
 			{System.out.print(" _____");}
 		
-		System.out.print("\n  |");
+		System.out.print("\n"+space);
 		for (int slot=0; slot<Results.length; slot++) 
 			{System.out.print("     |");}
 		
-		System.out.print("\n  |");
+		System.out.print("\n"+space);
 		for (int slot=0; slot<Results.length; slot++) 
 			{System.out.printf("  %c  |", (nShown>slot) ? Results[slot]:' ');}
         
-		System.out.print("\n  |");
+		System.out.print("\n"+space);
         for (int slot=0; slot<Results.length; slot++) 
         	{System.out.print("_____|");}
        
@@ -256,8 +256,10 @@ public class SlotMachine
 	// Counts the symbols in the results to find the most and least repeated.
 	public static void countSymbolsFound()
 	{
-		Symbol[] Found = createSymbolArray(); //Every different symbol found in the results.
-        MRS = new Symbol(0,0);
+		Symbol[] Found = new Symbol[Results.length]; //Every different symbol found in the results.
+	    for (int i=0; i<Results.length; i++) {Found[i] = new Symbol();}
+		
+	    MRS = new Symbol(0,0);
         LRS = new Symbol(Results.length,0);
         int i, j;	//Positions working with Results
 		int pos=0;	//Position working with Found
