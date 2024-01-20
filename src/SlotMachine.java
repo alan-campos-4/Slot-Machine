@@ -1,60 +1,36 @@
 import java.util.Scanner;
-//import java.text.DecimalFormat;
+import java.text.DecimalFormat;
 import java.util.InputMismatchException;
 
 
 
 
-//Possible classes: symbol, player, machine
 
 public class SlotMachine
 {
 
 
 	static Scanner input = new Scanner(System.in);
-	static char gameEnter;		//Player input for stopping or continuing the game.
+	static boolean gameEnter;	//Player input for stopping or continuing the game.
 	static char gameInput;		//Player input for reading a character within the game.
 	
-	static int nReels=4;		//Number of spinning reels the machine has.
-	static int nSymbols=4;		//Number of possible symbol in each reel.
+	static int nReels=4;	//Number of spinning reels the machine has.
+	static int nSymbols=4;	//Number of possible symbol in each reel.
 	
-	static char[] Results;		//Array of the results of spinning all the reels in the machine.
-	static Symbol MRS;			//Most Repeated Symbol in the results
-	static Symbol LRS;			//Least Repeated Symbol in the results
+	static char[] Results;	//Array of the results of spinning all the reels in the machine.
+	static Symbol MRS;		//Most Repeated Symbol in the results
+	static Symbol LRS;		//Least Repeated Symbol in the results
 	
-	static int betmin=20;		//Minimum amount of money the player can bet at a time.
-	static int betmax=100;		//Maximum amount of money the player can bet at a time.
-	static int gameLimit=10;	//Maximum amount of times the player can spin the reels.
-	static int winLimit=10000;	//Maximum amount of money the player can win.
-
-
-
-
-	public static class Symbol //Symbol found in the Results
-	{
-		private char sym;	//Symbol character
-		private int count;	//Amount of times it appears in Results
-		private int pos;	//Position it has in Results
-		
-		public Symbol()
-			{sym=' '; count=-1; pos=-1;}
-		public Symbol(char s)
-			{sym = s; count=-1; pos=-1;}
-		public Symbol(int c, int p)
-			{sym=' '; count=c;  pos=p;}
-		
-		public char getS()	{return sym;}
-		public int getC()	{return count;}
-		public int getP()	{return pos;}
-	}
+	final static double betmin=20;	//Minimum amount of money the player can bet at a time.
+	final static double betmax=100;	//Maximum amount of money the player can bet at a time.
+	final static int gameLimit=10;	//Maximum amount of times the player can spin the reels.
+	final static int winLimit=10000;//Maximum amount of money the player can win.
 
 
 
 
 
-
-
-	// Clear the terminal output.
+	// Clears the terminal output.
 	public static void clear()
 	{
 		System.out.println("\n");
@@ -79,9 +55,8 @@ public class SlotMachine
         System.out.println("\n");	//20
         System.out.flush();
 	}
-	
-	
-	// Delay the program for a given amount of mili-seconds.
+
+	// Delays the program for a given amount of mili-seconds.
 	public static void wait(int ms)
 	{
 		try 
@@ -90,8 +65,17 @@ public class SlotMachine
 			{Thread.currentThread().interrupt();}
 	}
 
-
-
+	// Waits for the input of the player
+	public static void pressToContinue()
+	{
+		System.out.println("\nPress any key to continue.");
+        try
+        {
+            System.in.read();
+            input.nextLine();
+        }  
+        catch(Exception e)	{}
+	}	
 
 	// Returns true if the value given exists in the array.
 	public static boolean exists(Symbol[] arr, char value)
@@ -103,136 +87,342 @@ public class SlotMachine
 		return false;
     }
 	
-	
-	// Loops until the character returned is valid.
-	public static char readInput(String message, char op1, char op2)
+	// Returns the object cast as a class
+	public static <T> T convertObject(Object o, Class<T> clazz) 
 	{
-		if (op2==' ')	{message += " ("+op1+"): ";}
-		else			{message += " ("+op1+"/"+op2+"): ";}
-		boolean readError = true;
-		char ans = ' ';
-		do {
-			try 
-			{
-				System.out.print(message);
-				ans = input.next().charAt(0);
-				if (ans==op1 || ans==Character.toUpperCase(op1) ||
-					ans==op2 || ans==Character.toUpperCase(op2) )
-					{readError = false;}
-				else
-					{System.out.println("  Input not accepted. Try again.");}
-			}
-			catch (InputMismatchException e)
-				{System.out.println("  Invalid input.");}
-			
-		} while(readError);
+	    try 
+	    	{return clazz.cast(o);}
+	    catch(ClassCastException e) 
+	    	{return null;}
+	}
+	
+	// Loops until the input and type returned is valid.
+	@SuppressWarnings("unchecked")
+	public static <T> T readInput(String message, T par1, T par2, char dif)
+	{
+		if (dif=='/')		{message += " ("+par1+"/"+par2+"): ";}
+		else if (dif=='-')	{message += " ("+par1+" - "+par2+"): ";}
+		else if (dif=='_')	{message += " ("+par1+"): ";}
+		else				{message += ": ";}
 		
-		return ans;
-	}	
-	
-	
-	// Loops until the amount returned is valid.
-	public static double readNum(String message, int min, int max)
-	{
-		message += " ("+min+"-"+max+"): ";
 		boolean readError = true;
-		double ans = 0.0;
 		do {
 			try 
 			{
 				System.out.print(message);
-				ans = input.nextDouble();
-				if (ans>=min && ans<=max)
-					{readError = false;}
-				else
-					{System.out.println("  Input not accepted. Try again.");}
+				
+				/***** Type Integer ****/
+				if (par1 instanceof Integer)
+				{
+					int ans = input.nextInt();
+					if (ans>=(int)par1 && ans<=(int)par2)
+					{
+						readError = false;
+						return (T)convertObject(ans, Integer.class);
+					}
+					else {System.out.println("  Input not in range. Try again.");}
+				}
+				
+				/***** Type Double ****/
+				else if (par1 instanceof Double)
+				{
+					double ans = input.nextDouble();
+					if (ans>=(double)par1 && ans<=(double)par2)
+					{
+						readError = false;  
+						return (T)convertObject(ans, Double.class);
+					}
+					else {System.out.println("  Input not in range. Try again.");}
+				}
+				
+				/***** Type Character ****/
+				else if (par1 instanceof Character)
+				{
+					char ans = input.next().charAt(0);
+					if (ans==(char)par1 || ans==Character.toUpperCase((char)par1) ||
+						ans==(char)par2 || ans==Character.toUpperCase((char)par2) )
+					{
+						readError = false;  
+						return (T)convertObject(ans, Character.class);
+					}
+					else {System.out.println("  Input not in range. Try again.");}
+				}
+				
+				else {System.out.println("  Input not accepted.");}
+				
 			}
-			catch (InputMismatchException e)
-				{System.out.println("  Invalid input.");}
+			catch (InputMismatchException e) {System.out.println("  Invalid input.");}
 			input.nextLine();
+			
 		} while(readError);
 		
-		return ans;
+		
+		return par1;
+		
 	}
 
 
 
 
-	// Displays the menu with the rules and rewards of the game.
-	public static void showMenu(char type)
+
+
+	public static class Symbol //Symbol found in the Results
 	{
-		System.out.println("\nGame Rules:");
-		System.out.println(" - Every bet has to be between "+betmin+" and "+betmax+" €");
-		System.out.println(" - You can't play more than "+gameLimit+" games.");
-		System.out.println(" - There is a limit to how much you can win ");
-		System.out.println("\nPrizes available:");
-		System.out.println(" - All reels match : jackpot.");
-		System.out.println(" - Almost all reels match : chance at all or nothing.");
-		System.out.println(" - More than half the reels match : win some money.");
-		System.out.println(" - Less than half the reels match : lose some money.");
-		System.out.println(" - Half of the reels match : keep your bet.");
-		System.out.println(" - No matches : you lose.\n");
-		/*
-		if (type=='Y' || type=='N')
-		{
-			System.out.println("Probability:");
-			DecimalFormat formatter = new DecimalFormat("#0.0000");
-			
-			double probAll;		// All reels match
-			double probAlmost;	// Almost all reels match
-			double probMH=0;	// More than half the reels match
-			double probLH=0;	// Less than half the reels match
-			double probHalf=0;	// Half of the reels match
-			double probNone=1;	// No matches
-			
-			probAll		= Math.pow( ((double)1/nSymbols), nReels );		// (1/x)^4
-			probAlmost	= Math.pow( ((double)1/nSymbols), nReels-1 );	// (1/x)^3
-			probHalf	= Math.pow( ((double)1/nSymbols), nReels/2 );	// (1/x)^2
-			
-			for (int i=nReels/2+1; i<=nReels; i++)	// (1/x)^3 + (1/x)^4
-				{probMH += Math.pow( ((double)1/nSymbols), i );}
-			
-			for (int i=1; i<nReels/2; i++)			// (1/x)^1 + (1/x)^2
-				{probLH += Math.pow( ((double)1/nSymbols), i );}
-	    	
-			for (int i=0; i<nReels; i++)	// (4/x)*(3/x)*(2/x)*(1/x)
-				{probNone *= ((double)(nReels-i)/nSymbols);}
-	    	
-	    	System.out.println(" - All reels \t"+formatter.format(probAll*100)+" %");
-	    	System.out.println(" - Almost all \t"+formatter.format(probAlmost*100)+" %");
-	    	System.out.println(" - > Half \t"+formatter.format(probMH*100)+" %");
-	    	System.out.println(" - < Half \t"+formatter.format(probLH*100)+" %");
-	    	System.out.println(" - = Half \t"+formatter.format(probHalf*100)+" %");
-	    	System.out.println(" - No match \t"+formatter.format(probNone*100)+" % \n");
-		}*/
+		private char sym;	//Symbol character
+		private int count;	//Amount of times it appears in Results
+		private int pos;	//Position it has in Results
+		
+		public Symbol()
+			{sym=' '; count=-1; pos=-1;}
+		public Symbol(char s)
+			{sym = s; count=-1; pos=-1;}
+		public Symbol(int c, int p)
+			{sym=' '; count=c;  pos=p;}
+		
+		public char getS()	{return sym;}
+		public int getC()	{return count;}
+		public int getP()	{return pos;}
 	}
-	
-	
+
+
+	public static class Player
+	{
+		private double bet;
+		private double spent;
+		private int games;
+		
+		public Player()	{bet=0.0; spent=0.0; games=0;}
+		
+		public void betInit(double read)
+			{bet = read; spent = bet;}
+		public void betIncrease(double increase)
+		{
+			if (bet+increase >= winLimit)
+			{
+				do {
+					System.out.println("\nThis increase exceeds the limit.");
+					System.out.println("Your bet is still "+bet+".");
+					if (gameInput=='y'||gameInput=='Y')
+						{increase = readInput("Enter the increase",betmin,betmax,'-');}
+					else
+						{increase = 0;}
+				} while (bet+increase >= winLimit);
+			}
+			bet += increase;
+			spent += increase;
+			System.out.println("\nYour bet is now "+bet+" €.");
+			pressToContinue();
+		}
+		
+		public void calculatePrize()
+		{
+			if (MRS.count==Results.length-1) {reroll();}
+		    
+			if (MRS.count==1)
+		    {
+		    	bet = 0;
+		    	gameEnter = false;
+		    	System.out.println("You got no matches.");
+		    }
+		    else if (MRS.count==Results.length)
+			{
+		    	bet *= 100;
+				gameEnter = false;
+				System.out.println("You won the jackpot!!!");
+			}
+			else
+			{
+				System.out.println("You got the "+MRS.sym+" symbol "+MRS.count+" times.");
+		    	
+				if (MRS.count>Results.length/2)
+		        {
+					bet *= 10;
+					System.out.println("You have gained money and now have "+bet+" €.");
+				}
+				else if (MRS.count<Results.length/2)
+		        {
+					bet += 0.5;
+					System.out.println("You have lost money and now have "+bet+" €.");
+				}
+				else 
+					{System.out.println("You still have "+bet+" €.");}
+			}
+		}
+		public void endMessage() 
+		{
+			System.out.print("\n- - - - - - - - - - - - - - -");
+			System.out.print("\n\n  You played "+games+" game"+((games==1)?"":"s") );
+			
+			if (bet==0)	
+				{System.out.println("\n   and lost "+spent+" €.");}
+			else if (bet==spent)
+			{
+				System.out.println("\n   and made back the money");
+				System.out.println("   that you bet: "+bet+" €.");
+			}
+			else
+			{
+				System.out.println(".\n   You have spent "+spent+" €.");
+				if (bet<spent)
+					{System.out.println("    And left with "+bet+" €.");}
+				else
+					{System.out.println("    And have won "+bet+" €.");}
+			}
+		}
+	}
+
+
+
+
+
+
+	// Starts the slot machine
+	public static void game() 
+	{
+		Player p1 = new Player();
+		Results = new char[nReels];
+		gameEnter = true;
+		
+		p1.betInit(readInput("Enter your bet",betmin,betmax,'-'));
+		
+		do {
+			
+			
+		/********** Spins the reels of the machine and displays it **********/ 
+			
+			for (int reels=0; reels<=Results.length; reels++)
+		    {
+		        clear();
+		        System.out.println("\t-- "+(p1.games+1)+"º Game --");
+		        displayMachine(reels);
+		        if (reels==0)				{gameInput = readInput("Start",'p',' ','_');}
+		        if (reels<Results.length)	{Results[reels] = spinReel();}
+		        wait(400+reels*50);
+		    }
+		    p1.games++;
+		    
+		    
+	    /********** Calculates a prize according to the symbols found **********/ 
+		    
+		    countSymbolsFound();
+		    
+		    p1.calculatePrize();
+			
+			
+		/********** Restarting or ending the game **********/
+		    
+		    if (p1.games==gameLimit) 
+			{
+				gameEnter = false;
+				System.out.println("\n  You have reached the maximum amount of games.");
+			}
+		    
+			if (p1.bet>=winLimit)
+			{
+				p1.bet = winLimit;
+				gameEnter = false;
+				System.out.println("\n\t You have reached the maximum amount");
+				System.out.println("\t of money that can be awarded.");
+				System.out.println("\t You will recieve that instead.");
+			}
+			
+			if (gameEnter)
+			{
+		        gameInput = readInput("Do you want to continue playing?",'y','n','/');
+		        if (gameInput=='y'||gameInput=='Y')
+		        {
+		        	gameInput = readInput("Do you want to bet more money?",'y','n','/');
+		            if (gameInput=='y'||gameInput=='Y')
+		            {
+		            	p1.betIncrease(readInput("Enter the increase",betmin,betmax,'-'));
+		            }
+		        }
+		        else 
+		        	{gameEnter = false;}
+		    }
+			
+			
+		} while ((gameEnter) && (p1.bet<winLimit) && (p1.games<gameLimit));
+		
+		
+		p1.endMessage();
+	}
+
+	// Shows the rules of the game
+	public static void showRules() 
+	{
+		System.out.println("\n  Game Rules:");
+		System.out.println("  - Every bet has to be between "+betmin+" and "+betmax+" €.");
+		System.out.println("  - You can't play more than "+gameLimit+" games.");
+		System.out.println("  - There is a limit to how much you can win.");
+		System.out.println("\n  Prizes available:");
+		System.out.println("  - All reels match : jackpot.");
+		System.out.println("  - Almost all reels match : chance at all or nothing.");
+		System.out.println("  - More than half the reels match : win some money.");
+		System.out.println("  - Less than half the reels match : lose some money.");
+		System.out.println("  - Half of the reels match : keep your bet.");
+		System.out.println("  - No matches : you lose.");
+	}
+
+	// Shows the probability of each outcome
+	public static void showProb() 
+	{
+		DecimalFormat formatter = new DecimalFormat("#0.0000");
+		double probAll;		// All reels match
+		double probAlmost;	// Almost all reels match
+		double probMH=0;	// More than half the reels match
+		double probLH=0;	// Less than half the reels match
+		double probHalf=0;	// Half of the reels match
+		double probNone=1;	// No matches
+		
+		probAll		= Math.pow( ((double)1/nSymbols), nReels );		// (1/x)^4
+		probAlmost	= Math.pow( ((double)1/nSymbols), nReels-1 );	// (1/x)^3
+		probHalf	= Math.pow( ((double)1/nSymbols), nReels/2 );	// (1/x)^2
+		
+		for (int i=1; i<=nReels/2; i++)			// (1/x)^1 + (1/x)^2
+			{probLH += Math.pow( ((double)1/nSymbols), i );}
+		
+		for (int i=nReels/2+1; i<=nReels; i++)	// (1/x)^3 + (1/x)^4
+			{probMH += Math.pow( ((double)1/nSymbols), i );}
+		
+		for (int i=0; i<nReels; i++)	// (4/x)*(3/x)*(2/x)*(1/x)
+			{probNone *= ((double)(nReels-i)/nSymbols);}
+		
+		System.out.println("\n  Probability:");
+		System.out.println("  - All reels \t"+formatter.format(probAll*100)+" %");
+		System.out.println("  - Almost all \t"+formatter.format(probAlmost*100)+" %");
+		System.out.println("  - < Half \t"+formatter.format(probLH*100)+" %");
+		System.out.println("  - = Half \t"+formatter.format(probHalf*100)+" %");
+		System.out.println("  - > Half \t"+formatter.format(probMH*100)+" %");
+		System.out.println("  - No match \t"+formatter.format(probNone*100)+" % \n");
+	}
+
+
+
 	// Displays the slot machine with the given number of reels visible.
 	public static void displayMachine(int nShown)
 	{
-		String space = "\t";
+		String space = "  ";
 		
 		System.out.print(space);
 		for (int slot=0; slot<Results.length; slot++) 
 			{System.out.print(" _____");}
 		
-		System.out.print("\n"+space);
+		System.out.print("\n"+space+"|");
 		for (int slot=0; slot<Results.length; slot++) 
 			{System.out.print("     |");}
 		
-		System.out.print("\n"+space);
+		System.out.print("\n"+space+"|");
 		for (int slot=0; slot<Results.length; slot++) 
 			{System.out.printf("  %c  |", (nShown>slot) ? Results[slot]:' ');}
         
-		System.out.print("\n"+space);
+		System.out.print("\n"+space+"|");
         for (int slot=0; slot<Results.length; slot++) 
         	{System.out.print("_____|");}
        
         System.out.println("\n");
 	}	
-	
-	
+
 	// Returns a random character to assign to the results.
 	public static char spinReel()
 	{
@@ -251,8 +441,7 @@ public class SlotMachine
             default: return '_';
         }
 	}	
-	
-	
+
 	// Counts the symbols in the results to find the most and least repeated.
 	public static void countSymbolsFound()
 	{
@@ -283,8 +472,7 @@ public class SlotMachine
 		}
 
 	}	
-	
-	
+
 	// Re-rolls the "missing" reel and changes the results accordingly.
 	public static void reroll()
 	{
@@ -292,7 +480,7 @@ public class SlotMachine
 		System.out.println(" You can reroll for the chance to get all matches,");
 		System.out.println(" but if you fail you will loose all your money.");
 		
-		gameInput = readInput("Do you want to reroll the "+(LRS.pos+1)+"º reel?",'y','n');
+		gameInput = readInput("Do you want to reroll the "+(LRS.pos+1)+"º reel?",'y','n','/');
 		if (gameInput=='y' || gameInput=='Y')
 		{
 			Results[LRS.pos] = spinReel();
@@ -325,166 +513,52 @@ public class SlotMachine
 	public static void main(String[] args)
 	{
 		
-    	double playerBet=0;		//Amount of money the player currently has as a bet.
-    	double playerSpent=0;	//Amount of money the player has spent playing the game.
-    	int gameCount=0;		//Amount of times the player has spun the reels.
-    	
-		System.out.println("\n\t --- Welcome to the SLOT MACHINE --- ");
-		System.out.println("\tBet an some money and try to win a prize!!\n");
+		int opc;
+		boolean loop = true;
 		
-		gameEnter = readInput("Do you want to play?",'y','n');
-		if (gameEnter=='y'||gameEnter=='Y')
-		{
-			showMenu(gameEnter);
+		do {
+			System.out.println("\n\t --- Welcome to the SLOT MACHINE --- ");
+			System.out.println("Bet an some money and try to win a prize!!");
+			System.out.println("The machine currently has "+nReels+" reels and "+nSymbols+" symbols.");
 			
-			System.out.println("The machine has "+nReels+" reels and "+nSymbols+" symbols.");
-			gameInput = readInput("Do you want to change these numbers?",'y','n');
-			if (gameInput=='y'||gameInput=='Y')
+			System.out.println("\nWhat do you want to do?");
+			System.out.println("1. Play the game.");
+			System.out.println("2. View the ruleset.");
+			System.out.println("3. Change the parameters.");
+			System.out.println("0. Exit.\n");
+			
+			opc = readInput("Choose an option",0,4,'-');
+			
+			switch(opc)
 			{
-				nReels = (int)readNum("Set the number of reels",4,8);
-				nSymbols = (int)readNum("Set the number of symbols",4,10);
+				case 0: {loop = false;} 
+				break;
+				case 1: {game();}
+				break;
+				case 2:	{showRules();}
+				break;
+				case 4:	{showProb();}
+				break;
+				case 3: 
+				{
+					nReels = readInput("  Set the number of reels",4,8,'-');
+					nSymbols = readInput("  Set the number of symbols",4,10,'-');
+				}
+				break;
+				default: {System.out.println("  Input not in range. Try again.");} 
+				break;
 			}
-			Results = new char[nReels];
-			displayMachine(0);
+			pressToContinue();
+			clear();
 			
-			playerBet = readNum("Enter your bet",betmin,betmax);
-			playerSpent = playerBet;
-			
-			
-			do {
-				
-				
-			/********** Assigns & displays the results of spinning **********/ 
-				
-				for (int reels=0; reels<=Results.length; reels++)
-	            {
-	                clear();
-	                System.out.println("\t-- "+(gameCount+1)+"º Game --");
-	                displayMachine(reels);
-	                if (reels==0)				{gameInput = readInput("Start",'p',' ');}
-	                if (reels<Results.length)	{Results[reels] = spinReel();}
-	                wait(400+reels*50);
-	            }
-	            gameCount++;
-				
-				
-			/********** Finds most and least repeated symbol **********/
-	            
-	            countSymbolsFound();
-	            
-	            
-            /********** Calculates and displays the player's prize **********/
-	            
-	            if (MRS.count==Results.length-1) {reroll();}
-	            
-            	if (MRS.count==1)
-	            {
-	            	playerBet = 0;
-	            	gameEnter = 'n';
-	            	System.out.println("You got no matches.");
-	            }
-	            else if (MRS.count==Results.length)
-            	{
-            		playerBet *= 1000;
-            		gameEnter = 'n';
-            		System.out.println("You won the jackpot!!!");
-            	}
-            	else
-            	{
-            		System.out.println("You got the "+MRS.sym+" symbol "+MRS.count+" times.");
-	            	
-            		if (MRS.count>Results.length/2)
-		            {
-		    			playerBet *= 10; 
-		    			System.out.println("You have gained money and now have "+playerBet+" €.");
-		    		}
-		    		else if (MRS.count<Results.length/2)
-		            {
-		    			playerBet *= 0.5; 
-		    			System.out.println("You have lost money and now have "+playerBet+" €.");
-		    		}
-		    		else 
-		    			{System.out.println("You still have "+playerBet+" €.");}
-            	}
-            	
-            	
-            /********** Restarts, increases bet or ends game **********/
-	            
-	            if (gameCount==gameLimit) 
-        		{
-            		gameEnter = 'n';
-        			System.out.println("\n  You have reached the maximum amount of games.");
-        		}
-	            
-        		if (playerBet>=winLimit)
-        		{
-        			playerBet = winLimit;
-            		gameEnter = 'n';
-        			System.out.println("\n\t You have reached the maximum amount");
-        			System.out.println("\t of money that can be awarded.");
-        			System.out.println("\t You will recieve that instead.");
-        		}
-            	
-        		if (gameEnter!='n')
-        		{
-                    gameEnter = readInput("Do you want to continue playing?",'y','n');
-                    if (gameEnter=='y'||gameEnter=='Y')
-                    {
-                    	gameInput = readInput("Do you want to bet more money?",'y','n');
-                        if (gameInput=='y'||gameInput=='Y')
-                        {
-                        	double increase = readNum("Enter the increase",betmin,betmax);
-                        	if (playerBet+increase >= winLimit)
-                        	{
-                        		do {
-                        			System.out.println("\nThis increase exceeds the limit.");
-                            		System.out.println("Your bet is still "+playerBet+".");
-                        			if (gameInput=='y'||gameInput=='Y')
-                        				{increase = readNum("Enter the increase",betmin,betmax);}
-                        			else
-                        				{increase = 0;}
-                        		} while (playerBet+increase >= winLimit);
-                        	}
-                        	playerBet += increase;
-                        	playerSpent += increase;
-                    		System.out.println("\nYour bet is now "+playerBet+" €.");
-                    		wait(1200);
-                        }
-                    }
-                }
-        		
-        		
-			} while ((gameEnter=='y'||gameEnter=='Y')&&(playerBet<winLimit)&&(gameCount<gameLimit));
-			
-			
-			
-		/********** End of Loop. Final Message **********/
-			
-			System.out.print("\n  You played "+gameCount+" game"+((gameCount==1)?"":"s") );
-			
-			if (playerBet==0)
-			{
-				System.out.println("\n   and lost "+playerSpent+" €.");
-			}
-			else if (playerBet==playerSpent)
-			{
-				System.out.println("\n   and made back the money");
-				System.out.println("   that you bet: "+playerBet+" €.");
-			}
-			else
-			{
-				System.out.println(".\n   You have spent "+playerSpent+" €.");
-				if (playerBet<playerSpent)
-					{System.out.println("    And left with "+playerBet+" €.");}
-				else
-					{System.out.println("    And have won "+playerBet+" €.");}
-			}
-    		
-			
-    	}
-		System.out.println("\n\n\t *** Game Over *** ");
+		}while (loop);
+		
+		
+
+		System.out.println("\n- - - - - Game Over - - - - -");
 		input.close();
     }
+
 
 
 }
