@@ -7,26 +7,26 @@ import org.junit.jupiter.api.Test;
 class SlotMachine_Test 
 {
 
+//*
 	@Test
 	void readInput_Test()
 	{
-		System.out.println("\treadInput: ");
 		int num = SlotMachine.readInput("Choose an option",1,'-',5);
 		System.out.println("  num = "+num);
 		double dob = SlotMachine.readInput("Choose an option",1.5,'-',15.8);
 		System.out.println("  num = "+dob);
 		char opc = SlotMachine.readInput("Choose an option",'y','/','n');
 		System.out.println("  opc = "+opc);
-		
 	}
-	
-	
+//*/
+
+
 
 //*
 	@Test
 	void countSymbolsFound_Test()
 	{
-		char[] arr = {'@','E','E','@','E','@','-','@',};
+		char[] arr = {'E','@','l','E','@','l','@','-','@'};
 		SlotMachine.Results = new char[arr.length];
 		for (int i=0; i<arr.length; i++) {SlotMachine.Results[i] = arr[i];}
 		
@@ -35,19 +35,19 @@ class SlotMachine_Test
 		
 		assertTrue(SlotMachine.MRS.getSym()=='@');
 		assertTrue(SlotMachine.MRS.getCount()==	4);
-		assertTrue(SlotMachine.MRS.getPos()==0);
+		assertTrue(SlotMachine.MRS.getPos()==1);
 		assertTrue(SlotMachine.LRS.getSym()=='-');
 		assertTrue(SlotMachine.LRS.getCount()==1);
-		assertTrue(SlotMachine.LRS.getPos()==6);
+		assertTrue(SlotMachine.LRS.getPos()==7);
 		
 		assertFalse(SlotMachine.MRS.getPos()==3);
-		assertFalse(SlotMachine.LRS.getPos()==7);
+		assertFalse(SlotMachine.LRS.getPos()==4);
 	}
 //*/
 
 
 
-/*
+//*
 	@Test
 	void reroll_Test()
 	{
