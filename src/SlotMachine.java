@@ -1,8 +1,17 @@
 import java.util.Scanner;
 import java.util.ArrayList;
+//import java.io.File;
 import java.text.DecimalFormat;
 
 
+
+/* TODO:
+ * "Payout"
+ * Inheritance (extends)
+ *		Multi-way machine
+ * Charge for spinning and free spins
+ * File class
+ */
 
 
 public class SlotMachine
@@ -11,15 +20,18 @@ public class SlotMachine
 	/* Clears the terminal output. */
 	public static void clear()
 	{
-		//* "Works" in the Eclipse IDE Console
+		// "Works" in the Eclipse IDE Console 
+		//*
 		System.out.println("\n\n\n\n\n");  //5
         System.out.println("\n\n\n\n\n");  //10
         System.out.println("\n\n\n\n\n");  //15
         System.out.println("\n\n\n\n\n");  //20
         System.out.println("\n\n\n\n\n");  //25
-        //System.out.flush(); //*/
+        //System.out.flush(); 
+        //*/
         
-		/* Works when executed in a terminal e.g.: Windows Powershell
+		// Works in Windows Powershell
+        /*
 		try {
             if (System.getProperty("os.name").contains("Windows")) 
             {
@@ -29,7 +41,8 @@ public class SlotMachine
 				Process startProcess = new ProcessBuilder("clear").inheritIO().start();
 				startProcess.waitFor();
 			}
-		} catch (Exception E) {System.out.println(E);}  //*/
+		} catch (Exception E) {System.out.println(E);}  
+		//*/
 	}
 
 
@@ -113,39 +126,41 @@ public class SlotMachine
 	static int nReels=4;	//Number of spinning reels the machine has.
 	static int nSymbs=4;	//Number of available symbols when spinning.
 	//All of the possible symbols that can be obtained by spinning.
-	static char[] symbols = {'~','o','/','\\','|','_','@','#','%','&'};
-	
+	static char[] symbols = {'~','#','@','/','\\','|','_','%','&'};
 	static char[] Results;	//Array of the results of spinning all the reels in the machine.
 	static ResSymbol MRS;	//Most Repeated Symbol in the results
 	static ResSymbol LRS;	//Least Repeated Symbol in the results
+	
+	static ArrayList<ResSymbol> FoundArray = new ArrayList<ResSymbol>();
 	
 	
 	public static class ResSymbol //Symbol found in the Results
 	{
 		private char sym;	//Character value
 		private int count;	//Times the symbol appears in the Results
-		private int pos;	//Position of the symbol in the Results
+		//Positions the symbol is found in the Results
+		private ArrayList<Integer> pos = new ArrayList<Integer>();
 		
-		public ResSymbol()						{sym=' '; count=0; pos=-1;}
-		public ResSymbol(char s, int c, int p)	{sym=s; count=c; pos=p;}
+		public ResSymbol()						{sym=' '; count=0;}
+		public ResSymbol(char s, int c)			{sym=s; count=c;}
+		public ResSymbol(char s, int c, int p)	{sym=s; count=c; pos.add(p);}
 		
-		public void set(char s, int c, int p)	{sym=s; count=c; pos=p;}
+		public void set(char s, int c, int p)	{sym=s; count=c; pos.add(p);}
 		
 		public char getSym()	{return sym;}
 		public int getCount()	{return count;}
-		public int getPos()		{return pos;}
+		public int getPos(int p){return pos.get(p);}
 	}
-	
+
+
 	public static class Player //The player and their money
 	{
 		private double bet;		//Money currently as a bet
 		private double spent;	//Money introduced as a bet overall
 		private int numGames;	//Number of games fully completed
 		
-		public Player()
-			{bet=0.0;  spent=0.0;  numGames=0;}
-		public Player(double read)
-			{bet=read; spent=read; numGames=0;}
+		public Player()				{bet=0.0;  spent=0.0;  numGames=0;}
+		public Player(double read)	{bet=read; spent=read; numGames=0;}
 		
 		public double getBet()	{return bet;}
 		public int getGames()	{return numGames;}
@@ -168,7 +183,7 @@ public class SlotMachine
 		}
 		
 		
-		/* Changes the value of the bet based on the matches found */
+		/* Modifies the bet based on the number of matches found */
 		public void calculatePrize()
 		{
 			if (MRS.count==Results.length-1) {reroll();}
@@ -248,6 +263,8 @@ public class SlotMachine
 
 
 
+
+
 	/* Returns a random character to assign to the results. */
 	public static char spinReel()
 		{return symbols[(int)(Math.random()*nSymbs)];}
@@ -279,11 +296,11 @@ public class SlotMachine
 	/* Counts the symbols in the results to find the most and least repeated. */
 	public static void countSymbolsFound()
 	{
-	    MRS = new ResSymbol(' ',0,0);
-        LRS = new ResSymbol(' ',Results.length,0);
+	    MRS = new ResSymbol(' ',0);
+        LRS = new ResSymbol(' ',Results.length);
         boolean exists;
 		
-		ArrayList<ResSymbol> FoundArray = new ArrayList<ResSymbol>();
+		//ArrayList<ResSymbol> FoundArray = new ArrayList<ResSymbol>();
 		for (int i=0; i<Results.length; i++)
 		{
 			exists = false;
@@ -297,19 +314,20 @@ public class SlotMachine
 			}
 			if (!exists)
 			{
-				int symcount = 0;
+				ResSymbol NewSym = new ResSymbol(Results[i], 0);
 				for (int j=0; j<Results.length; j++)
                 {
-                    if (Results[i]==Results[j])	{symcount++;}
+                    if (Results[i]==Results[j])
+                    	{NewSym.count++; NewSym.pos.add(j);}
                 }
-				FoundArray.add(new ResSymbol(Results[i], symcount, i));
-                if (symcount > MRS.count)	{MRS.set(Results[i], symcount, i);}
-                if (symcount < LRS.count)	{LRS.set(Results[i], symcount, i);}
+				FoundArray.add(NewSym);
+                if (NewSym.count > MRS.count)	{MRS = NewSym;}
+                if (NewSym.count < LRS.count)	{LRS = NewSym;}
             }
 		}
 	}
-	
-	
+
+
 	/* Re-rolls the "missing" reel and changes the results accordingly. */
 	public static void reroll()
 	{
@@ -317,13 +335,13 @@ public class SlotMachine
 		System.out.println(" You can reroll for the chance to get all matches,");
 		System.out.println(" but if you fail you will loose all your money.");
 		
-		gameInput = readInput("Do you want to reroll the "+(LRS.pos+1)+"º reel?",'y','/','n');
+		gameInput = readInput("Do you want to reroll the "+(LRS.pos.get(0)+1)+"º reel?",'y','/','n');
 		if (gameInput=='y' || gameInput=='Y')
 		{
-			Results[LRS.pos] = spinReel();
+			Results[LRS.pos.get(0)] = spinReel();
 			displayMachine(Results.length);
 			
-			if (Results[MRS.pos]==Results[LRS.pos])
+			if (Results[MRS.pos.get(0)]==Results[LRS.pos.get(0)])
 			{
 				System.out.println("The new symbol is a match.\n");
 				MRS.count = Results.length;
@@ -334,13 +352,14 @@ public class SlotMachine
 				MRS.count = 1;
 			}
 		}
+		System.out.println();
 	}
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
 	/* Shows the rules of the game. */
 	public static void showRules() 
 	{
@@ -356,8 +375,8 @@ public class SlotMachine
 		System.out.println("  - Half of the reels match : keep your bet.");
 		System.out.println("  - No matches : you lose.");
 	}
-	
-	
+
+
 	/* Shows the probability of each outcome of the game. */
 	public static void showProb() 
 	{
@@ -385,8 +404,8 @@ public class SlotMachine
 		System.out.println("  - < Half \t"+formatter.format(probLH*100)+" %");
 		System.out.println("  - No match \t"+formatter.format(probNone*100)+" %");
 	}
-	
-	
+
+
 	/* Starts the slot machine. */
 	public static void game() 
 	{
