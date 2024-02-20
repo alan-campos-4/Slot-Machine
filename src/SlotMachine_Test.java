@@ -34,6 +34,20 @@ class SlotMachine_Test
 		//assertTrue(SlotMachines.isFound(arrr, 5));
 		
 	}
+	
+	
+	@Test
+	void mainMenu_Test()
+	{
+		//SlotMachines.main();
+	}
+	
+	@Test
+	void machineMenu_Test()
+	{
+		SlotMachines.SingleRow M1 = new SlotMachines.SingleRow();
+		M1.menuSelect();
+	}
 
 
 

@@ -5,6 +5,7 @@ import java.text.DecimalFormat;
 
 
 
+
 /* TODO:
  * Multi-way re-roll functionality
  * !! symMax cannot be smaller than rows !!
@@ -13,6 +14,7 @@ import java.text.DecimalFormat;
  * Cost of spinning and free spins
  * FileWriter class -> record results || instances of 7
  */
+
 
 
 
@@ -83,7 +85,7 @@ public class SlotMachines
 	// Stops the program until the player presses a key.
 	public static void pressAnyKeyTo(String message)
 	{
-		SlowPrintln("Press any key to "+message+".");
+		SlowPrintln("\nPress any key to "+message+".");
         try 
         {
             System.in.read();
@@ -157,14 +159,18 @@ public class SlotMachines
 				String str = input.nextLine();
 				if (str!="")
 				{
-					if (param1 instanceof String)	{return (T)str;}
+					if (param1 instanceof String)
+					{
+						return (T)str;
+					}
 					else if (param1 instanceof Character)
 					{
 						char ans = str.charAt(0);
 						if (ans==(char)param1 || ans==Character.toUpperCase((char)param1) 
 						 || ans==(char)param2 || ans==Character.toUpperCase((char)param2) )
-							{return (T)(T)param1.getClass().cast(ans);}
-						else {StopPrintln("  Input outside of specified range. Try again.");}
+							{return (T)param1.getClass().cast(ans);}
+						else
+							{StopPrintln("  Input outside of specified range. Try again.");}
 					}
 					else 
 					{
@@ -181,16 +187,19 @@ public class SlotMachines
 								int ans = Integer.parseInt(str);
 								if (ans>=(int)param1 && ans<=(int)param2)
 									{return (T)param1.getClass().cast(ans);}
-								else {StopPrintln("  Input outside of range. Try again.");}	
+								else
+									{StopPrintln("  Input outside of range. Try again.");}	
 							}
 							else if (param1 instanceof Double && str.length()<14)
 							{
 								double ans = Double.parseDouble(str);
 								if (ans>=(double)param1 && ans<=(double)param2)
 									{return (T)param1.getClass().cast(ans);}
-								else {StopPrintln("  Input outside of range. Try again.");}
+								else 
+									{StopPrintln("  Input outside of range. Try again.");}
 							}
-							else {StopPrintln("  Input type not accepted. Try again.");}
+							else
+								{StopPrintln("  Input type not accepted. Try again.");}
 						}
 						else {StopPrintln("  Input type not accepted. Try again.");}
 					}
@@ -228,123 +237,56 @@ public class SlotMachines
 	
 	
 	
-	//The players and their money
-	public static class Player 
-	{
-		private String name;	//Name of the player
-		private double bet;		//Money currently as a bet
-		private double spent;	//Money introduced as a bet overall
-		private int numGames;	//Number of games fully completed
-		
-		public Player()	{name = readInput("What is your name?","__",'_',"__");}
-		
-		public double getBet()	{return bet;}
-		public int getGames()	{return numGames;}
-		
-		//Initializes the player's bet
-		public void betInit(double read)	{bet=read; spent=read; numGames=0;}
-		
-		// Increases the bet if it stays within the limit
-		public void betIncrease(double increase)
-		{
-			while (bet+increase > WINLIMIT) 
-			{
-				SlowPrintln("\nThis increase exceeds the limit by"+
-						(WINLIMIT-bet-increase)+"€.");
-				SlowPrintln("Your bet remains as "+bet+"€.");
-				increase = readInput("Enter a lower increase",BETMIN,'-',BETMAX);
-			}
-			bet += increase;
-			spent += increase;
-			SlowPrintln("\nYour bet is now "+bet+" €.");
-			pressAnyKeyTo("continue the game");
-		}
-		
-		// Displays the money won or lost at the end of a game
-		public void endMessage()
-		{
-			StopPrintln("\n- - - - - - - - - - - - - - -");
-			SlowPrint("\n  You played "+numGames+" game"+((numGames==1)?"":"s") );
-			
-			if (bet==0)	
-				{SlowPrintln("\n   and lost "+spent+" €.");}
-			else if (bet==spent)
-			{
-				SlowPrintln("\n   and made back the money");
-				SlowPrintln("   that you bet: "+bet+" €.");
-			}
-			else
-			{
-				SlowPrintln(".\n   You have spent "+spent+" €.");
-				if (bet<spent)
-					{SlowPrintln("    And left with "+bet+" €.");}
-				else
-					{SlowPrintln("    And have won "+bet+" €.");}
-			}
-			StopPrintln("\n- - - - - - - - - - - - - - -\n");
-		}
-	}
-	
-	
-	
-	
-	
-	
 	//The slot machines and its types
 	abstract static class Machine
 	{
 		protected int rows;			//Rows of the machine
 		protected int reels;		//Columns of the machine, the spinning reels
 		protected char[][] results;	//The results of spinning. Rows first, columns second
-		
-		protected int symMax;		//Amount of symbols available when spinning
 		protected char[] machSyms;	//Symbols available in the machine
 		
 		protected int minSize;		//Minimum amount of rows and reels allowed
 		protected int maxSize;		//Maximum amount of rows and reels allowed
 		protected int minSyms;		//Minimum number of symbols available allowed
-		protected double cost;		//Cost of spinning the reels per game
 		
-		protected Player P;			//Player using the machine at the moment
+		protected double cost;		//Cost of spinning the reels per game
+		protected double bet;		//Money currently as a bet
+		protected double spent;		//Money introduced as a bet overall
+		protected int numGames;		//Number of games fully completed
 		
 		public Machine(int ro, int re, int syms)
 		{
 			this.rows = ro;
 			this.reels = re;
-			this.symMax = syms;
 			this.results = new char[rows][reels];
-			this.machSyms = new char[symMax];
+			this.machSyms = new char[syms];
 			
 			if (this instanceof SingleRow)
 			{
-				this.cost = Math.ceil( ((double)reels*(double)symMax)
+				this.cost = Math.ceil( ((double)reels*(double)machSyms.length)
 							*((double)3/(double)10) );
 			} else {
-				this.cost = Math.ceil( ((double)reels*(double)rows*(double)symMax)
+				this.cost = Math.ceil( ((double)reels*(double)rows*(double)machSyms.length)
 							*((double)1/(double)10) );
 			}
 			
 			char newsym;
-			for (int i=0; i<symMax; i++)
+			for (int i=0; i<syms; i++)
 			{
-				do {newsym = all[(int)(Math.random()*symMax)];}
+				do {newsym = all[(int)(Math.random()*machSyms.length)];}
 				while (exists(machSyms, newsym));
 				machSyms[i] = newsym;
 			}
 			
 		}
 		
-		public int getRows()	{return rows;}
-		public int getReels()	{return reels;}
-		public int getSyms()	{return symMax;}
-		
-		public void changeParameters()
+		public void changeParameters()				//Change the rows, reels, and symbols of the machine
 		{
 			int nRows, nReels, nSyms;
 			
 			SlowPrintln("\n\t Reels="+reels
 					+ ( (this instanceof Multiway) ? (" Rows="+rows+" "):(" ") )
-					+ "Symbols="+symMax);
+					+ "Symbols="+machSyms.length);
 			SlowPrintln("Input new values for these parameters.");
 			if (this instanceof Multiway)
 				{nRows = readInput(" Number of rows",minSize,'-',maxSize);}
@@ -353,7 +295,7 @@ public class SlotMachines
 			nReels = readInput(" Number of reels",minSize,'-',maxSize);
 			nSyms = readInput(" Number of symbols",minSyms,'-',all.length);
 			
-			while (nSyms>nRows || nSyms>nReels)
+			while (nSyms<nRows || nSyms<nReels)
 			{
 				StopPrintln("The number of symbols cannot be smaller than \n"
 						+ "the number of "+((nRows<nReels)? "rows":"reels" )+"." );
@@ -364,15 +306,14 @@ public class SlotMachines
 			
 			rows = nRows;
 			reels = nReels;
-			symMax = nSyms;
 			results = new char[rows][reels];
 			
-			machSyms = new char[symMax];
-			for (int i=0; i<symMax; i++)
+			machSyms = new char[nSyms];
+			for (int i=0; i<machSyms.length; i++)
 				{machSyms[i] = all[i];}
 			
 		}
-		public void displayMachine(int nShown)
+		public void displayMachine(int nShown)		//Display the reels of the machine
 		{
 			System.out.print("  ");
 			for (int re=0; re<reels; re++) 
@@ -394,11 +335,11 @@ public class SlotMachines
 			}
 			System.out.println("\n");
 		}
-		public void displayProgressively(int game)
+		public void displayProgressively(int game)	//Show the reels as they are spinning
 		{
 			for (int reelsShown=0; reelsShown<=reels; reelsShown++)
 		    {
-				StopPrintln("\t-- "+(game)+"º Game --");
+				System.out.println("\t-- "+(game)+"º Game --");
 				displayMachine(reelsShown);
 				if(reelsShown<reels)
 				{
@@ -409,66 +350,74 @@ public class SlotMachines
 		    }
 		}
 		
-		public void callShowRules()
+		public void showRules()
 		{
 			SlowPrintln("\n  Game Rules:");
 			SlowPrintln("  - Every bet has to be between "+BETMIN+" and "+BETMAX+" €.");
 			SlowPrintln("  - You can't play more than "+GAMELIMIT+" games.");
 			SlowPrintln("  - There is a limit to how much you can win.");
-			if (this instanceof SingleRow)
-				{((SingleRow)this).showRules();}
-			else
-				{((Multiway)this).showRules();}
 		}
-		public void callShowProb()
+		public void showProb()
 		{
-			if (this instanceof SingleRow)
-				{((SingleRow)this).showProb();}
-			else
-				{((Multiway)this).showProb();}
-			pressAnyKeyTo("continue");
+			SlowPrintln("\n  Probability:");
 		}
-		public void callSpinReels()
+		public void spinReels()			{numGames++;}
+		public void calculatePrize()	{bet -= cost;}
+		public void checkResults()		{StopPrintln("\t-------------\n");}
+		
+		public void betInit(double read)	//Initializes the player's bet
+			{bet=read; spent=read; numGames=0;}
+		public void betIncrease(double inc)	//Increases the bet if it stays within the limit
 		{
-			P.numGames++;
-			if (this instanceof SingleRow)
-				{((SingleRow)this).spinReels();;}
-			else
-				{((Multiway)this).spinReels();}
-		}
-		public void callCheckResults()
+			while (bet+inc > WINLIMIT)
+			{
+				SlowPrintln("\nThis increase exceeds the limit by"+
+						(WINLIMIT-bet-inc)+"€.");
+				SlowPrintln("Your bet remains as "+bet+"€.");
+				inc = readInput("Enter a lower increase",BETMIN,'-',BETMAX);
+			}
+			bet += inc;
+			spent += inc;
+			SlowPrintln("\nYour bet is now "+bet+" €.");
+			pressAnyKeyTo("continue the game");
+		}	
+		public void endMessage()			//Displays the money won or lost at the end of a game
 		{
-			if (this instanceof SingleRow)
-				{((SingleRow)this).countMatches();}
+			StopPrintln("\n- - - - - - - - - - - - - - -");
+			SlowPrint("\n  You played "+numGames+" game"+((numGames==1)?"":"s") );
+			
+			if (bet==0)	
+				{SlowPrintln("\n   and lost "+spent+" €.");}
+			else if (bet==spent)
+			{
+				SlowPrintln("\n   and made back the money");
+				SlowPrintln("   that you bet: "+bet+" €.");
+			}
 			else
-				{((Multiway)this).checkWinLines();}
-		}
-		public void callCalcPrize(Player P)
-		{
-			P.bet -= cost;
-			if (this instanceof SingleRow)
-				{((SingleRow)this).calculatePrize(P);}
-			else
-				{((Multiway)this).calculatePrize(P);}
+			{
+				SlowPrintln(".\n   You have spent "+spent+" €.");
+				if (bet<spent)	{SlowPrintln("    And left with "+bet+" €.");}
+				else			{SlowPrintln("    And have won "+bet+" €.");}
+			}
+			StopPrintln("\n- - - - - - - - - - - - - - -");
 		}
 		
 		public void menuSelect()
 		{
 			int opc2;
-			P = new Player();
 			
 			do {
 				clear();
-				StopPrintln("\n     --- "+P.name+", Welcome to the Slot Machine ---");
+				StopPrintln("\n\t  --- Welcome to the Slot Machine ---");
 				SlowPrintln("\nSpin the reels and try to match the symbols");
 				SlowPrintln("The bigger your bet, the bigger a prize you'll win!!");
 				
 				SlowPrintln("\nThis machine has "+reels+" reels"
 						+ ((this instanceof Multiway) ? (", "+rows+" rows \n"):(" ") )
-						+ "and "+symMax+" possible symbols");
+						+ "and "+machSyms.length+" possible symbols");
 				SlowPrintln(" and costs "+cost+"€ to spin per turn.");
-				
-				SlowPrintln("\nWhat do you want to do?");
+				displayMachine(0);
+				SlowPrintln("What do you want to do?");
 				StopPrintln(" 1. Play the game.");
 				StopPrintln(" 2. View the ruleset.");
 				StopPrintln(" 3. Change the parameters.");
@@ -479,8 +428,8 @@ public class SlotMachines
 				{
 					case 1: {startGame();} break;
 					case 3: {changeParameters();} break;
-					case 2: {callShowRules();} break;
-					case 4: {callShowProb();} break;
+					case 2: {showRules();} break;
+					case 4: {showProb();} break;
 					case 0: {waitM(TIMEWAIT, "Returning to the previous menu");} break;
 				}
 				if (opc2!=0)
@@ -494,16 +443,15 @@ public class SlotMachines
 		
 		public void startGame()
 		{
-			P.betInit(readInput("Enter your bet",BETMIN,'-',BETMAX));
+			betInit(readInput("Enter your bet",BETMIN,'-',BETMAX));
 			gameEnter = true;
 			
 			do {
 				clear();
-				callSpinReels();
-				displayProgressively(P.numGames);
-				callCheckResults();
-				callCalcPrize(P);
-				
+				spinReels();
+				displayProgressively(numGames);
+				checkResults();
+				calculatePrize();
 				if (gameEnter)
 				{
 			        gameInput = readInput("Do you want to continue playing?",'y','/','n');
@@ -511,15 +459,16 @@ public class SlotMachines
 			        {
 			        	gameInput = readInput("Do you want to bet more money?",'y','/','n');
 			            if (gameInput=='y'||gameInput=='Y')
-			            	{P.betIncrease(readInput("Enter the increase",BETMIN,'-',BETMAX));}
+			            	{betIncrease(readInput("Enter the increase",BETMIN,'-',BETMAX));}
 			        }
 			        else {gameEnter = false;}
 			    }
 				
-			} while ((gameEnter) && (P.getBet()<WINLIMIT) && (P.getGames()<GAMELIMIT));
+			} while ((gameEnter) && (bet<WINLIMIT) && (numGames<GAMELIMIT));
 			
-			P.endMessage();
+			endMessage();
 		}
+		
 	}
 	
 	
@@ -541,6 +490,7 @@ public class SlotMachines
 		
 		public void showRules()		//Rules and outcomes in playing a single row slot machine
 		{
+			super.showRules();
 			SlowPrintln("\n  Prizes available:");
 			SlowPrintln("  - All reels match : jackpot.");
 			SlowPrintln("  - Almost all reels match : chance at all or nothing.");
@@ -551,7 +501,7 @@ public class SlotMachines
 		}
 		public void showProb()		//Probability of each outcome in a single row slot machine
 		{
-			DecimalFormat formatter = new DecimalFormat("#0.0000");
+			super.showProb();
 			double probAll;		//All of the reels match.
 			double probAlmost;	//All of the reels except one match.
 			double probMH=0; 	//More than half the reels match.
@@ -559,15 +509,15 @@ public class SlotMachines
 			double probLH=0;	//Less than half the reels match.
 			double probNone=1;	//Not a single match.
 			int half = (int)Math.ceil((double)reels/2);
+			DecimalFormat formatter = new DecimalFormat("#0.0000");
 			
-			probAll		= Math.pow( ((double)1/symMax), reels );
-			probAlmost	= Math.pow( ((double)1/symMax), reels-1 );
-			probHalf	= Math.pow( ((double)1/symMax), half );
-			for (int i=half+1; i<=reels; i++)	{probMH += Math.pow( ((double)1/symMax), i );}
-			for (int i=2; i<half; i++)			{probLH += Math.pow( ((double)1/symMax), i );}
-			for (int i=0; i<reels; i++)			{probNone *= ((double)(reels-i)/symMax);}
+			probAll		= Math.pow( ((double)1/machSyms.length), reels );
+			probAlmost	= Math.pow( ((double)1/machSyms.length), reels-1 );
+			probHalf	= Math.pow( ((double)1/machSyms.length), half );
+			for (int i=half+1; i<=reels; i++)	{probMH += Math.pow( ((double)1/machSyms.length), i );}
+			for (int i=2; i<half; i++)			{probLH += Math.pow( ((double)1/machSyms.length), i );}
+			for (int i=0; i<reels; i++)			{probNone *= ((double)(reels-i)/machSyms.length);}
 			
-			SlowPrintln("\n  Probability:");
 			SlowPrintln("  - All reels \t"+formatter.format(probAll*100)+" %");
 			SlowPrintln("  - Almost all \t"+formatter.format(probAlmost*100)+" %");
 			SlowPrintln("  - > Half \t"+formatter.format(probMH*100)+" %");
@@ -578,11 +528,13 @@ public class SlotMachines
 		
 		public void spinReels()		//Generates a value for the results
 		{
+			super.spinReels();
 			for (int i=0; i<reels; i++)
-				{results[0][i] = machSyms[(int)(Math.random()*symMax)];}
+				{results[0][i] = machSyms[(int)(Math.random()*machSyms.length)];}
 		}
-		public void countMatches()	//For every row and check for matching symbols
+		public void checkResults()	//For every row and check for matching symbols
 		{
+			super.checkResults();
 			boolean exists;
 			MRS = new symFound(' ',0,-1);
 			LRS = new symFound(' ',reels,-1);
@@ -617,19 +569,20 @@ public class SlotMachines
 	            }
 			}
 		}	
-		public void calculatePrize(Player P)
+		public void calculatePrize()//Calculates the prize based on the matching symbols
 		{
+			super.calculatePrize();
 			if (MRS.count==reels-1) {reroll();}
 			
 			if (MRS.count==1)
 		    {
-		    	P.bet = 0;
+		    	bet = 0;
 		    	gameEnter = false;
 		    	SlowPrintln("You got no matches.");
 		    }
 		    else if (MRS.count==reels)
 			{
-		    	P.bet *= 100;
+		    	bet *= 100;
 				gameEnter = false;
 				SlowPrintln("You won the jackpot!!!");
 			}
@@ -638,26 +591,26 @@ public class SlotMachines
 				SlowPrintln("You got the "+MRS.sym+" symbol "+MRS.count+" times.");
 				if (MRS.count>reels/2)
 		        {
-					P.bet *= 10;
-					SlowPrintln("You have gained money and now have "+P.bet+" €.");
+					bet *= 10;
+					SlowPrintln("You have gained money and now have "+bet+" €.");
 				}
 				else if (MRS.count<reels/2)
 		        {
-					P.bet *= 0.5;
-					SlowPrintln("You have lost money and now have "+P.bet+" €.");
+					bet *= 0.5;
+					SlowPrintln("You have lost money and now have "+bet+" €.");
 				}
 				else
-					{SlowPrintln("You still have "+P.bet+" €.");}
+					{SlowPrintln("You still have "+bet+" €.");}
 			}
 			
-			if (P.numGames==GAMELIMIT) 
+			if (numGames==GAMELIMIT) 
 			{
 				gameEnter = false;
 				SlowPrintln("\n  You have reached the maximum amount of numGames.");
 			}
-			if (P.bet>WINLIMIT)
+			if (bet>WINLIMIT)
 			{
-				P.bet = WINLIMIT;
+				bet = WINLIMIT;
 				gameEnter = false;
 				SlowPrintln("\n\t You have reached the maximum amount");
 				SlowPrintln("\t of money that can be awarded.");
@@ -715,6 +668,7 @@ public class SlotMachines
 		
 		public void showRules()		//Rules and outcomes in playing a multi-way slot machine
 		{
+			super.showRules();
 			SlowPrintln("\n  Prizes available:");
 			SlowPrintln("  - All lines match: jackpot");
 			SlowPrintln("  - Both diagonals match: win a lot of money.");
@@ -724,22 +678,20 @@ public class SlotMachines
 		}
 		public void showProb()		//Probability of each outcome in a multi-way slot machine
 		{
-			DecimalFormat formatter = new DecimalFormat("#0.0000");
+			super.showProb();
 			double probAll=0;	//All lines match.
 			double probDiags=0;	//Both diagonals match.
 			double probDiag=0;	//One of the diagonals match.
 			double probHori=0;	//Any horizontal match.
 			double probNone=1;	//No lines match.
+			DecimalFormat formatter = new DecimalFormat("#0.0000");
 			
-			probDiag 	= Math.pow( ((double)1/symMax), limit );
+			probDiag 	= Math.pow( ((double)1/machSyms.length), limit );
 			probDiags	= probDiag*probDiag;
-			
-			probHori	= Math.pow( ((double)1/symMax), reels );
+			probHori	= Math.pow( ((double)1/machSyms.length), reels );
 			probAll		= probHori*rows;
-			
 			probNone	= (1-probDiag)*(1-probHori);
 			
-			SlowPrintln("\n  Probability:");
 			SlowPrintln("  - All lines    \t"+formatter.format(probAll*100)+" %");
 			SlowPrintln("  - Both diagonals \t"+formatter.format(probDiags*100)+" %");
 			SlowPrintln("  - One diagonal \t"+formatter.format(probDiag*100)+" %");
@@ -749,9 +701,10 @@ public class SlotMachines
 		
 		public void	spinReels()		//Generates symbols in the reels in the intended order
 		{
+			super.spinReels();
 			for (int i=0; i<reels; i++)
 			{
-				int next, pos = (int)Math.random()*symMax;
+				int next, pos = (int)Math.random()*machSyms.length;
 				results[0][i] = all[pos];
 				for (int j=0; j<rows; j++)
 				{
@@ -762,8 +715,9 @@ public class SlotMachines
 				}
 			}
 		}
-		public void checkWinLines()	//Checks all the winning lines
+		public void checkResults()	//Checks all the winning lines
 		{
+			super.checkResults();
 			diagonal1 = 0;
 			diagonal2 = 0;
 			horizontal = new int[rows];
@@ -793,8 +747,10 @@ public class SlotMachines
 				}
 			}
 		}
-		public void calculatePrize(Player P)	//..,Calculates the prize based on the winning lines
+		public void calculatePrize()//..,Calculates the prize based on the winning lines
 		{
+			super.calculatePrize();
+			
 			boolean fullHorizontal = true;
 			for (int i=0; i<horizontal.length; i++)
 			{
@@ -802,23 +758,23 @@ public class SlotMachines
 			}
 			if (fullHorizontal)
 			{
-				P.bet *= 100;
+				bet *= 100;
 				gameEnter = false;
 				SlowPrintln("You won the jackpot!!!");
 			}
 			else if (diagonal1==reels && diagonal2==reels)
 			{
-				P.bet *= 10;
+				bet *= 10;
 				SlowPrintln("You got winning lines on both diagonals!");
 			}
 			else if (diagonal1==reels)
 			{
-				P.bet *= 2;
+				bet *= 2;
 				SlowPrintln("You got a winning line on the first diagonal");
 			}
 			else if (diagonal2==reels)
 			{
-				P.bet *= 2;
+				bet *= 2;
 				SlowPrintln("You got a winning line on the second diagonal");
 			}
 			else
