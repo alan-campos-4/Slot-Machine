@@ -1,0 +1,123 @@
+H 7 7 7 H A K K T K * A H H H H H 
+K K K K K 
+A A A A A 
+7 7 7 7 7 
+T T T T T 
+21-02-2024 19:17:37* T K H 
+
+21/02/2024 - 19:23:37
+ A K T K
+
+21/02/2024 - 19:23:57
+ * * A 7
+
+21/02/2024 - 19:24:07
+ K T 7 A
+
+22/02/2024 - 20:09:13
+ * * K H
+ - Prize: 72.0
+ - Spent: 80.0
+ T * * A
+ - Prize: 64.0
+ - Spent: 80.0
+ T H K 7
+ - Prize: 0.0
+ - Spent: 80.0
+ - Prize: 0.0
+ - Spent: 70.0
+ - Prize: 480.0
+ - Spent: 80.0
+
+23/35/2024 - 08:35:07
+1: 	 [K] [*] [K] [A]
+2: 	 [T] [*] [H] [7]
+Prize: 0.0
+Spent: 90.0
+
+
+23/38/2024 - 08:38:05
+1: 	 [*] [*] [H] [K]
+2: 	 [7] [A] [*] [H]
+Prize: 0.0
+Spent: 80.0
+
+
+23/02/2024 - 09:17:48
+  Bet: 52.0
+  Game 1:	 [7] [*] [H] [*]
+  Bet: 440.0
+  Game 2:	 [T] [T] [A] [T]
+Bet increased to470.0
+  Bet: 462.0
+  Game 3:	 [A] [K] [H] [A]
+ Prize: 462.0
+ Spent: 90.0
+
+23/02/2024 - 09:23:13
+  Bet: 80.0
+  Game 1:	 [*] [A] [H] [H]
+Bet increased to92.0
+  Bet: 92.0
+  Game 2:	 [T] [H] [*] [*]
+  Bet: 84.0
+  Game 3:	 [K] [K] [*] [A]
+  Bet: 76.0
+  Game 4:	 [H] [H] [7] [T]
+ Prize: 68.0
+ Spent: 100.0
+
+23/02/2024 - 09:30:19
+  Bet: 60.0
+  Game 1:	 [*] [T] [T] [*]
+Bet increased by 30.0
+  Bet: 82.0
+  Game 2:	 [K] [A] [H] [K]
+  Bet: 74.0
+  Game 3:	 [K] [T] [H] [*]
+ Prize: 0.0
+ Spent: 90.0
+
+23/02/2024 - 09:30:57
+  Bet: 50.0
+  Game 1:	 [T] [T] [T] [T] [T]
+	 [K] [K] [K] [K] [K]
+	 [7] [7] [7] [7] [7]
+	 [H] [H] [H] [H] [H]
+	 [A] [A] [A] [A] [A]
+ Prize: 37.0
+ Spent: 50.0
+
+23/02/2024 - 09:37:57
+   Bet: 80.0
+   Game 1: 	 [H] [*] [*] [A]
+   Bet: 72.0
+   Game 2: 	 [A] [H] [7] [H]
+    Bet increased by 20.0
+   Bet: 84.0
+   Game 3: 	 [7] [T] [A] [7]
+   Bet: 76.0
+   Game 4: 	 [A] [*] [T] [7]
+ Prize: 0.0
+ Spent: 100.0
+
+23/02/2024 - 09:47:34
+ Reels=4 Symbols=6
+ Cost=8.0
+   Bet: 90.0
+   Game 1: 	 [7] [H] [T] [K]
+ Prize: 0.0
+ Spent: 90.0
+
+23/02/2024 - 09:47:55
+ Rows=5 Reels=5
+ Symbols=5
+ Cost=13.0
+   Bet: 40.0
+   Game 1: 	 [7] [7] [7] [7] [7]
+		 [T] [T] [T] [T] [T]
+		 [K] [K] [K] [K] [K]
+		 [A] [A] [A] [A] [A]
+		 [H] [H] [H] [H] [H]
+ Prize: 27.0
+ Spent: 40.0

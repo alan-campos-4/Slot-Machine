@@ -6,24 +6,12 @@ import org.junit.jupiter.api.Test;
 
 class SlotMachine_Test 
 {
-
-/*
-	@Test
-	void readInput_Test()
-	{
-		int num = SlotMachine.readInput("Choose an option",1,'-',5);
-		System.out.println("  num = "+num);
-		double dob = SlotMachine.readInput("Choose an option",1.5,'-',15.8);
-		System.out.println("  num = "+dob);
-		char opc = SlotMachine.readInput("Choose an option",'y','/','n');
-		System.out.println("  opc = "+opc);
-	}
-//*/
-
+	
+	
 	@Test
 	void isFound_Test()
 	{
-		int[] arrr = {1,2,3,5,8,9,6,4};
+		//int[] arrr = {1,2,3,5,8,9,6,4};
 		char[] all = {'7','A','H','K','T','*','@','^','|','%','&','\\'};
 		
 		assertTrue(SlotMachines.exists(all,'K'));
@@ -36,22 +24,8 @@ class SlotMachine_Test
 	}
 	
 	
-	@Test
-	void mainMenu_Test()
-	{
-		//SlotMachines.main();
-	}
 	
-	@Test
-	void machineMenu_Test()
-	{
-		SlotMachines.SingleRow M1 = new SlotMachines.SingleRow();
-		M1.menuSelect();
-	}
-
-
-
-
+	
 /*
 	@Test
 	void countSymbolsFound_Test()
@@ -74,9 +48,10 @@ class SlotMachine_Test
 		//assertFalse(SlotMachine.LRS.getPos()==4);
 	}
 //*/
-
-
-
+	
+	
+	
+	
 /*
 	@Test
 	void reroll_Test()

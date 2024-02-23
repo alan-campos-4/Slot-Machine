@@ -1,18 +1,20 @@
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.text.DecimalFormat;
-//import java.io.File;
+import java.io.IOException;
+import java.io.File;
+import java.io.FileWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 
 
 
 /* TODO:
- * Multi-way re-roll functionality
- * !! symMax cannot be smaller than rows !!
+ ** Multi-way re-roll functionality
  * symbol for jack-pot
  * Pay table
  * Cost of spinning and free spins
- * FileWriter class -> record results || instances of 7
  */
 
 
@@ -22,7 +24,10 @@ public class SlotMachines
 {
 
 
-	static Scanner input = new Scanner(System.in);
+	static File filename = new File("record.txt");	//The results record
+	static FileWriter output;						//For saving the results in a record
+	
+	static Scanner input = new Scanner(System.in);	//For reading player inputs
 	static boolean gameEnter;	//Player input for stopping or continuing the game.
 	static char gameInput;		//Player input for reading a character within the game.
 	
@@ -30,12 +35,11 @@ public class SlotMachines
 	static final double BETMAX = 100;	//Maximum amount of money the player can bet at a time.
 	static final int WINLIMIT = 10000;	//Maximum amount of money the player can win.
 	static final int GAMELIMIT = 10;	//Maximum amount of times the player can spin the reels.
-	static final int TIMEWAIT = 500;	//Standard time to wait.
-	static final int TIMESTOP = 400;	//Time delayed after printing a line with StopPrint.
-	static final int TIMESLOW = 15;		//Time delayed between characters during SlowPrint.
-	
+	static final int TIMEWAIT = 400;	//Standard time to wait.
+	static final int TIMESTOP = 250;	//Time delayed after printing a line with StopPrint.
+	static final int TIMESLOW = 12;		//Time delayed between characters during SlowPrint.
 	//All symbols that can appear on a machine
-	static char[] all = {'7','A','H','K','T','*','@','^','|','%','&','\\'};
+	static final char[] all = {'7','A','H','K','T','*','@','^','|','%','&','\\'};
 	
 	
 	
@@ -243,7 +247,7 @@ public class SlotMachines
 		protected int rows;			//Rows of the machine
 		protected int reels;		//Columns of the machine, the spinning reels
 		protected char[][] results;	//The results of spinning. Rows first, columns second
-		protected char[] machSyms;	//Symbols available in the machine
+		protected char[] machSyms;	//"machine Symbols" Symbols available to this machine 
 		
 		protected int minSize;		//Minimum amount of rows and reels allowed
 		protected int maxSize;		//Maximum amount of rows and reels allowed
@@ -275,12 +279,48 @@ public class SlotMachines
 			{
 				do {newsym = all[(int)(Math.random()*machSyms.length)];}
 				while (exists(machSyms, newsym));
-				machSyms[i] = newsym;
+				this.machSyms[i] = newsym;
 			}
 			
 		}
 		
-		public void changeParameters()				//Change the rows, reels, and symbols of the machine
+		public void displayMachine(int nShown)	//Shows the reels of the machine
+		{
+			System.out.print("  ");
+			for (int re=0; re<reels; re++) 
+				{System.out.print(" _____");}
+			
+			for (int row=0; row<rows; row++)
+			{
+				System.out.print("\n  |");
+				for (int reel=0; reel<reels; reel++)
+					{System.out.print("     |");}
+				
+				System.out.print("\n  |");
+				for (int reel=0; reel<reels; reel++)
+					{System.out.printf("  %c  |", (nShown>reel) ? results[row][reel]:' ');}
+		        
+				System.out.print("\n  |");
+		        for (int reel=0; reel<reels; reel++)
+		        	{System.out.print("_____|");}
+			}
+			System.out.println("\n");
+		}
+		public void displayAndSpin(int game)	//Shows the reels as they are spinning
+		{
+			for (int reelsShown=0; reelsShown<=reels; reelsShown++)
+		    {
+				System.out.println("\t-- "+(game)+"º Game --");
+				displayMachine(reelsShown);
+				if(reelsShown<reels)
+				{
+					pressAnyKeyTo("spin");
+					clear();
+				}
+				else {waitM(TIMEWAIT);}
+		    }
+		}	
+		public void changeParameters()	//Changes the rows, reels, and symbols of the machine
 		{
 			int nRows, nReels, nSyms;
 			
@@ -288,6 +328,7 @@ public class SlotMachines
 					+ ( (this instanceof Multiway) ? (" Rows="+rows+" "):(" ") )
 					+ "Symbols="+machSyms.length);
 			SlowPrintln("Input new values for these parameters.");
+			
 			if (this instanceof Multiway)
 				{nRows = readInput(" Number of rows",minSize,'-',maxSize);}
 			else
@@ -313,49 +354,13 @@ public class SlotMachines
 				{machSyms[i] = all[i];}
 			
 		}
-		public void displayMachine(int nShown)		//Display the reels of the machine
-		{
-			System.out.print("  ");
-			for (int re=0; re<reels; re++) 
-				{System.out.print(" _____");}
-			
-			for (int row=0; row<rows; row++)
-			{
-				System.out.print("\n  |");
-				for (int reel=0; reel<reels; reel++)
-					{System.out.print("     |");}
-				
-				System.out.print("\n  |");
-				for (int reel=0; reel<reels; reel++)
-					{System.out.printf("  %c  |", (nShown>reel) ? results[row][reel]:' ');}
-		        
-				System.out.print("\n  |");
-		        for (int reel=0; reel<reels; reel++)
-		        	{System.out.print("_____|");}
-			}
-			System.out.println("\n");
-		}
-		public void displayProgressively(int game)	//Show the reels as they are spinning
-		{
-			for (int reelsShown=0; reelsShown<=reels; reelsShown++)
-		    {
-				System.out.println("\t-- "+(game)+"º Game --");
-				displayMachine(reelsShown);
-				if(reelsShown<reels)
-				{
-					pressAnyKeyTo("spin");
-					clear();
-				}
-				else {waitM(TIMEWAIT);}
-		    }
-		}
 		
 		public void showRules()
 		{
 			SlowPrintln("\n  Game Rules:");
-			SlowPrintln("  - Every bet has to be between "+BETMIN+" and "+BETMAX+" €.");
-			SlowPrintln("  - You can't play more than "+GAMELIMIT+" games.");
-			SlowPrintln("  - There is a limit to how much you can win.");
+			StopPrintln("  - Every bet has to be between "+BETMIN+" and "+BETMAX+" €.");
+			StopPrintln("  - You can't play more than "+GAMELIMIT+" games.");
+			StopPrintln("  - There is a limit to how much you can win.");
 		}
 		public void showProb()
 		{
@@ -363,7 +368,7 @@ public class SlotMachines
 		}
 		public void spinReels()			{numGames++;}
 		public void calculatePrize()	{bet -= cost;}
-		public void checkResults()		{StopPrintln("\t-------------\n");}
+		public void checkResults()		{StopPrintln("");}
 		
 		public void betInit(double read)	//Initializes the player's bet
 			{bet=read; spent=read; numGames=0;}
@@ -379,6 +384,14 @@ public class SlotMachines
 			bet += inc;
 			spent += inc;
 			SlowPrintln("\nYour bet is now "+bet+" €.");
+			try {
+				output = new FileWriter(filename,true);
+				output.write("    Bet increased by "+inc+"\n");
+			    output.flush();
+		    } catch (IOException e) {
+				System.out.println("An error occurred.");
+				e.printStackTrace();
+		    }
 			pressAnyKeyTo("continue the game");
 		}	
 		public void endMessage()			//Displays the money won or lost at the end of a game
@@ -400,6 +413,58 @@ public class SlotMachines
 				else			{SlowPrintln("    And have won "+bet+" €.");}
 			}
 			StopPrintln("\n- - - - - - - - - - - - - - -");
+		}
+		
+		public void saveStart()		//Saves the date, time and bet in the record file
+		{
+			try {
+				output = new FileWriter(filename,true);
+				DateTimeFormatter format = DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm:ss");
+			    output.write("\n"+LocalDateTime.now().format(format)+"\n");
+			    output.flush();
+		    } catch (IOException e) {
+				System.out.println("An error occurred.");
+				e.printStackTrace();
+		    }
+		}
+		public void saveResults()	//Saves the results of spinning in the record file
+		{
+			try {
+				output = new FileWriter(filename,true);
+				output.write("   Bet: "+bet+"\n");
+				for (int i=0; i<rows; i++)
+				{
+					if (i==0)	{output.write("   Game "+numGames+": \t");}
+					else		{output.write("\t\t");}
+					for (int j=0; j<reels; j++)	{output.write(" ["+results[i][j]+"]");}	
+					output.write("\n");
+				}
+				output.flush();
+		    } catch (IOException e) {
+				System.out.println("An error occurred.");
+				e.printStackTrace();
+		    }
+		}
+		public void saveEnd()		//Saves the money involved in the record file
+		{
+			try {
+				output = new FileWriter(filename,true);
+				output.write(" Prize: "+bet+"\n");
+				output.write(" Spent: "+spent+"\n");
+				output.flush();
+			} catch (IOException e) {
+				System.out.println("An error occurred.");
+				e.printStackTrace();
+		    }
+		}
+		public void saveClose()		//Closes the FileWriter class
+		{
+			try {
+				output.close();
+			} catch (IOException e) {
+				System.out.println("An error occurred.");
+				e.printStackTrace();
+		    }
 		}
 		
 		public void menuSelect()
@@ -426,48 +491,51 @@ public class SlotMachines
 				
 				switch(opc2)
 				{
-					case 1: {startGame();} break;
 					case 3: {changeParameters();} break;
 					case 2: {showRules();} break;
 					case 4: {showProb();} break;
 					case 0: {waitM(TIMEWAIT, "Returning to the previous menu");} break;
+					case 1: 
+					{	
+						betInit(readInput("Enter your bet",BETMIN,'-',BETMAX));
+						saveStart();
+						gameEnter = true;
+						
+						do {
+							clear();
+							spinReels();
+							displayAndSpin(numGames);
+							
+							saveResults();
+							checkResults();
+							calculatePrize();
+							
+							if (gameEnter)
+							{
+						        gameInput = readInput("Do you want to continue playing?",'y','/','n');
+						        if (gameInput=='y'||gameInput=='Y')
+						        {
+						        	gameInput = readInput("Do you want to bet more money?",'y','/','n');
+						            if (gameInput=='y'||gameInput=='Y')
+						            	{betIncrease(readInput("Enter the increase",BETMIN,'-',BETMAX));}
+						        }
+						        else {gameEnter = false;}
+						    }
+							
+						} while ((gameEnter) && (bet<WINLIMIT) && (numGames<GAMELIMIT));
+						
+						saveEnd();
+						endMessage();	
+					}
+					break;
 				}
-				if (opc2!=0)
-				{
-					pressAnyKeyTo("continue");
-					waitM(TIMEWAIT,"Returning to the slot menu");
-				}
+				if (opc2!=0) {pressAnyKeyTo("return to the slot menu");}
 				
 			} while (opc2!=0);
+			
+			saveClose();
 		}
 		
-		public void startGame()
-		{
-			betInit(readInput("Enter your bet",BETMIN,'-',BETMAX));
-			gameEnter = true;
-			
-			do {
-				clear();
-				spinReels();
-				displayProgressively(numGames);
-				checkResults();
-				calculatePrize();
-				if (gameEnter)
-				{
-			        gameInput = readInput("Do you want to continue playing?",'y','/','n');
-			        if (gameInput=='y'||gameInput=='Y')
-			        {
-			        	gameInput = readInput("Do you want to bet more money?",'y','/','n');
-			            if (gameInput=='y'||gameInput=='Y')
-			            	{betIncrease(readInput("Enter the increase",BETMIN,'-',BETMAX));}
-			        }
-			        else {gameEnter = false;}
-			    }
-				
-			} while ((gameEnter) && (bet<WINLIMIT) && (numGames<GAMELIMIT));
-			
-			endMessage();
-		}
 		
 	}
 	
@@ -492,12 +560,12 @@ public class SlotMachines
 		{
 			super.showRules();
 			SlowPrintln("\n  Prizes available:");
-			SlowPrintln("  - All reels match : jackpot.");
-			SlowPrintln("  - Almost all reels match : chance at all or nothing.");
-			SlowPrintln("  - More than half the reels match : win some money.");
-			SlowPrintln("  - Less than half the reels match : lose some money.");
-			SlowPrintln("  - Half of the reels match : keep your bet.");
-			SlowPrintln("  - No matches : you lose.");
+			StopPrintln("  - All reels match : jackpot.");
+			StopPrintln("  - Almost all reels match : chance at all or nothing.");
+			StopPrintln("  - More than half the reels match : win some money.");
+			StopPrintln("  - Less than half the reels match : lose some money.");
+			StopPrintln("  - Half of the reels match : keep your bet.");
+			StopPrintln("  - No matches : you lose.");
 		}
 		public void showProb()		//Probability of each outcome in a single row slot machine
 		{
@@ -518,12 +586,12 @@ public class SlotMachines
 			for (int i=2; i<half; i++)			{probLH += Math.pow( ((double)1/machSyms.length), i );}
 			for (int i=0; i<reels; i++)			{probNone *= ((double)(reels-i)/machSyms.length);}
 			
-			SlowPrintln("  - All reels \t"+formatter.format(probAll*100)+" %");
-			SlowPrintln("  - Almost all \t"+formatter.format(probAlmost*100)+" %");
-			SlowPrintln("  - > Half \t"+formatter.format(probMH*100)+" %");
-			SlowPrintln("  - = Half \t"+formatter.format(probHalf*100)+" %");
-			SlowPrintln("  - < Half \t"+formatter.format(probLH*100)+" %");
-			SlowPrintln("  - No match \t"+formatter.format(probNone*100)+" %");
+			StopPrintln("  - All reels \t"+formatter.format(probAll*100)+" %");
+			StopPrintln("  - Almost all \t"+formatter.format(probAlmost*100)+" %");
+			StopPrintln("  - > Half \t"+formatter.format(probMH*100)+" %");
+			StopPrintln("  - = Half \t"+formatter.format(probHalf*100)+" %");
+			StopPrintln("  - < Half \t"+formatter.format(probLH*100)+" %");
+			StopPrintln("  - No match \t"+formatter.format(probNone*100)+" %");
 		}
 		
 		public void spinReels()		//Generates a value for the results
@@ -643,6 +711,19 @@ public class SlotMachines
 			System.out.println();
 		}
 		
+		public void saveStart()
+		{
+			super.saveStart();
+			try {
+				output.write(" Reels = "+reels+"\tSymbols = "+machSyms.length+"\n");
+				output.write(" Cost = "+cost+"\n");
+			    output.flush();
+		    } catch (IOException e) {
+				System.out.println("An error occurred.");
+				e.printStackTrace();
+		    }
+		}
+		
 	}
 	
 	
@@ -759,7 +840,6 @@ public class SlotMachines
 			if (fullHorizontal)
 			{
 				bet *= 100;
-				gameEnter = false;
 				SlowPrintln("You won the jackpot!!!");
 			}
 			else if (diagonal1==reels && diagonal2==reels)
@@ -779,12 +859,27 @@ public class SlotMachines
 			}
 			else
 			{
+				gameEnter = false;
 				SlowPrintln("You got no winning lines.");
 			}
 		}
 		public void reroll()		//...Re-roll when one reel is left for the jackpot
 		{
 			//
+		}
+		
+		public void saveStart()
+		{
+			super.saveStart();
+			try {
+				output.write(" Rows = "+rows+"\tReels = "+reels+"\n");
+				output.write(" Symbols = "+machSyms.length+"\n");
+				output.write(" Cost = "+cost+"\n");
+			    output.flush();
+		    } catch (IOException e) {
+				System.out.println("An error occurred.");
+				e.printStackTrace();
+		    }
 		}
 		
 	}
@@ -839,9 +934,11 @@ public class SlotMachines
 			
 		} while (opc1!=0);
 		
-		System.out.println("\n\n\t\t ***** Game Over ***** ");
 		input.close();
+		System.out.println("\n\n\t\t ***** Game Over ***** ");
 	}
+
+
 
 
 
