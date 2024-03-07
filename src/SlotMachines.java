@@ -1,5 +1,6 @@
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.Random;
 import java.text.DecimalFormat;
 import java.io.IOException;
 import java.io.File;
@@ -11,7 +12,8 @@ import java.time.format.DateTimeFormatter;
 
 
 /* TODO:
- ** Multi-way re-roll functionality
+ * Multi-way re-roll functionality
+ * Interface
  * symbol for jack-pot
  * Pay table
  * Cost of spinning and free spins
@@ -24,10 +26,11 @@ public class SlotMachines
 {
 
 
-	static File filename = new File("record.txt");	//The results record
-	static FileWriter output;						//For saving the results in a record
-	
+	static FileWriter output;						//For saving the arrResults in a record
+	static File filename = new File("record.txt");	//The arrResults record
+	static Random rand = new Random();				//For generating random numbers
 	static Scanner input = new Scanner(System.in);	//For reading player inputs
+	
 	static boolean gameEnter;	//Player input for stopping or continuing the game.
 	static char gameInput;		//Player input for reading a character within the game.
 	
@@ -37,7 +40,7 @@ public class SlotMachines
 	static final int GAMELIMIT = 10;	//Maximum amount of times the player can spin the reels.
 	static final int TIMEWAIT = 400;	//Standard time to wait.
 	static final int TIMESTOP = 250;	//Time delayed after printing a line with StopPrint.
-	static final int TIMESLOW = 12;		//Time delayed between characters during SlowPrint.
+	static final int TIMESLOW = 10;		//Time delayed between characters during SlowPrint.
 	//All symbols that can appear on a machine
 	static final char[] all = {'7','A','H','K','T','*','@','^','|','%','&','\\'};
 	
@@ -220,23 +223,6 @@ public class SlotMachines
 	
 	
 	
-	//The symbols found in the result of spinning the reels
-	public static class symFound 
-	{
-		private char sym;	//Character value
-		private int count;	//Times the symbol appears in the Results
-		private int pos;	//Position the symbol is first found in the Results
-		
-		public symFound()						{sym=' '; count=0; pos=-1;}
-		public symFound(char s, int c, int p)	{sym = s; count=c; pos=p;}
-		
-		public char getSym()	{return sym;}
-		public int getCount()	{return count;}
-		public int getPos()		{return pos;}
-		
-	}
-	
-	
 	
 	
 	
@@ -244,14 +230,13 @@ public class SlotMachines
 	//The slot machines and its types
 	abstract static class Machine
 	{
-		protected int rows;			//Rows of the machine
+		protected int rows;			//Rows of the machine.
 		protected int reels;		//Columns of the machine, the spinning reels
-		protected char[][] results;	//The results of spinning. Rows first, columns second
-		protected char[] machSyms;	//"machine Symbols" Symbols available to this machine 
+		protected char[][] arrResults;	//Array of the results of spinning. [Rows][Columns]
+		protected char[] arrSyms;		//Array of the symbols available to this machine.
 		
-		protected int minSize;		//Minimum amount of rows and reels allowed
-		protected int maxSize;		//Maximum amount of rows and reels allowed
-		protected int minSyms;		//Minimum number of symbols available allowed
+		protected int minSize, maxSize;	//Minimum and maximum amount of rows and reels allowed
+		protected int minSyms, maxSyms;	//Minimum and maximum number of symbols available allowed
 		
 		protected double cost;		//Cost of spinning the reels per game
 		protected double bet;		//Money currently as a bet
@@ -262,24 +247,24 @@ public class SlotMachines
 		{
 			this.rows = ro;
 			this.reels = re;
-			this.results = new char[rows][reels];
-			this.machSyms = new char[syms];
+			this.arrResults = new char[rows][reels];
+			this.arrSyms = new char[syms];
 			
 			if (this instanceof SingleRow)
 			{
-				this.cost = Math.ceil( ((double)reels*(double)machSyms.length)
+				this.cost = Math.ceil( ((double)reels*(double)arrSyms.length)
 							*((double)3/(double)10) );
 			} else {
-				this.cost = Math.ceil( ((double)reels*(double)rows*(double)machSyms.length)
+				this.cost = Math.ceil( ((double)reels*(double)rows*(double)arrSyms.length)
 							*((double)1/(double)10) );
 			}
 			
 			char newsym;
 			for (int i=0; i<syms; i++)
 			{
-				do {newsym = all[(int)(Math.random()*machSyms.length)];}
-				while (exists(machSyms, newsym));
-				this.machSyms[i] = newsym;
+				do {newsym = all[rand.nextInt(arrSyms.length)];}
+				while (exists(arrSyms, newsym));
+				this.arrSyms[i] = newsym;
 			}
 			
 		}
@@ -298,7 +283,7 @@ public class SlotMachines
 				
 				System.out.print("\n  |");
 				for (int reel=0; reel<reels; reel++)
-					{System.out.printf("  %c  |", (nShown>reel) ? results[row][reel]:' ');}
+					{System.out.printf("  %c  |", (nShown>reel) ? arrResults[row][reel]:' ');}
 		        
 				System.out.print("\n  |");
 		        for (int reel=0; reel<reels; reel++)
@@ -326,7 +311,7 @@ public class SlotMachines
 			
 			SlowPrintln("\n\t Reels="+reels
 					+ ( (this instanceof Multiway) ? (" Rows="+rows+" "):(" ") )
-					+ "Symbols="+machSyms.length);
+					+ "Symbols="+arrSyms.length);
 			SlowPrintln("Input new values for these parameters.");
 			
 			if (this instanceof Multiway)
@@ -347,11 +332,11 @@ public class SlotMachines
 			
 			rows = nRows;
 			reels = nReels;
-			results = new char[rows][reels];
+			arrResults = new char[rows][reels];
 			
-			machSyms = new char[nSyms];
-			for (int i=0; i<machSyms.length; i++)
-				{machSyms[i] = all[i];}
+			arrSyms = new char[nSyms];
+			for (int i=0; i<arrSyms.length; i++)
+				{arrSyms[i] = all[i];}
 			
 		}
 		
@@ -419,15 +404,23 @@ public class SlotMachines
 		{
 			try {
 				output = new FileWriter(filename,true);
-				DateTimeFormatter format = DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm:ss");
-			    output.write("\n"+LocalDateTime.now().format(format)+"\n");
+			    
+				output.write("\n"+
+				LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd - HH:mm:ss"))
+				+"\n");
+			    
+			    if (this instanceof Multiway) {output.write(" Rows = "+rows+", ");}
+			    output.write(" Reels = "+reels);
+				output.write("\tSymbols = "+arrSyms.length+"\n");
+				output.write(" Cost of spinning = "+cost+"\n");
 			    output.flush();
+			  
 		    } catch (IOException e) {
 				System.out.println("An error occurred.");
 				e.printStackTrace();
 		    }
 		}
-		public void saveResults()	//Saves the results of spinning in the record file
+		public void saveResults()	//Saves the arrResults of spinning in the record file
 		{
 			try {
 				output = new FileWriter(filename,true);
@@ -436,7 +429,7 @@ public class SlotMachines
 				{
 					if (i==0)	{output.write("   Game "+numGames+": \t");}
 					else		{output.write("\t\t");}
-					for (int j=0; j<reels; j++)	{output.write(" ["+results[i][j]+"]");}	
+					for (int j=0; j<reels; j++)	{output.write(" ["+arrResults[i][j]+"]");}	
 					output.write("\n");
 				}
 				output.flush();
@@ -476,12 +469,12 @@ public class SlotMachines
 				StopPrintln("\n\t  --- Welcome to the Slot Machine ---");
 				SlowPrintln("\nSpin the reels and try to match the symbols");
 				SlowPrintln("The bigger your bet, the bigger a prize you'll win!!");
-				
-				SlowPrintln("\nThis machine has "+reels+" reels"
-						+ ((this instanceof Multiway) ? (", "+rows+" rows \n"):(" ") )
-						+ "and "+machSyms.length+" possible symbols");
-				SlowPrintln(" and costs "+cost+"€ to spin per turn.");
 				displayMachine(0);
+				SlowPrintln("This machine has "+reels+" reels"
+						+ ((this instanceof Multiway) ? (", "+rows+" rows \n"):(" ") )
+						+ "and "+arrSyms.length+" possible symbols");
+				SlowPrintln(" and costs "+cost+"€ to spin per turn.\n");
+				
 				SlowPrintln("What do you want to do?");
 				StopPrintln(" 1. Play the game.");
 				StopPrintln(" 2. View the ruleset.");
@@ -496,7 +489,7 @@ public class SlotMachines
 					case 4: {showProb();} break;
 					case 0: {waitM(TIMEWAIT, "Returning to the previous menu");} break;
 					case 1: 
-					{	
+					{
 						betInit(readInput("Enter your bet",BETMIN,'-',BETMAX));
 						saveStart();
 						gameEnter = true;
@@ -525,7 +518,8 @@ public class SlotMachines
 						} while ((gameEnter) && (bet<WINLIMIT) && (numGames<GAMELIMIT));
 						
 						saveEnd();
-						endMessage();	
+						endMessage();
+						saveClose();
 					}
 					break;
 				}
@@ -533,9 +527,8 @@ public class SlotMachines
 				
 			} while (opc2!=0);
 			
-			saveClose();
+			
 		}
-		
 		
 	}
 	
@@ -543,16 +536,18 @@ public class SlotMachines
 	//The machine shows one symbol of the reel at a time
 	public static class SingleRow extends Machine
 	{
-		symFound MRS;	//Most Repeated Symbol in the results
-		symFound LRS;	//Least Repeated Symbol in the results
-		ArrayList<symFound> FoundArray;	//ArrayList of every different symbol found in the results
+		//ArrayList of every different symbol found in the results
+		protected ArrayList<Character> arrFound;
+		//For both the most and least repeated symbols: MRS and LRS
+		protected char MRsym, LRsym;	//Character value
+		protected int MRcount, LRcount;	//Times the symbol appears in the results
+		protected int MRpos, LRpos;		//Position the symbol is first found in the results
 		
 		public SingleRow(int nreels, int nsymbols)
 		{
 			super(1, nreels, nsymbols);
-			minSize = 4; 
-			maxSize = 8;
-			minSyms = 4;
+			minSize = 4;	maxSize = 8;
+			minSyms = 4;	maxSyms = 8;
 		}
 		public SingleRow()	{this(4, 6);}
 		
@@ -579,12 +574,12 @@ public class SlotMachines
 			int half = (int)Math.ceil((double)reels/2);
 			DecimalFormat formatter = new DecimalFormat("#0.0000");
 			
-			probAll		= Math.pow( ((double)1/machSyms.length), reels );
-			probAlmost	= Math.pow( ((double)1/machSyms.length), reels-1 );
-			probHalf	= Math.pow( ((double)1/machSyms.length), half );
-			for (int i=half+1; i<=reels; i++)	{probMH += Math.pow( ((double)1/machSyms.length), i );}
-			for (int i=2; i<half; i++)			{probLH += Math.pow( ((double)1/machSyms.length), i );}
-			for (int i=0; i<reels; i++)			{probNone *= ((double)(reels-i)/machSyms.length);}
+			probAll		= Math.pow( ((double)1/arrSyms.length), reels );
+			probAlmost	= Math.pow( ((double)1/arrSyms.length), reels-1 );
+			probHalf	= Math.pow( ((double)1/arrSyms.length), half );
+			for (int i=half+1; i<=reels; i++)	{probMH += Math.pow( ((double)1/arrSyms.length), i );}
+			for (int i=2; i<half; i++)			{probLH += Math.pow( ((double)1/arrSyms.length), i );}
+			for (int i=0; i<reels; i++)			{probNone *= ((double)(reels-i)/arrSyms.length);}
 			
 			StopPrintln("  - All reels \t"+formatter.format(probAll*100)+" %");
 			StopPrintln("  - Almost all \t"+formatter.format(probAlmost*100)+" %");
@@ -598,57 +593,59 @@ public class SlotMachines
 		{
 			super.spinReels();
 			for (int i=0; i<reels; i++)
-				{results[0][i] = machSyms[(int)(Math.random()*machSyms.length)];}
+				{arrResults[0][i] = arrSyms[rand.nextInt(arrSyms.length)];}
 		}
 		public void checkResults()	//For every row and check for matching symbols
 		{
 			super.checkResults();
-			boolean exists;
-			MRS = new symFound(' ',0,-1);
-			LRS = new symFound(' ',reels,-1);
-			FoundArray = new ArrayList<symFound>();
+			boolean found;	//If the symbol being examined has been found
+			int count, pos;	//Count and position of the symbol being examined
+			MRsym = LRsym = ' ';
+			MRpos = LRpos = -1;
+			MRcount = 0; LRcount = reels;
+			arrFound = new ArrayList<Character>();
 			
 			for (int i=0; i<reels; i++)
 			{
-				exists = false;
-				if (!FoundArray.isEmpty())
+				found = false;
+				if (!arrFound.isEmpty())
 				{
-					for (int j=0; j<FoundArray.size() && !exists; j++)
+					for (int j=0; j<arrFound.size() && !found; j++)
 					{
-						if (results[0][i]==FoundArray.get(j).getSym())
-							{exists = true;}
+						if (arrResults[0][i]==arrFound.get(j))
+							{found = true;}
 		 			}
 				}
-				if (!exists)
+				if (!found)
 				{
-					int symcount = 0, newpos = -1;
+					count = 0; 
+					pos = -1;
 					for (int j=0; j<reels; j++)
 	                {
-	                    if (results[0][i]==results[0][j])
+	                    if (arrResults[0][i]==arrResults[0][j])
 	                    {
-	                    	symcount++;
-	                    	if (newpos==-1) {newpos=j;}
+	                    	if (pos==-1) {pos=j;}
+	                    	count++;
 	                    }
 	                }
-					symFound newSym = new symFound(results[0][i], symcount, newpos);
-					FoundArray.add(newSym);
-	                if (symcount > MRS.count)	{MRS = newSym;}
-	                if (symcount < LRS.count)	{LRS = newSym;}
+	                if (count > MRcount)	{MRsym=arrResults[0][i]; MRcount=count; MRpos=pos;}
+	                if (count < LRcount)	{MRsym=arrResults[0][i]; MRcount=count; MRpos=pos;}
+	                arrFound.add(arrResults[0][i]);
 	            }
 			}
 		}	
 		public void calculatePrize()//Calculates the prize based on the matching symbols
 		{
 			super.calculatePrize();
-			if (MRS.count==reels-1) {reroll();}
+			if (MRcount==reels-1) {reroll();}
 			
-			if (MRS.count==1)
+			if (MRcount==1)
 		    {
 		    	bet = 0;
 		    	gameEnter = false;
 		    	SlowPrintln("You got no matches.");
 		    }
-		    else if (MRS.count==reels)
+		    else if (MRcount==reels)
 			{
 		    	bet *= 100;
 				gameEnter = false;
@@ -656,13 +653,13 @@ public class SlotMachines
 			}
 			else
 			{
-				SlowPrintln("You got the "+MRS.sym+" symbol "+MRS.count+" times.");
-				if (MRS.count>reels/2)
+				SlowPrintln("You got the "+MRsym+" symbol "+MRcount+" times.");
+				if (MRcount>reels/2)
 		        {
 					bet *= 10;
 					SlowPrintln("You have gained money and now have "+bet+" €.");
 				}
-				else if (MRS.count<reels/2)
+				else if (MRcount<reels/2)
 		        {
 					bet *= 0.5;
 					SlowPrintln("You have lost money and now have "+bet+" €.");
@@ -691,37 +688,24 @@ public class SlotMachines
 			SlowPrintln(" You can reroll for the chance to get all matches,");
 			SlowPrintln(" but if you fail you will loose all your money.");
 			
-			gameInput = readInput("Do you want to reroll the "+(LRS.pos+1)+"º reel?",'y','/','n');
+			gameInput = readInput("Do you want to reroll the "+(LRpos+1)+"º reel?",'y','/','n');
 			if (gameInput=='y' || gameInput=='Y')
 			{
-				//results[LRS.pos.get(0)] = spinReel();
-				displayMachine(results.length);
+				//arrResults[LRS.pos.get(0)] = spinReel();
+				displayMachine(arrResults.length);
 				
-				if (results[0][MRS.pos]==results[0][LRS.pos])
+				if (arrResults[0][MRpos]==arrResults[0][LRpos])
 				{
 					SlowPrintln("The new symbol is a match.\n");
-					MRS.count = results.length;
+					MRcount = arrResults.length;
 				}
 				else
 				{
 					SlowPrintln("The new symbol is still different.\n");
-					MRS.count = 1;
+					MRcount = 1;
 				}
 			}
 			System.out.println();
-		}
-		
-		public void saveStart()
-		{
-			super.saveStart();
-			try {
-				output.write(" Reels = "+reels+"\tSymbols = "+machSyms.length+"\n");
-				output.write(" Cost = "+cost+"\n");
-			    output.flush();
-		    } catch (IOException e) {
-				System.out.println("An error occurred.");
-				e.printStackTrace();
-		    }
 		}
 		
 	}
@@ -730,18 +714,17 @@ public class SlotMachines
 	//The machine shows several symbols of the reel
 	public static class Multiway extends Machine
 	{
-		int limit;			//Number of reels or rows, whichever one is smaller
-		char checking;		//Character used to check for the winning lines
-		int diagonal1;		//Number of symbols matching along the first diagonal line
-		int diagonal2;		//Number of symbols matching along the second diagonal line
-		int[] horizontal;	//Numbers of symbols matching along the horizontal lines
+		protected int limit;		//Number of reels or rows, whichever one is smaller
+		protected char checking;	//Character used to check for the winning lines
+		protected int diagonal1;	//Number of symbols matching along the first diagonal line
+		protected int diagonal2;	//Number of symbols matching along the second diagonal line
+		protected int[] horizontal;	//Numbers of symbols matching along the horizontal lines
 		
 		public Multiway(int nRows, int nReels, int nSymbols)
 		{
 			super(nRows, nReels, nSymbols);
-			minSize = 3;
-			maxSize = 7;
-			minSyms = 4;
+			minSize = 3;	maxSize = 7;
+			minSyms = 4;	maxSyms = 8;
 			limit = Integer.min(rows,reels);
 		}
 		public Multiway(int size, int nSymbols)	{this(size, size, nSymbols);}
@@ -767,9 +750,9 @@ public class SlotMachines
 			double probNone=1;	//No lines match.
 			DecimalFormat formatter = new DecimalFormat("#0.0000");
 			
-			probDiag 	= Math.pow( ((double)1/machSyms.length), limit );
+			probDiag 	= Math.pow( ((double)1/arrSyms.length), limit );
 			probDiags	= probDiag*probDiag;
-			probHori	= Math.pow( ((double)1/machSyms.length), reels );
+			probHori	= Math.pow( ((double)1/arrSyms.length), reels );
 			probAll		= probHori*rows;
 			probNone	= (1-probDiag)*(1-probHori);
 			
@@ -783,16 +766,16 @@ public class SlotMachines
 		public void	spinReels()		//Generates symbols in the reels in the intended order
 		{
 			super.spinReels();
+			int next=0, pos=0;
 			for (int i=0; i<reels; i++)
 			{
-				int next, pos = (int)Math.random()*machSyms.length;
-				results[0][i] = all[pos];
-				for (int j=0; j<rows; j++)
+				pos = rand.nextInt(arrSyms.length);
+				arrResults[0][i] = arrSyms[pos];
+				for (int j=1; j<rows; j++)
 				{
-					if (pos+j >= rows)	{next = pos+j-rows;}
-					else				{next = pos+j;}
+					next = pos+j-((pos+j>=reels)? reels:0 );
 					
-					results[0+j][i] = machSyms[next];
+					arrResults[j][i] = arrSyms[next];
 				}
 			}
 		}
@@ -802,29 +785,29 @@ public class SlotMachines
 			diagonal1 = 0;
 			diagonal2 = 0;
 			horizontal = new int[rows];
-			for (int i=0; i<rows; i++) {horizontal[i]=0;}
+			for (int i=0; i<horizontal.length; i++) {horizontal[i]=0;}
 			
 			//Diagonal 1: top-left --> bottom-right
-			checking = results[0][0];
+			checking = arrResults[0][0];
 			for (int i=1; i<limit; i++)
 			{
-				if (checking==results[i][i]) {diagonal1++;}
+				if (checking==arrResults[i][i]) {diagonal1++;}
 			}
 			
 			//Diagonal 2: top-right --> bottom-left
-			checking = results[0][reels-1];
+			checking = arrResults[0][reels-1];
 			for (int i=1; i<limit; i++)
 			{
-				if (checking==results[i][reels-1-i]) {diagonal2++;}
+				if (checking==arrResults[i][reels-1-i]) {diagonal2++;}
 			}
 			
 			//Horizontal lines: from top to bottom
 			for (int i=0; i<rows; i++)
 			{
-				checking = results[i][0];
+				checking = arrResults[i][0];
 				for (int j=1; j<reels; j++)
 				{
-					if (checking==results[i][j]) {horizontal[i]++;}
+					if (checking==arrResults[i][j]) {horizontal[i]++;}
 				}
 			}
 		}
@@ -866,20 +849,6 @@ public class SlotMachines
 		public void reroll()		//...Re-roll when one reel is left for the jackpot
 		{
 			//
-		}
-		
-		public void saveStart()
-		{
-			super.saveStart();
-			try {
-				output.write(" Rows = "+rows+"\tReels = "+reels+"\n");
-				output.write(" Symbols = "+machSyms.length+"\n");
-				output.write(" Cost = "+cost+"\n");
-			    output.flush();
-		    } catch (IOException e) {
-				System.out.println("An error occurred.");
-				e.printStackTrace();
-		    }
 		}
 		
 	}

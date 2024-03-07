@@ -121,3 +121,120 @@ Bet increased by 30.0
 		 [H] [H] [H] [H] [H]
  Prize: 27.0
  Spent: 40.0
+
+07/03/2024 - 08:23:59
+ Rows = 5	Reels = 5
+ Symbols = 5
+ Cost = 13.0
+   Bet: 80.0
+   Game 1: 	 [7] [7] [A] [K] [T]
+		 [7] [7] [A] [K] [T]
+		 [7] [7] [A] [K] [T]
+		 [7] [7] [A] [K] [T]
+		 [7] [7] [A] [K] [T]
+ Prize: 67.0
+ Spent: 80.0
+
+07/03/2024 - 08:25:21
+ Rows = 5	Reels = 5
+ Symbols = 5
+ Cost = 13.0
+   Bet: 80.0
+   Game 1: 	 [7] [7] [7] [7] [7]
+		 [7] [7] [7] [7] [7]
+		 [H] [H] [H] [H] [H]
+		 [K] [K] [K] [K] [K]
+		 [T] [T] [T] [T] [T]
+ Prize: 67.0
+ Spent: 80.0
+
+07/03/2024 - 08:27:45
+ Rows = 5	Reels = 5
+ Symbols = 5
+ Cost = 13.0
+   Bet: 80.0
+   Game 1: 	 [7] [7] [7] [7] [7]
+		 [H] [H] [H] [H] [H]
+		 [7] [7] [7] [7] [7]
+		 [A] [A] [A] [A] [A]
+		 [K] [K] [K] [K] [K]
+ Prize: 67.0
+ Spent: 80.0
+
+07/03/2024 - 08:34:49
+ Rows = 5	Reels = 5
+ Symbols = 5
+ Cost = 13.0
+   Bet: 80.0
+   Game 1: 	 [A] [A] [A] [A] [A]
+		 [K] [K] [K] [K] [K]
+		 [T] [T] [T] [T] [T]
+		 [7] [7] [7] [7] [7]
+		 [H] [H] [H] [H] [H]
+ Prize: 67.0
+ Spent: 80.0
+
+07/03/2024 - 08:45:50
+ Rows = 5	Reels = 5
+ Symbols = 5
+ Cost = 13.0
+   Bet: 90.0
+   Game 1: 	 [7] [7] [7] [7] [7]
+		 [K] [K] [K] [K] [K]
+		 [A] [A] [A] [A] [A]
+		 [T] [T] [T] [T] [T]
+		 [H] [H] [H] [H] [H]
+ Prize: 77.0
+ Spent: 90.0
+
+2024/03/07 - 09:01:14
+ Rows = 5,  Reels = 5	Symbols = 5
+ Cost of spinning = 13.0
+   Bet: 90.0
+   Game 1: 	 [A] [A] [A] [A] [A]
+		 [K] [K] [K] [K] [K]
+		 [T] [T] [T] [T] [T]
+		 [H] [H] [H] [H] [H]
+		 [7] [7] [7] [7] [7]
+ Prize: 77.0
+ Spent: 90.0
+
+2024/03/07 - 09:02:24
+ Rows = 5,  Reels = 5	Symbols = 5
+ Cost of spinning = 13.0
+
+2024/03/07 - 09:05:57
+ Rows = 5,  Reels = 5	Symbols = 5
+ Cost of spinning = 13.0
+
+2024/03/07 - 09:07:23
+ Rows = 5,  Reels = 5	Symbols = 5
+ Cost of spinning = 13.0
+
+2024/03/07 - 09:17:51
+ Rows = 5,  Reels = 5	Symbols = 5
+ Cost of spinning = 13.0
+
+2024/03/07 - 09:19:36
+ Rows = 5,  Reels = 5	Symbols = 5
+ Cost of spinning = 13.0
+   Bet: 50.0
+   Game 1: 	 [A] [7] [7] [7] [K]
+		 [H] [K] [K] [K] [A]
+		 [T] [A] [A] [A] [H]
+		 [7] [H] [H] [H] [T]
+		 [K] [T] [T] [T] [7]
+ Prize: 37.0
+ Spent: 50.0
+
+2024/03/07 - 09:23:51
+ Rows = 5,  Reels = 5	Symbols = 5
+ Cost of spinning = 13.0
+   Bet: 50.0
+   Game 1: 	 [H] [H] [H] [T] [T]
+		 [K] [K] [K] [7] [7]
+		 [T] [T] [T] [A] [A]
+		 [7] [7] [7] [H] [H]
+		 [A] [A] [A] [K] [K]
+ Prize: 37.0
+ Spent: 50.0
