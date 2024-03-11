@@ -8,25 +8,7 @@ class SlotMachine_Test
 {
 	
 	
-	@Test
-	void isFound_Test()
-	{
-		//int[] arrr = {1,2,3,5,8,9,6,4};
-		char[] all = {'7','A','H','K','T','*','@','^','|','%','&','\\'};
-		
-		assertTrue(SlotMachines.exists(all,'K'));
-		assertTrue(SlotMachines.exists(all,'@'));
-		assertTrue(SlotMachines.exists(all,'\\'));
-		assertTrue(SlotMachines.exists(all,'7'));
-		assertFalse(SlotMachines.exists(all,'a'));
-		//assertTrue(SlotMachines.isFound(arrr, 5));
-		
-	}
-	
-	
-	
-	
-/*
+//*
 	@Test
 	void countSymbolsFound_Test()
 	{
@@ -50,9 +32,8 @@ class SlotMachine_Test
 //*/
 	
 	
-	
-	
-/*
+		
+//*
 	@Test
 	void reroll_Test()
 	{

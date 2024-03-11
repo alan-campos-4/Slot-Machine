@@ -1,37 +1,35 @@
+
+//		----- ----- ----- -----  ----- ----- ----- -----
+//		----- ----- ----- 1º TRIMESTRE ----- ----- -----
+//		----- ----- ----- -----  ----- ----- ----- -----
+
+
 import java.util.Scanner;
 import java.util.ArrayList;
-//import java.io.File;
 import java.text.DecimalFormat;
 
 
 
-/* TODO:
- * "Payout"
- * Inheritance (extends)
- *		Multi-way machine
- * Charge for spinning and free spins
- * File class
- */
 
 
 public class SlotMachine
 {
 
-	/* Clears the terminal output. */
+	// Clears the terminal output.
 	public static void clear()
 	{
 		// "Works" in the Eclipse IDE Console 
-		//*
+		//
 		System.out.println("\n\n\n\n\n");  //5
         System.out.println("\n\n\n\n\n");  //10
         System.out.println("\n\n\n\n\n");  //15
         System.out.println("\n\n\n\n\n");  //20
         System.out.println("\n\n\n\n\n");  //25
         //System.out.flush(); 
-        //*/
+        //
         
 		// Works in Windows Powershell
-        /*
+        //
 		try {
             if (System.getProperty("os.name").contains("Windows")) 
             {
@@ -42,11 +40,11 @@ public class SlotMachine
 				startProcess.waitFor();
 			}
 		} catch (Exception E) {System.out.println(E);}  
-		//*/
+		//
 	}
 
 
-	/* Delays the program for a given amount of mili-seconds. */
+	// Delays the program for a given amount of mili-seconds.
 	public static void wait(int ms)
 	{
 		try 
@@ -56,7 +54,7 @@ public class SlotMachine
 	}
 
 
-	/* Stops the program until the player presses a key. */
+	// Stops the program until the player presses a key.
 	public static void pressAnyKeyTo(String message)
 	{
 		System.out.println("\nPress any key to "+message+".");
@@ -67,7 +65,7 @@ public class SlotMachine
 	}
 
 
-	/* Loops until the input and type returned are valid. */
+	// Loops until the input and type returned are valid.
 	@SuppressWarnings("unchecked")
 	public static <T> T readInput(String message, T par1, char dif, T par2)
 	{
@@ -166,7 +164,7 @@ public class SlotMachine
 		public int getGames()	{return numGames;}
 		
 		
-		/* Increases the bet if it stays within the limit */
+		// Increases the bet if it stays within the limit
 		public void betIncrease(double increase)
 		{
 			while (bet+increase > winLimit) 
@@ -183,7 +181,7 @@ public class SlotMachine
 		}
 		
 		
-		/* Modifies the bet based on the number of matches found */
+		// Modifies the bet based on the number of matches found
 		public void calculatePrize()
 		{
 			if (MRS.count==Results.length-1) {reroll();}
@@ -233,7 +231,7 @@ public class SlotMachine
 		}
 
 		
-		/* Displays the money won or lost at the end of a game */
+		// Displays the money won or lost at the end of a game
 		public void endMessage()
 		{
 			System.out.print("\n- - - - - - - - - - - - - - -");
@@ -265,12 +263,12 @@ public class SlotMachine
 
 
 
-	/* Returns a random character to assign to the results. */
+	// Returns a random character to assign to the results.
 	public static char spinReel()
 		{return symbols[(int)(Math.random()*nSymbs)];}
 
 
-	/* Displays the slot machine with the given number of reels visible. */
+	// Displays the slot machine with the given number of reels visible.
 	public static void displayMachine(int nShown)
 	{
 		System.out.print("  ");
@@ -293,7 +291,7 @@ public class SlotMachine
 	}
 
 
-	/* Counts the symbols in the results to find the most and least repeated. */
+	// Counts the symbols in the results to find the most and least repeated.
 	public static void countSymbolsFound()
 	{
 	    MRS = new ResSymbol(' ',0);
@@ -328,7 +326,7 @@ public class SlotMachine
 	}
 
 
-	/* Re-rolls the "missing" reel and changes the results accordingly. */
+	// Re-rolls the "missing" reel and changes the results accordingly.
 	public static void reroll()
 	{
 		System.out.println(" You are one reel away from the jackpot.");
@@ -360,7 +358,7 @@ public class SlotMachine
 
 
 
-	/* Shows the rules of the game. */
+	// Shows the rules of the game.
 	public static void showRules() 
 	{
 		System.out.println("\n  Game Rules:");
@@ -377,7 +375,7 @@ public class SlotMachine
 	}
 
 
-	/* Shows the probability of each outcome of the game. */
+	// Shows the probability of each outcome of the game.
 	public static void showProb() 
 	{
 		DecimalFormat formatter = new DecimalFormat("#0.0000");
@@ -406,7 +404,7 @@ public class SlotMachine
 	}
 
 
-	/* Starts the slot machine. */
+	// Starts the slot machine.
 	public static void game() 
 	{
 		Player P1 = new Player(readInput("Enter your bet",betmin,'-',betmax));
@@ -489,3 +487,8 @@ public class SlotMachine
     }
 
 }
+
+
+
+
+//*/
