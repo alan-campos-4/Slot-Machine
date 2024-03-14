@@ -444,3 +444,57 @@ Bet increased by 30.0
 		 [T] [T] [H]
  Prize: 37.0
  Spent: 50.0
+
+2024/03/13 - 09:51:02
+ Reels = 4	Symbols = 6
+ Cost of spinning = 10.0
+   Bet: 0.0
+   Game 1: 	 [*] [T] [K] [A]
+ Prize: 0.0
+ Spent: 80.0
+
+2024/03/13 - 09:51:20
+ Reels = 4	Symbols = 6
+ Cost of spinning = 10.0
+   Bet: 0.0
+   Game 1: 	 [K] [H] [T] [*]
+ Prize: 0.0
+ Spent: 60.0
+
+2024/03/13 - 09:51:53
+ Reels = 4	Symbols = 4
+ Cost of spinning = 7.0
+   Bet: 0.0
+   Game 1: 	 [7] [H] [H] [H]
+ Prize: 0.0
+ Spent: 50.0
+
+2024/03/13 - 09:52:43
+ Rows = 5,  Reels = 5	Symbols = 5
+ Cost of spinning = 13.0
+   Bet: 37.0
+   Game 1: 	 [A] [T] [7] [A] [K]
+		 [H] [7] [K] [H] [A]
+		 [T] [K] [A] [T] [H]
+		 [7] [A] [H] [7] [T]
+		 [K] [H] [T] [K] [7]
+ Prize: 37.0
+ Spent: 50.0
+
+2024/03/13 - 09:55:04
+ Rows = 5,  Reels = 5	Symbols = 5
+ Cost of spinning = 13.0
+   Bet: 7.0
+   Game 1: 	 [H] [7] [T] [H] [A]
+		 [T] [K] [7] [T] [H]
+		 [7] [A] [K] [7] [T]
+		 [K] [H] [A] [K] [7]
+		 [A] [T] [H] [A] [K]
+ Prize: 7.0
+ Spent: 20.0
+
+2024/03/13 - 18:55:40
+ Reels = 4	Symbols = 6
+ Cost of spinning = 10.0
+   Bet: 40.0
+   Game 1: 	 [7] [T] [A] [7]

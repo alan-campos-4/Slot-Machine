@@ -3,6 +3,8 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.text.DecimalFormat;
 import java.io.IOException;
+//import java.io.InputStreamReader;
+//import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.time.LocalDateTime;
@@ -11,6 +13,27 @@ import java.time.format.DateTimeFormatter;
 
 
 
+/*
+TODO (3rd trimester):
+ * 
+ * ----- Required for grading ----
+ * Database integration (MySQL, video)
+ * 
+ * ----- Improvements from teacher -----
+ * Show history of games
+ * Check history for different results
+ * 
+ * ----- Functionality -----
+ * **Design Multi-way re-roll**
+ * *Fix single row re-roll*
+ * *Input reading*: 
+ * 		- Single / different methods
+ * 		- Try-Catch for menu selection
+ * Player class, ask name
+ * Menu option for guaranteed re-roll
+ * Free spins
+ * 
+*/
 
 
 
@@ -34,10 +57,6 @@ public class SlotMachines
 	static final int TIMEWAIT = 400;	//Standard time to wait.
 	//All symbols that can appear on a machine
 	static final char[] all = {'7','A','H','K','T','*','@','^','|','%','&','\\'};
-	
-	
-	
-	
 	
 	
 	// Clears the terminal output.
@@ -82,11 +101,11 @@ public class SlotMachines
 	public static void outputClose()
 	{
 		try {
+			output = new FileWriter(filename,true);
+			output.flush();
 			output.close();
 		} catch (IOException e) {e.printStackTrace();}
 	}
-	
-	
 	
 	
 	// Returns true if the value given exists in the array
@@ -98,16 +117,8 @@ public class SlotMachines
 		}
 		return false;
 	}
-	// Returns true if the value given exists in the array
-	public static <T> boolean exists1(T[] arr, T value)
-	{
-		for (T element : arr)
-		{
-			if (element==value) {return true;}
-		}
-		return false;
-	}
 	// Loops until the input and type returned are valid.
+	/*
 	@SuppressWarnings("unchecked")
 	public static <T> T readInput(String message, T param1, char dif, T param2)
 	{
@@ -175,7 +186,87 @@ public class SlotMachines
 			}while(readError);
 		}catch (ClassCastException | NumberFormatException e) {e.printStackTrace();}
 		return param1;
+	}//*/
+	//*
+	public static <T> String inputPrompt(T param1, char dif, T param2)
+	{
+		if (dif=='-')		{return " ("+param1+" - "+param2+"): ";}
+		else if (dif=='/')	{return " ("+param1+"/"+param2+"): ";}
+		else				{return ": ";}
 	}
+	public static char readInput(String message, char op1, char op2)
+	{
+		message += inputPrompt(op1, '/', op2);
+		String str = "";
+		boolean read = true;
+		do {
+			try {
+				System.out.print("\n"+message);
+				str = input.nextLine();
+				if (!str.isEmpty())
+				{
+					if (str.charAt(0)==op1 || str.charAt(0)==Character.toLowerCase(op1) ||
+						str.charAt(0)==op2 || str.charAt(0)==Character.toLowerCase(op2))
+					{
+						return op1;
+					}
+					else {System.out.print("  Input not in range. Try again.");}
+				}
+				else {System.out.print("  Input not viable. Try again.");}
+			} catch (NumberFormatException e)
+				{e.printStackTrace();}
+			input.nextLine();
+		} while (read);
+		return op1;
+	}
+	public static double readInput(String message, double min, char dif, double max)
+	{
+		message += inputPrompt(min, dif, max);
+		double value = 0.0;
+		boolean read = true;
+		do {
+			try {
+				System.out.print("\n"+message);
+				value = input.nextDouble();
+				if (value==0)
+				{
+					if (value>=min && value<=max)
+						{return value;}
+					else
+						{System.out.print("  Input not in range. Try again.");}
+				}
+				else {System.out.print("  Input not viable. Try again.");}
+			} catch (NumberFormatException e)
+				{e.printStackTrace();}
+			input.nextLine();
+		} while (read);
+		return min;
+	}
+	public static int readInput(String message, int min, char dif, int max)
+	{
+		message += inputPrompt(min, dif, max);
+		int value = 0;
+		boolean read = true;
+		do {
+			try {
+				System.out.print("\n"+message);
+				value = input.nextInt();
+				if (value==0)
+				{
+					if (value>=min && value<=max)
+						{return value;}
+					else
+						{System.out.print("  Input not in range. Try again.");}
+				}
+				else {System.out.print("  Input not viable. Try again.");}
+			} catch (NumberFormatException e)
+				{e.printStackTrace();}
+			input.nextLine();
+		} while (read);
+		return min;
+	}
+	//*/
+	
 	
 	
 	
@@ -371,7 +462,7 @@ public class SlotMachines
 				e.printStackTrace();
 		    }
 		}
-		public void saveResults()			//Saves the arrResults of spinning in the record file.
+		public void saveResults()			//Saves the results of spinning in the record file.
 		{
 			try {
 				output = new FileWriter(filename,true);
@@ -403,7 +494,7 @@ public class SlotMachines
 		    }
 		}
 		
-		public void menuSelect()
+		public void menuSelect()	//Menu and options for every action of a machine
 		{
 			int opc2;
 			
@@ -442,10 +533,10 @@ public class SlotMachines
 							saveResults();
 							if (gameEnter)
 							{
-						        gameInput = readInput("Do you want to continue playing?",'y','/','n');
+						        gameInput = readInput("Do you want to continue playing?",'y','n');
 						        if (gameInput=='y'||gameInput=='Y')
 						        {
-						        	gameInput = readInput("Do you want to bet more money?",'y','/','n');
+						        	gameInput = readInput("Do you want to bet more money?",'y','n');
 						            if (gameInput=='y'||gameInput=='Y')
 						            	{betIncrease(readInput("Enter the increase",BETMIN,'-',BETMAX));}
 						        }
@@ -456,7 +547,6 @@ public class SlotMachines
 						} while ((gameEnter) && (bet<WINLIMIT) && (numGames<GAMELIMIT));
 						
 						endMessage();
-						
 					} break;
 				}
 				if (opc2!=0) {pressAnyKeyTo("return to the slot menu");}
@@ -466,7 +556,7 @@ public class SlotMachines
 			
 		}
 		
-		public void Game()
+		public void Game()			//Playing one game of the slot machine.
 		{
 			numGames++;
 			bet -= cost;
@@ -485,6 +575,7 @@ public class SlotMachines
 				((Multiway)this).calculatePrize();
 			}
 		}
+		
 	}
 	
 	
@@ -558,14 +649,6 @@ public class SlotMachines
 			System.out.println("  - No match \t"+formatter.format(probNone*100)+" %");
 		}
 		
-		public void playGame()
-		{
-			numGames++;
-			spinReels();
-			displayAndSpin();
-			checkResults();
-			calculatePrize();
-		}
 		public void spinReels()
 		{
 			for (int i=0; i<reels; i++)
@@ -663,7 +746,7 @@ public class SlotMachines
 			System.out.println(" You can reroll for the chance to get all matches,");
 			System.out.println(" but if you fail you will loose all your money.");
 			
-			gameInput = readInput("Do you want to reroll the "+(LRpos+1)+"º reel?",'y','/','n');
+			gameInput = readInput("Do you want to reroll the "+(LRpos+1)+"º reel?",'y','n');
 			if (gameInput=='y' || gameInput=='Y')
 			{
 				//arrResults[LRS.pos.get(0)] = spinReel();
@@ -689,15 +772,15 @@ public class SlotMachines
 	//Type of slot machine that shows several symbols of the reel
 	public static class Multiway extends Machine implements Actions
 	{
-		protected int limit;		//Number of reels or rows, whichever one is smaller.
 		protected char checking;	//Character used to check for the winning lines.
+		protected int limit;		//Number of reels or rows, whichever one is smaller.
 		
 		protected int diagonal1;	//Number of symbols matching along the first diagonal line.
 		protected int diagonal2;	//Number of symbols matching along the second diagonal line.
+		protected int missingPos;	//Position of the symbol left to match whole line.
 		
 		protected int[] horizontal;	//Numbers of symbols matching along the horizontal lines.
 		protected int horiMatch;	//Position of the horizontal line with matching symbols.
-		protected int missingPos;	//Position of the symbol left to match whole line.
 		
 		public Multiway(int nRows, int nReels, int nSymbols)
 		{
@@ -745,24 +828,16 @@ public class SlotMachines
 			System.out.println("  - No lines     \t"+formatter.format(probNone*100)+" %");
 		}
 		
-		public void playGame()
-		{
-			numGames++;
-			spinReels();
-			displayAndSpin();
-			checkResults();
-			calculatePrize();
-		}
 		public void	spinReels()
 		{
 			int next=0, pos=0;
 			for (int i=0; i<reels; i++)
 			{
-				pos = rand.nextInt(arrSyms.length);
-				arrResults[0][i] = arrSyms[pos];
+				pos = rand.nextInt(arrSyms.length);	//Assigns symbols to the reels vertically
+				arrResults[0][i] = arrSyms[pos];	//in the order they have in arrSymS
 				for (int j=1; j<rows; j++)
 				{
-					next = pos+j-((pos+j>=reels)? reels:0 );
+					next = pos+j-((pos+j>=reels)? reels:0);
 					
 					arrResults[j][i] = arrSyms[next];
 				}
@@ -845,7 +920,7 @@ public class SlotMachines
 				System.out.println("You got no winning lines.");
 			}
 		}
-		public void reroll()
+		public void reroll()	//... ...
 		{
 			if (diagonal1==reels-1)
 			{
@@ -902,7 +977,6 @@ public class SlotMachines
 				break;
 				case 3:
 				{
-					//Machine M3 = new Machine(5,5,5);
 					System.out.println("\n· A \"singlerow\" slot machine\n"
 									 + "  has several reels and in one row.");
 					System.out.println("· Prizes are obtained after spinning the reels\n"
@@ -929,6 +1003,8 @@ public class SlotMachines
 		outputClose();
 		System.out.println("\n\n\t\t ***** Game Over ***** ");
 	}
+
+
 
 
 
