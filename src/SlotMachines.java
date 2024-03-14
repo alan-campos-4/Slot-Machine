@@ -1,12 +1,10 @@
 import java.util.Scanner;
-import java.util.ArrayList;
 import java.util.Random;
+import java.util.ArrayList;
 import java.text.DecimalFormat;
-import java.io.IOException;
-//import java.io.InputStreamReader;
-//import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -19,16 +17,14 @@ TODO (3rd trimester):
  * ----- Required for grading ----
  * Database integration (MySQL, video)
  * 
- * ----- Improvements from teacher -----
+ * ----- Suggestions from teacher -----
  * Show history of games
  * Check history for different results
  * 
  * ----- Functionality -----
- * **Design Multi-way re-roll**
- * *Fix single row re-roll*
- * *Input reading*: 
- * 		- Single / different methods
- * 		- Try-Catch for menu selection
+ * Redesign Multi-way re-roll
+ * 		- ArrayIndexOutOfBoundsException
+ * Fix single row re-roll
  * Player class, ask name
  * Menu option for guaranteed re-roll
  * Free spins
@@ -118,7 +114,6 @@ public class SlotMachines
 		return false;
 	}
 	// Loops until the input and type returned are valid.
-	/*
 	@SuppressWarnings("unchecked")
 	public static <T> T readInput(String message, T param1, char dif, T param2)
 	{
@@ -127,146 +122,48 @@ public class SlotMachines
 		else if (dif=='|')	{message += " ("+param1+"): ";}
 		else				{message += ": ";}
 		
-		//String str;
-		boolean readError=true, isNumber=true;
-		
-		try{
-			do{
-				System.out.print("\n"+message);
-				String str = input.nextLine();
-				if (str!="")
-				{
-					if (param1 instanceof String)
-					{
-						return (T)str;
-					}
-					else if (param1 instanceof Character)
-					{
-						char ans = str.charAt(0);
-						if (ans==(char)param1 || ans==Character.toUpperCase((char)param1) 
-						 || ans==(char)param2 || ans==Character.toUpperCase((char)param2) )
-							{return (T)param1.getClass().cast(ans);}
-						else
-							{System.out.println("  Input outside of specified range. Try again.");}
-					}
-					else 
-					{
-						//Checks that the string can be turned into a number
-						for (int i=0; i<str.length() && isNumber; i++) 
-						{
-							if ((int)str.charAt(i)<48 || (int)str.charAt(i)>57) //ASCII: 48=0, 57=9
-								{isNumber = false;}
-						}
-						if (isNumber)
-						{
-							if (param1 instanceof Integer && str.length()<9)
-							{
-								int ans = Integer.parseInt(str);
-								if (ans>=(int)param1 && ans<=(int)param2)
-									{return (T)param1.getClass().cast(ans);}
-								else
-									{System.out.println("  Input outside of range. Try again.");}	
-							}
-							else if (param1 instanceof Double && str.length()<14)
-							{
-								double ans = Double.parseDouble(str);
-								if (ans>=(double)param1 && ans<=(double)param2)
-									{return (T)param1.getClass().cast(ans);}
-								else 
-									{System.out.println("  Input outside of range. Try again.");}
-							}
-							else
-								{System.out.println("  Input type not accepted. Try again.");}
-						}
-						else {System.out.println("  Input type not accepted. Try again.");}
-					}
-				}
-				else {System.out.println("  Try again.");}
-				
-			}while(readError);
-		}catch (ClassCastException | NumberFormatException e) {e.printStackTrace();}
-		return param1;
-	}//*/
-	//*
-	public static <T> String inputPrompt(T param1, char dif, T param2)
-	{
-		if (dif=='-')		{return " ("+param1+" - "+param2+"): ";}
-		else if (dif=='/')	{return " ("+param1+"/"+param2+"): ";}
-		else				{return ": ";}
-	}
-	public static char readInput(String message, char op1, char op2)
-	{
-		message += inputPrompt(op1, '/', op2);
-		String str = "";
-		boolean read = true;
+		String str;
+		boolean readError = true;
 		do {
 			try {
 				System.out.print("\n"+message);
 				str = input.nextLine();
 				if (!str.isEmpty())
 				{
-					if (str.charAt(0)==op1 || str.charAt(0)==Character.toLowerCase(op1) ||
-						str.charAt(0)==op2 || str.charAt(0)==Character.toLowerCase(op2))
+					if (param1 instanceof Character)
 					{
-						return op1;
+						char ans = str.charAt(0);
+						if (ans==(char)param1 || ans==Character.toUpperCase((char)param1) 
+						 || ans==(char)param2 || ans==Character.toUpperCase((char)param2) )
+							{return (T)param1.getClass().cast(ans);} //checked by ClassCastException
+						else
+							{System.out.println("  Input outside of specified range. Try again.");}
 					}
-					else {System.out.print("  Input not in range. Try again.");}
+					else if (param1 instanceof Integer)
+					{
+						int ans = Integer.parseInt(str); //checked by NumberFormatException
+						if (ans>=(int)param1 && ans<=(int)param2)
+							{return (T)param1.getClass().cast(ans);} //checked by ClassCastException
+						else
+							{System.out.println("  Input outside of range. Try again.");}
+					}
+					else if (param1 instanceof Double)
+					{
+						double ans = Double.parseDouble(str); //checked by NumberFormatException
+						if (ans>=(double)param1 && ans<=(double)param2)
+							{return (T)param1.getClass().cast(ans);} //checked by ClassCastException
+						else
+							{System.out.println("  Input outside of range. Try again.");}
+					}
+					else {System.out.println("  Input type not accepted. Try again.");}
 				}
-				else {System.out.print("  Input not viable. Try again.");}
-			} catch (NumberFormatException e)
-				{e.printStackTrace();}
-			input.nextLine();
-		} while (read);
-		return op1;
+				else {System.out.println("  Try again.");}
+			}
+			catch (NumberFormatException e)	{System.out.println("  Input should be a number. Try again.");}
+			catch (ClassCastException e)	{System.out.println("  Input type not accepted. Try again.");}
+		} while(readError);
+		return param1;
 	}
-	public static double readInput(String message, double min, char dif, double max)
-	{
-		message += inputPrompt(min, dif, max);
-		double value = 0.0;
-		boolean read = true;
-		do {
-			try {
-				System.out.print("\n"+message);
-				value = input.nextDouble();
-				if (value==0)
-				{
-					if (value>=min && value<=max)
-						{return value;}
-					else
-						{System.out.print("  Input not in range. Try again.");}
-				}
-				else {System.out.print("  Input not viable. Try again.");}
-			} catch (NumberFormatException e)
-				{e.printStackTrace();}
-			input.nextLine();
-		} while (read);
-		return min;
-	}
-	public static int readInput(String message, int min, char dif, int max)
-	{
-		message += inputPrompt(min, dif, max);
-		int value = 0;
-		boolean read = true;
-		do {
-			try {
-				System.out.print("\n"+message);
-				value = input.nextInt();
-				if (value==0)
-				{
-					if (value>=min && value<=max)
-						{return value;}
-					else
-						{System.out.print("  Input not in range. Try again.");}
-				}
-				else {System.out.print("  Input not viable. Try again.");}
-			} catch (NumberFormatException e)
-				{e.printStackTrace();}
-			input.nextLine();
-		} while (read);
-		return min;
-	}
-	//*/
-	
 	
 	
 	
@@ -533,10 +430,10 @@ public class SlotMachines
 							saveResults();
 							if (gameEnter)
 							{
-						        gameInput = readInput("Do you want to continue playing?",'y','n');
+						        gameInput = readInput("Do you want to continue playing?",'y','/','n');
 						        if (gameInput=='y'||gameInput=='Y')
 						        {
-						        	gameInput = readInput("Do you want to bet more money?",'y','n');
+						        	gameInput = readInput("Do you want to bet more money?",'y','/','n');
 						            if (gameInput=='y'||gameInput=='Y')
 						            	{betIncrease(readInput("Enter the increase",BETMIN,'-',BETMAX));}
 						        }
@@ -746,7 +643,7 @@ public class SlotMachines
 			System.out.println(" You can reroll for the chance to get all matches,");
 			System.out.println(" but if you fail you will loose all your money.");
 			
-			gameInput = readInput("Do you want to reroll the "+(LRpos+1)+"º reel?",'y','n');
+			gameInput = readInput("Do you want to reroll the "+(LRpos+1)+"º reel?",'y','/','n');
 			if (gameInput=='y' || gameInput=='Y')
 			{
 				//arrResults[LRS.pos.get(0)] = spinReel();
