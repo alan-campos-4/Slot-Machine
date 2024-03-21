@@ -1,12 +1,11 @@
-import java.util.Scanner;
-import java.util.Random;
-import java.util.ArrayList;
+import java.sql.*;
 import java.text.DecimalFormat;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.Scanner;
+
 
 
 
@@ -16,44 +15,28 @@ TODO (3rd trimester):
  * 
  * ----- Required for grading ----
  * Database integration (MySQL, video)
- * 
- * ----- Suggestions from teacher -----
- * Show history of games
- * Check history for different results
+ * - Show result history			[suggestion]
+ * - Change results due to history	[suggestion]
  * 
  * ----- Functionality -----
- * Redesign Multi-way re-roll
- * 		- ArrayIndexOutOfBoundsException
- * Fix single row re-roll
+ * Redesign Multi-way re-roll (test)
  * Player class, ask name
- * Menu option for guaranteed re-roll
- * Free spins
+ * ? Continue keyword instead of gameEnter variable
+ * ? Free spins
  * 
 */
 
 
 
 
+
 public class SlotMachines
 {
-
-
-	static FileWriter output;						//For saving the arrResults in a record
-	static File filename = new File("record.txt");	//The arrResults record
-	static Random rand = new Random();				//For generating random numbers
-	static Scanner input = new Scanner(System.in);	//For reading player inputs
 	
-	static boolean gameEnter;	//Player input for stopping or continuing the game.
-	static char gameInput;		//Player input for reading a character within the game.
+	/*************** General classes and methods ***************/
 	
-	static final double BETMIN = 20;	//Minimum amount of money the player can bet at a time.
-	static final double BETMAX = 100;	//Maximum amount of money the player can bet at a time.
-	static final int WINLIMIT = 10000;	//Maximum amount of money the player can win.
-	static final int GAMELIMIT = 10;	//Maximum amount of times the player can spin the reels.
-	static final int TIMEWAIT = 400;	//Standard time to wait.
-	//All symbols that can appear on a machine
-	static final char[] all = {'7','A','H','K','T','*','@','^','|','%','&','\\'};
-	
+	static Random rand = new Random();
+	static Scanner input = new Scanner(System.in);
 	
 	// Clears the terminal output.
 	public static void clear()
@@ -82,27 +65,18 @@ public class SlotMachines
 		} catch (Exception E) {System.out.println(E);}  
 		//*/
 	}
+	
 	// Stops the program until the player presses a key.
 	public static void pressAnyKeyTo(String message)
 	{
 		System.out.println("\nPress any key to "+message+".");
-        try 
-        {
+        try {
             System.in.read();
             input.nextLine();
-        }
-        catch(Exception e) {}
+        } 
+        catch(Exception e)
+        	{e.printStackTrace();}
 	}
-	// Closes the connection to the output file
-	public static void outputClose()
-	{
-		try {
-			output = new FileWriter(filename,true);
-			output.flush();
-			output.close();
-		} catch (IOException e) {e.printStackTrace();}
-	}
-	
 	
 	// Returns true if the value given exists in the array
 	public static boolean exists(char[] arr, char value)
@@ -113,55 +87,55 @@ public class SlotMachines
 		}
 		return false;
 	}
+	
 	// Loops until the input and type returned are valid.
 	@SuppressWarnings("unchecked")
 	public static <T> T readInput(String message, T param1, char dif, T param2)
 	{
 		if (dif=='-')		{message += " ("+param1+" - "+param2+"): ";}
 		else if (dif=='/')	{message += " ("+param1+"/"+param2+"): ";}
-		else if (dif=='|')	{message += " ("+param1+"): ";}
 		else				{message += ": ";}
 		
-		String str;
-		boolean readError = true;
+		String inputstr;
+		boolean read = true;
 		do {
 			try {
 				System.out.print("\n"+message);
-				str = input.nextLine();
-				if (!str.isEmpty())
+				inputstr = input.nextLine();
+				if (!inputstr.isEmpty())
 				{
-					if (param1 instanceof Character)
+					if (param1 instanceof String)	{return (T)inputstr;}
+					else if (param1 instanceof Character)
 					{
-						char ans = str.charAt(0);
+						char ans = inputstr.charAt(0);
 						if (ans==(char)param1 || ans==Character.toUpperCase((char)param1) 
 						 || ans==(char)param2 || ans==Character.toUpperCase((char)param2) )
-							{return (T)param1.getClass().cast(ans);} //checked by ClassCastException
-						else
-							{System.out.println("  Input outside of specified range. Try again.");}
+							{return (T)param1.getClass().cast(ans);} //can throw ClassCastException
+						else											
+							{System.out.println("  Input outside of specified range.");}
 					}
 					else if (param1 instanceof Integer)
 					{
-						int ans = Integer.parseInt(str); //checked by NumberFormatException
+						int ans = Integer.parseInt(inputstr); //can throw NumberFormatException
 						if (ans>=(int)param1 && ans<=(int)param2)
-							{return (T)param1.getClass().cast(ans);} //checked by ClassCastException
+							{return (T)param1.getClass().cast(ans);} //can throw ClassCastException
 						else
-							{System.out.println("  Input outside of range. Try again.");}
+							{System.out.println("  Input outside of range.");}
 					}
 					else if (param1 instanceof Double)
 					{
-						double ans = Double.parseDouble(str); //checked by NumberFormatException
+						double ans = Double.parseDouble(inputstr); //can throw NumberFormatException
 						if (ans>=(double)param1 && ans<=(double)param2)
-							{return (T)param1.getClass().cast(ans);} //checked by ClassCastException
+							{return (T)param1.getClass().cast(ans);} //can throw ClassCastException
 						else
-							{System.out.println("  Input outside of range. Try again.");}
+							{System.out.println("  Input outside of range.");}
 					}
-					else {System.out.println("  Input type not accepted. Try again.");}
+					else {System.out.println("  Input type not accepted.");}
 				}
-				else {System.out.println("  Try again.");}
 			}
-			catch (NumberFormatException e)	{System.out.println("  Input should be a number. Try again.");}
-			catch (ClassCastException e)	{System.out.println("  Input type not accepted. Try again.");}
-		} while(readError);
+			catch (NumberFormatException e)	{System.out.println("  Input should be a number.");}
+			catch (ClassCastException e)	{System.out.println("  Input type not casted.");}
+		} while(read);
 		return param1;
 	}
 	
@@ -169,22 +143,108 @@ public class SlotMachines
 	
 	
 	
+	/*************** Game attributes ***************/
+	
+	//All symbols that can appear on a machine
+	static final char[] all = {'7','A','H','K','T','*','@','^','|','%','&','\\'};
+	
+	static final double BETMIN = 20;	//Minimum amount of money the player can bet at a time.
+	static final double BETMAX = 100;	//Maximum amount of money the player can bet at a time.
+	static final int WINLIMIT = 10000;	//Maximum amount of money the player can win.
+	static final int GAMELIMIT = 10;	//Maximum amount of times the player can spin the reels.
+	static final int TIMEWAIT = 400;	//Standard time to wait.
+	
+	static boolean gameEnter;	//Player input for stopping or continuing the game.
+	static char gameInput;		//Player input for reading a character within the game.
+	
+	
+	
+	
+	
+	
+	/*************** Class and interface implementation ***************/
+	
+	//The player and their actions
+	public static class Player
+	{
+		protected String name;		//The player's name
+		protected int numGames;		//Number of games fully completed
+		protected double bet;		//Money currently as a bet
+		protected double spent;		//Money introduced as a bet overall
+		
+		public Player(String nm)
+		{
+			this.name = nm;
+			this.numGames = 0;
+			this.bet = 0.0;
+			this.spent = 0.0;
+		}
+		public Player()		{this("P1");}
+ 		
+		public void betInit(double read)	//Initializes the player's bet.
+		{
+ 			bet = read;
+ 			spent = read;
+ 			numGames = 0;
+ 		}
+		public void betIncrease(double inc)	//Increases the bet if it stays within the limit.
+		{
+			while (bet+inc > WINLIMIT)
+			{
+				System.out.println("\nThis increase exceeds the limit by"+(WINLIMIT-bet-inc)+"€.");
+				System.out.println("Your bet remains as "+bet+"€.");
+				inc = readInput("Enter a lower increase",BETMIN,'-',BETMAX);
+			}
+			bet += inc;
+			spent += inc;
+			System.out.println("\nYour bet is now "+bet+" €.");
+//			try {
+//				output = new FileWriter(filename,true);
+//				output.write("    Bet increased by "+inc+"\n");
+//			    output.flush();
+//		    } catch (IOException e) {
+//				System.out.println("An error occurred.");
+//				e.printStackTrace();
+//		    }
+			pressAnyKeyTo("continue the game");
+		}
+		public void endMessage()			//Displays the money won or lost at the end of a game.
+		{
+			System.out.println("\n- - - - - - - - - - - - - - -");
+			System.out.print("\n  You played "+numGames+" game"+((numGames==1)?"":"s") );
+			
+			if (bet==0)	
+				{System.out.println("\n   and lost "+spent+" €.");}
+			else if (bet==spent)
+			{
+				System.out.println("\n   and made back the money");
+				System.out.println("   that you bet: "+bet+" €.");
+			}
+			else
+			{
+				System.out.println(".\n   You have spent "+spent+" €.");
+				if (bet<spent)	{System.out.println("    And left with "+bet+" €.");}
+				else			{System.out.println("    And have won "+bet+" €.");}
+			}
+			System.out.println("\n- - - - - - - - - - - - - - -");
+		}
+		
+	}
+	
 	
 	//The slot machines' characteristics and actions regardless of type.
 	abstract static class Machine
 	{
 		protected char[][] arrResults;	//Array of the results of spinning. [Rows][Columns]
 		protected char[] arrSyms;		//Array of the symbols available to this machine.
-		protected int rows;			//Number of rows of the machine.
-		protected int reels;		//Number of columns or reels of the machine.
+		protected int rows;				//Number of rows of the machine.
+		protected int reels;			//Number of columns or reels of the machine.
+		protected double cost;			//Cost of spinning the reels per game
 		
 		protected int minSize, maxSize;	//Minimum and maximum amount of rows and reels allowed
 		protected int minSyms, maxSyms;	//Minimum and maximum number of symbols available allowed
 		
-		protected int numGames;		//Number of games fully completed
-		protected double cost;		//Cost of spinning the reels per game
-		protected double bet;		//Money currently as a bet
-		protected double spent;		//Money introduced as a bet overall
+		protected Player P;				//The machine's player
 		
 		public Machine(int ro, int re, int syms)
 		{
@@ -193,6 +253,7 @@ public class SlotMachines
 			this.arrResults = new char[rows][reels];
 			assignSymbols(syms);
 			assignSpinCost();
+			this.P = new Player();
 		}
 		
 		public void assignSymbols(int size)	//Gives values to the array of available symbols.
@@ -269,11 +330,15 @@ public class SlotMachines
 			}
 			System.out.println("\n");
 		}
+		public void displayReels()			//Displays all of the reels of the machine
+		{
+			displayReels(reels);
+		}
 		public void displayAndSpin()		//Displays the reels as they are spinning.
 		{
 			for (int reelsShown=0; reelsShown<=reels; reelsShown++)
 		    {
-				System.out.println("\t-- "+(numGames)+"º Game --");
+				System.out.println("\t-- "+(P.numGames)+"º Game --");
 				displayReels(reelsShown);
 				if(reelsShown<reels)
 				{
@@ -281,26 +346,6 @@ public class SlotMachines
 					clear();
 				}
 		    }
-		}	
-		public void endMessage()			//Displays the money won or lost at the end of a game.
-		{
-			System.out.println("\n- - - - - - - - - - - - - - -");
-			System.out.print("\n  You played "+numGames+" game"+((numGames==1)?"":"s") );
-			
-			if (bet==0)	
-				{System.out.println("\n   and lost "+spent+" €.");}
-			else if (bet==spent)
-			{
-				System.out.println("\n   and made back the money");
-				System.out.println("   that you bet: "+bet+" €.");
-			}
-			else
-			{
-				System.out.println(".\n   You have spent "+spent+" €.");
-				if (bet<spent)	{System.out.println("    And left with "+bet+" €.");}
-				else			{System.out.println("    And have won "+bet+" €.");}
-			}
-			System.out.println("\n- - - - - - - - - - - - - - -");
 		}
 		
 		public void showRules()				//Shows the rules and outcomes of playing.
@@ -315,80 +360,19 @@ public class SlotMachines
 			System.out.println("\n  Probability:");
 		}
 		
-		public void betInit(double read)	//Initializes the player's bet.
-			{bet=read; spent=read; numGames=0;}
-		public void betIncrease(double inc)	//Increases the bet if it stays within the limit.
-		{
-			while (bet+inc > WINLIMIT)
-			{
-				System.out.println("\nThis increase exceeds the limit by"+(WINLIMIT-bet-inc)+"€.");
-				System.out.println("Your bet remains as "+bet+"€.");
-				inc = readInput("Enter a lower increase",BETMIN,'-',BETMAX);
-			}
-			bet += inc;
-			spent += inc;
-			System.out.println("\nYour bet is now "+bet+" €.");
-			try {
-				output = new FileWriter(filename,true);
-				output.write("    Bet increased by "+inc+"\n");
-			    output.flush();
-		    } catch (IOException e) {
-				System.out.println("An error occurred.");
-				e.printStackTrace();
-		    }
-			pressAnyKeyTo("continue the game");
-		}	
-		
-		public void saveStart()				//Saves the date, time and bet in the record file.
-		{
-			try {
-				output = new FileWriter(filename,true);
-			    
-				output.write("\n"+
-				LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd - HH:mm:ss"))
-				+"\n");
-			    
-			    if (this instanceof Multiway) {output.write(" Rows = "+rows+", ");}
-			    output.write(" Reels = "+reels);
-				output.write("\tSymbols = "+arrSyms.length+"\n");
-				output.write(" Cost of spinning = "+cost+"\n");
-			    output.flush();
-			  
-		    } catch (IOException e) {
-				System.out.println("An error occurred.");
-				e.printStackTrace();
-		    }
-		}
 		public void saveResults()			//Saves the results of spinning in the record file.
 		{
-			try {
-				output = new FileWriter(filename,true);
-				output.write("   Bet: "+bet+"\n");
-				for (int i=0; i<rows; i++)
-				{
-					if (i==0)	{output.write("   Game "+numGames+": \t");}
-					else		{output.write("\t\t");}
-					for (int j=0; j<reels; j++)
-						{output.write(" ["+arrResults[i][j]+"]");}	
-					output.write("\n");
-				}
-				output.flush();
-		    } catch (IOException e) {
-				System.out.println("An error occurred.");
-				e.printStackTrace();
-		    }
-		}
-		public void saveEnd()				//Saves the money involved in the record file.
-		{
-			try {
-				output = new FileWriter(filename,true);
-				output.write(" Prize: "+bet+"\n");
-				output.write(" Spent: "+spent+"\n");
-				output.flush();
-			} catch (IOException e) {
-				System.out.println("An error occurred.");
-				e.printStackTrace();
-		    }
+			String res = "", date = "";
+			date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-mm-dd HH:mm:ss"));
+			for (int i=0; i<rows; i++)
+			{
+				for (int j=0; j<reels; j++)
+					{res += arrResults[i][j];}
+				if (i+1<rows)
+					{res += ',';}
+			}
+			
+			addDB(P.name, date, res, P.spent, P.bet);
 		}
 		
 		public void menuSelect()	//Menu and options for every action of a machine
@@ -400,7 +384,7 @@ public class SlotMachines
 				System.out.println("\n\t  --- Welcome to the Slot Machine ---");
 				System.out.println("\nSpin the reels and try to match the symbols");
 				System.out.println("The bigger your bet, the bigger a prize you'll win!!");
-				//displayMachine(0);
+				
 				System.out.println("This machine has "+reels+" reels"
 						+ ((this instanceof Multiway) ? (", "+rows+" rows \n"):(" ") )
 						+ "and "+arrSyms.length+" possible symbols");
@@ -419,9 +403,8 @@ public class SlotMachines
 					case 2: {showRules();} break;
 					case 4: {showProb();} break;
 					case 0: {} break;
-					case 1: {
-						betInit(readInput("Enter your bet",BETMIN,'-',BETMAX));
-						saveStart();
+					case 1:
+					{
 						gameEnter = true;
 						
 						do {
@@ -435,16 +418,15 @@ public class SlotMachines
 						        {
 						        	gameInput = readInput("Do you want to bet more money?",'y','/','n');
 						            if (gameInput=='y'||gameInput=='Y')
-						            	{betIncrease(readInput("Enter the increase",BETMIN,'-',BETMAX));}
+						            	{P.betIncrease(readInput("Enter the increase",BETMIN,'-',BETMAX));}
 						        }
-						        else {gameEnter = false;}
+						        else {break;}//{gameEnter = false;}
 						    }
-							saveEnd();
 							
-						} while ((gameEnter) && (bet<WINLIMIT) && (numGames<GAMELIMIT));
-						
-						endMessage();
-					} break;
+						} while ((gameEnter) && (P.bet<WINLIMIT) && (P.numGames<GAMELIMIT));
+						P.endMessage();
+					}
+					break;
 				}
 				if (opc2!=0) {pressAnyKeyTo("return to the slot menu");}
 				
@@ -455,8 +437,8 @@ public class SlotMachines
 		
 		public void Game()			//Playing one game of the slot machine.
 		{
-			numGames++;
-			bet -= cost;
+			P.numGames++;
+			P.bet -= cost;
 			if (this instanceof SingleRow)
 			{
 				((SingleRow)this).spinReels();
@@ -484,8 +466,6 @@ public class SlotMachines
 		public void calculatePrize();	//Calculates the prize based on the conditions of each machine
 		public void reroll();			//Allow to re-calculate if close to the maximum prize
 	}
-	
-	
 	
 	
 	//Type of slot machine that shows one symbol of the reel at a time
@@ -591,18 +571,17 @@ public class SlotMachines
 		}	
 		public void calculatePrize()
 		{
-			
 			if (MRcount==reels-1) {reroll();}
 			
 			if (MRcount==1)
 		    {
-		    	bet = 0;
+		    	P.bet = 0;
 		    	gameEnter = false;
 		    	System.out.println("You got no matches.");
 		    }
 		    else if (MRcount==reels)
 			{
-		    	bet *= 100;
+		    	P.bet *= 100;
 				gameEnter = false;
 				System.out.println("You won the jackpot!!!");
 			}
@@ -611,26 +590,26 @@ public class SlotMachines
 				System.out.println("You got the "+MRsym+" symbol "+MRcount+" times.");
 				if (MRcount>reels/2)
 		        {
-					bet *= 10;
-					System.out.println("You have gained money and now have "+bet+" €.");
+					P.bet *= 10;
+					System.out.println("You have gained money and now have "+P.bet+" €.");
 				}
 				else if (MRcount<reels/2)
 		        {
-					bet *= 0.5;
-					System.out.println("You have lost money and now have "+bet+" €.");
+					P.bet *= 0.5;
+					System.out.println("You have lost money and now have "+P.bet+" €.");
 				}
 				else
-					{System.out.println("You still have "+bet+" €.");}
+					{System.out.println("You still have "+P.bet+" €.");}
 			}
 			
-			if (numGames==GAMELIMIT) 
+			if (P.numGames==GAMELIMIT) 
 			{
 				gameEnter = false;
 				System.out.println("\n  You have reached the maximum amount of numGames.");
 			}
-			if (bet>WINLIMIT)
+			if (P.bet>WINLIMIT)
 			{
-				bet = WINLIMIT;
+				P.bet = WINLIMIT;
 				gameEnter = false;
 				System.out.println("\n\t You have reached the maximum amount");
 				System.out.println("\t of money that can be awarded.");
@@ -639,20 +618,22 @@ public class SlotMachines
 		}
 		public void reroll()
 		{
-			System.out.println(" You are one reel away from the jackpot.");
-			System.out.println(" You can reroll for the chance to get all matches,");
-			System.out.println(" but if you fail you will loose all your money.");
+			System.out.println(" You are one reel away from the jackpot.\n");
+			System.out.println(" · You can leave it be and get the reward"
+							+"\n  for the "+MRcount+" matching reels.");
+			System.out.println(" · Or you can risk loosing all your money"
+							+"\n  for the chance of getting the jackpot.");
 			
 			gameInput = readInput("Do you want to reroll the "+(LRpos+1)+"º reel?",'y','/','n');
 			if (gameInput=='y' || gameInput=='Y')
 			{
-				//arrResults[LRS.pos.get(0)] = spinReel();
-				displayReels(arrResults.length);
+				arrResults[0][LRpos] = arrSyms[rand.nextInt(arrSyms.length)];
+				displayReels();
 				
 				if (arrResults[0][MRpos]==arrResults[0][LRpos])
 				{
 					System.out.println("The new symbol is a match.\n");
-					MRcount = arrResults.length;
+					MRcount = reels;
 				}
 				else
 				{
@@ -727,16 +708,23 @@ public class SlotMachines
 		
 		public void	spinReels()
 		{
-			int next=0, pos=0;
+			int startPos=0, nextPos=0;
 			for (int i=0; i<reels; i++)
 			{
-				pos = rand.nextInt(arrSyms.length);	//Assigns symbols to the reels vertically
-				arrResults[0][i] = arrSyms[pos];	//in the order they have in arrSymS
-				for (int j=1; j<rows; j++)
+				//Every column/reel starts with a random symbol.
+				startPos = rand.nextInt(arrSyms.length);
+				arrResults[0][i] = arrSyms[startPos];	
+				
+				//As it goes through the reel vertically,
+				//each following square is assigned the symbol following the random one.
+				for (int j=1; j<rows; j++)				
 				{
-					next = pos+j-((pos+j>=reels)? reels:0);
+					if (startPos+j>=arrSyms.length)
+						{nextPos = startPos+j-arrSyms.length;}
+					else
+						{nextPos = startPos+j;}
 					
-					arrResults[j][i] = arrSyms[next];
+					arrResults[j][i] = arrSyms[nextPos];
 				}
 			}
 		}
@@ -789,7 +777,7 @@ public class SlotMachines
 			}
 			if (fullHorizontal)
 			{
-				bet *= 100;
+				P.bet *= 100;
 				System.out.println("You won the jackpot!!!");
 			}
 			else if (diagonal1==reels-1 || diagonal2==reels-1)
@@ -798,17 +786,17 @@ public class SlotMachines
 			}
 			else if (diagonal1==reels && diagonal2==reels)
 			{
-				bet *= 10;
+				P.bet *= 10;
 				System.out.println("You got winning lines on both diagonals!");
 			}
 			else if (diagonal1==reels)
 			{
-				bet *= 10;
+				P.bet *= 10;
 				System.out.println("You got a winning line on the first diagonal");
 			}
 			else if (diagonal2==reels)
 			{
-				bet *= 10;
+				P.bet *= 10;
 				System.out.println("You got a winning line on the second diagonal");
 			}
 			else
@@ -840,8 +828,82 @@ public class SlotMachines
 	
 	
 	
+	/*************** Database connection implementation ***************/
+
+	static final String CONTROLLER = "com.mysql.jdbc.Driver";
+	static final String URL = "jdbc:mysql://localhost:3306/java_connect";
+	static final String USER = "root";
+	static final String PASS = "BasedAsFuck2024-";
+	static final String Table = "results";
+	static final String columns = "idResults,fulldate,playerName,Results,EndSpent,EndPrize";
+	
+	public static void addDB(String name, String date, String results, double spent, double prize)
+	{
+		try { 
+			//Class.forName(CONTROLLER);
+			Connection con = DriverManager.getConnection(URL, USER, PASS);
+			Statement stmt = con.createStatement(); 
+			
+			ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM "+Table);
+			int count = rs.getInt("COUNT(*)");
+	        
+			int result = stmt.executeUpdate(
+	        	"insert into "+Table+"("+columns+")"
+	        	+"values("+(count+1001)+",'"+name+"','"+date+"','"+results+"',"+spent+","+prize+")"); 
+	
+	        if (result > 0)
+	            System.out.println(" Inserted succesfully.");
+	        else
+	            System.out.println(" Insertion unsucessful.");
+	        con.close();
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			System.out.println("  Insertion error.");
+		} 
+		//catch (ClassNotFoundException e) {e.printStackTrace();}
+	}
+	
+	public static void showDB()
+	{
+		try {
+			Connection con = DriverManager.getConnection(URL, USER, PASS);
+			
+			Statement st = con.createStatement();
+			ResultSet rs = st.executeQuery("SELECT * FROM results");
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			int columnsNumber = rsmd.getColumnCount();                    
+			
+    		System.out.println("\n");
+    		for(int i=1 ; i<=columnsNumber; i++)
+    		{
+    			System.out.print(rsmd.getColumnName(i)+"  ");
+    		}
+    		System.out.println("\n----- ----- ----- ----- -----");
+	    	while (rs.next()) 
+	    	{
+	    		for(int i=1 ; i<=columnsNumber; i++) 
+	    		{
+	    			System.out.print(rs.getString(i)+"  \t"); 
+	    		}
+	    		System.out.println();
+	    	}
+		    
+	    } 
+	    catch (SQLException e)
+	    {
+	    	e.printStackTrace();
+	    	System.out.println("  Display error.");
+	    }
+	}
 	
 	
+	
+	
+	
+	/*************** MAIN ***************/
 	
 	public static void main(String[] args)
 	{
@@ -854,12 +916,14 @@ public class SlotMachines
 			System.out.println("\nWhat do you want to do?");
 			System.out.println(" 1. Play single row Slot Machine.");
 			System.out.println(" 2. Play multiway Slot Machine.");
-			System.out.println(" 3. Show simple instructions.");
+			System.out.println(" 3. Show machine descriptions.");
+			System.out.println(" 4. Show database.");
 			System.out.println(" 0. Exit.");
-			opc1 = readInput("Choose an option",0,' ',3);
+			opc1 = readInput("Choose an option",0,' ',4);
 			
 			switch(opc1)
 			{
+				case 0: {} break;
 				case 1: 
 				{
 					SingleRow M1 = new SingleRow();
@@ -886,7 +950,7 @@ public class SlotMachines
 									 + "  all symbols match.");
 				}
 				break;
-				case 0: {} break;
+				case 4: {showDB();} break;
 			}
 			if (opc1!=0) 
 			{
@@ -897,12 +961,8 @@ public class SlotMachines
 		} while (opc1!=0);
 		
 		input.close();
-		outputClose();
 		System.out.println("\n\n\t\t ***** Game Over ***** ");
 	}
-
-
-
 
 
 
