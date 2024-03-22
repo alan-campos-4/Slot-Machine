@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
+import net.efabrika.util.DBTablePrinter;
 
 
 
@@ -362,8 +363,7 @@ public class SlotMachines
 		
 		public void saveResults()			//Saves the results of spinning in the record file.
 		{
-			String res = "", date = "";
-			date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-mm-dd HH:mm:ss"));
+			String res = "";
 			for (int i=0; i<rows; i++)
 			{
 				for (int j=0; j<reels; j++)
@@ -372,7 +372,7 @@ public class SlotMachines
 					{res += ',';}
 			}
 			
-			addDB(P.name, date, res, P.spent, P.bet);
+			insertDB(P.name, P.numGames, res, P.spent, P.bet);
 		}
 		
 		public void menuSelect()	//Menu and options for every action of a machine
@@ -406,6 +406,7 @@ public class SlotMachines
 					case 1:
 					{
 						gameEnter = true;
+						P.betInit(readInput("Enter your bet",BETMIN,'-',BETMAX));
 						
 						do {
 							clear();
@@ -830,74 +831,80 @@ public class SlotMachines
 	
 	/*************** Database connection implementation ***************/
 
-	static final String CONTROLLER = "com.mysql.jdbc.Driver";
 	static final String URL = "jdbc:mysql://localhost:3306/java_connect";
 	static final String USER = "root";
 	static final String PASS = "BasedAsFuck2024-";
-	static final String Table = "results";
-	static final String columns = "idResults,fulldate,playerName,Results,EndSpent,EndPrize";
 	
-	public static void addDB(String name, String date, String results, double spent, double prize)
+	//Inserts the values given into the database table
+	public static void insertDB(String name, int games, String results, double spent, double prize)
 	{
-		try { 
-			//Class.forName(CONTROLLER);
+		try {
 			Connection con = DriverManager.getConnection(URL, USER, PASS);
-			Statement stmt = con.createStatement(); 
 			
-			ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM "+Table);
-			int count = rs.getInt("COUNT(*)");
-	        
-			int result = stmt.executeUpdate(
-	        	"insert into "+Table+"("+columns+")"
-	        	+"values("+(count+1001)+",'"+name+"','"+date+"','"+results+"',"+spent+","+prize+")"); 
-	
-	        if (result > 0)
-	            System.out.println(" Inserted succesfully.");
-	        else
-	            System.out.println(" Insertion unsucessful.");
-	        con.close();
+			//Read number of rows for insertion
+			int count=0;
+			Statement stmt3 = con.createStatement();
+			ResultSet rs3 = stmt3.executeQuery("SELECT COUNT(*) AS total FROM results");
+			while(rs3.next())	{count = rs3.getInt("total");}
+			
+			//Read date for insertion
+			String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+			
+			//Insert values
+			String sql = "INSERT INTO results(id,player,game,Result,endSpent,endPrize,fullDate) "
+					+ "VALUES ("+(count+1000)+",'"+name+"',"+games+","
+							+ "'"+results+"',"+spent+","+prize+",'"+date+"')";
+			
+			//Check insertion was successful
+			int m = con.createStatement().executeUpdate(sql);
+			if (m==1)
+			    {System.out.println("Results saved");}
+			else
+			    {System.out.println("Insertion failed");}
+			
 		}
 		catch (SQLException e)
 		{
 			e.printStackTrace();
 			System.out.println("  Insertion error.");
-		} 
-		//catch (ClassNotFoundException e) {e.printStackTrace();}
+		}
 	}
 	
-	public static void showDB()
+	//Displays the complete database table, regularly or with a script depending on the parameter
+	public static void displayDB(boolean table)
 	{
 		try {
 			Connection con = DriverManager.getConnection(URL, USER, PASS);
 			
-			Statement st = con.createStatement();
-			ResultSet rs = st.executeQuery("SELECT * FROM results");
-			ResultSetMetaData rsmd = rs.getMetaData();
-			
-			int columnsNumber = rsmd.getColumnCount();                    
-			
-    		System.out.println("\n");
-    		for(int i=1 ; i<=columnsNumber; i++)
-    		{
-    			System.out.print(rsmd.getColumnName(i)+"  ");
-    		}
-    		System.out.println("\n----- ----- ----- ----- -----");
-	    	while (rs.next()) 
-	    	{
-	    		for(int i=1 ; i<=columnsNumber; i++) 
-	    		{
-	    			System.out.print(rs.getString(i)+"  \t"); 
-	    		}
-	    		System.out.println();
-	    	}
-		    
-	    } 
+			if (table)
+				{DBTablePrinter.printTable(con, "results");}
+			else
+			{
+				Statement st = con.createStatement();
+				ResultSet rs = st.executeQuery("SELECT * FROM results");
+				ResultSetMetaData rsmd = rs.getMetaData();
+				int colnum = rsmd.getColumnCount();                    
+				
+	    		System.out.println("\n-------------------------");
+		    	while (rs.next())
+		    	{
+		    		for(int i=1 ; i<=colnum; i++)
+		    		{
+		    			System.out.print(((i==1)?"- ":"")+rs.getString(i)+" | "); 
+		    		}
+		    		System.out.println();
+		    	}
+			}
+	    }
 	    catch (SQLException e)
 	    {
 	    	e.printStackTrace();
 	    	System.out.println("  Display error.");
 	    }
 	}
+	
+	
+	
 	
 	
 	
@@ -916,10 +923,11 @@ public class SlotMachines
 			System.out.println("\nWhat do you want to do?");
 			System.out.println(" 1. Play single row Slot Machine.");
 			System.out.println(" 2. Play multiway Slot Machine.");
-			System.out.println(" 3. Show machine descriptions.");
+			System.out.println(" 3. Show machine differences.");
 			System.out.println(" 4. Show database.");
+			System.out.println(" 5. Show database with script.");
 			System.out.println(" 0. Exit.");
-			opc1 = readInput("Choose an option",0,' ',4);
+			opc1 = readInput("Choose an option",0,' ',5);
 			
 			switch(opc1)
 			{
@@ -939,18 +947,19 @@ public class SlotMachines
 				case 3:
 				{
 					System.out.println("\n· A \"singlerow\" slot machine\n"
-									 + "  has several reels and in one row.");
-					System.out.println("· Prizes are obtained after spinning the reels\n"
-									 + "  if along the reels there are\n"
-									 + "  at least two symbols matching.");
+									 + "   has several reels and in one row.");
+					System.out.println("  Prizes are won after spinning the reels\n"
+									 + "   if along the reels there are\n"
+									 + "   at least two symbols matching.");
 					System.out.println("\n· A \"multiway\" slot machine\n"
-									 + "  has several reels and row, not always equal.");
-					System.out.println("· Prizes are obtained after spinning the reels\n"
-									 + "  if along the winning lines\n"
-									 + "  all symbols match.");
+									 + "   has several reels and rows, not always equal.");
+					System.out.println("  Prizes are won after spinning the reels\n"
+									 + "   if along the winning lines\n"
+									 + "   all symbols match.");
 				}
 				break;
-				case 4: {showDB();} break;
+				case 4: {displayDB(false);} break;
+				case 5: {displayDB(true);}  break;
 			}
 			if (opc1!=0) 
 			{
@@ -963,6 +972,8 @@ public class SlotMachines
 		input.close();
 		System.out.println("\n\n\t\t ***** Game Over ***** ");
 	}
+
+
 
 
 
