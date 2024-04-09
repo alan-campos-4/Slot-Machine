@@ -42,13 +42,15 @@ class SlotMachines_Test
 				{
 					case 1:	{Reroll_SingleRow_Test();}	break;
 					case 2:	{Reroll_Multiway_Test();}	break;
-				}	
+				}
 				SlotMachines.pressAnyKeyTo("continue");
 			}
 		
 		} while (op!=0);
 		System.out.println("\n\t ----- End ----- ");
 	}
+	
+	
 	
 	
 	String getMethodName(int pos)

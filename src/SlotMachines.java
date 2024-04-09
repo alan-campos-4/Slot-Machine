@@ -1,11 +1,17 @@
-import java.sql.*;
-import java.text.DecimalFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+//General use
 import java.util.Random;
 import java.util.Scanner;
-import net.efabrika.util.DBTablePrinter;
+import java.util.ArrayList;
+import java.text.DecimalFormat;
+//Database implementation
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDateTime;				//For storing the date
+import java.time.format.DateTimeFormatter;	//For storing the date
+import net.efabrika.util.DBTablePrinter; //Script for displaying tables
+
 
 
 
@@ -14,16 +20,16 @@ import net.efabrika.util.DBTablePrinter;
 /*
 TODO (3rd trimester):
  * 
- * ----- Required for grading ----
- * Database integration (MySQL, video)
- * - Show result history			[suggestion]
- * - Change results due to history	[suggestion]
+ * ----- Implement -----
+ * JDBC management
+ * Graphic interface (JavaFX)
+ * Event handling
  * 
- * ----- Functionality -----
+ * ----- Improvements -----
+ * Change results due to history	[teacher suggestion]
  * Redesign Multi-way re-roll (test)
- * Player class, ask name
+ * Free spins
  * ? Continue keyword instead of gameEnter variable
- * ? Free spins
  * 
 */
 
@@ -31,10 +37,11 @@ TODO (3rd trimester):
 
 
 
+
 public class SlotMachines
 {
-	
-	/*************** General classes and methods ***************/
+
+	/********** General classes and methods **********/
 	
 	static Random rand = new Random();
 	static Scanner input = new Scanner(System.in);
@@ -42,29 +49,29 @@ public class SlotMachines
 	// Clears the terminal output.
 	public static void clear()
 	{
-		// "Works" in the Eclipse IDE Console 
-		//*
-		System.out.println("\n\n\n\n\n");  //5
-        System.out.println("\n\n\n\n\n");  //10
-        System.out.println("\n\n\n\n\n");  //15
-        System.out.println("\n\n\n\n\n");  //20
-        System.out.println("\n\n\n\n\n");  //25
-        //System.out.flush(); 
-        //*/
-        
-		// Works in Windows Powershell
-        /*
-		try {
+		/*try {
+			
             if (System.getProperty("os.name").contains("Windows")) 
             {
-				Process startProcess = new ProcessBuilder("cmd","/c","clear").inheritIO().start();
+            	Process startProcess = new ProcessBuilder("cmd","/c","clear").inheritIO().start();
 				startProcess.waitFor();
-			} else {
+			}
+            else
+            {
 				Process startProcess = new ProcessBuilder("clear").inheritIO().start();
 				startProcess.waitFor();
 			}
-		} catch (Exception E) {System.out.println(E);}  
-		//*/
+			System.out.print("\033[H\033[2J");
+			System.out.flush();
+		}
+		catch (Exception e)*/
+		{
+			System.out.println("\n\n\n\n\n");  //5
+	        System.out.println("\n\n\n\n\n");  //10
+	        System.out.println("\n\n\n\n\n");  //15
+	        System.out.println("\n\n\n\n\n");  //20
+	        System.out.println("\n\n\n\n\n");  //25
+		}
 	}
 	
 	// Stops the program until the player presses a key.
@@ -101,41 +108,43 @@ public class SlotMachines
 		boolean read = true;
 		do {
 			try {
-				System.out.print("\n"+message);
+				System.out.print(message);
 				inputstr = input.nextLine();
 				if (!inputstr.isEmpty())
 				{
-					if (param1 instanceof String)	{return (T)inputstr;}
+					if (param1 instanceof String)
+						{return (T)inputstr;}
 					else if (param1 instanceof Character)
 					{
 						char ans = inputstr.charAt(0);
 						if (ans==(char)param1 || ans==Character.toUpperCase((char)param1) 
 						 || ans==(char)param2 || ans==Character.toUpperCase((char)param2) )
 							{return (T)param1.getClass().cast(ans);} //can throw ClassCastException
-						else											
-							{System.out.println("  Input outside of specified range.");}
+						else
+							{System.out.println("\nInput outside of range.");}
 					}
 					else if (param1 instanceof Integer)
 					{
 						int ans = Integer.parseInt(inputstr); //can throw NumberFormatException
 						if (ans>=(int)param1 && ans<=(int)param2)
-							{return (T)param1.getClass().cast(ans);} //can throw ClassCastException
+							{return (T)Integer.class.cast(ans);} //can throw ClassCastException
 						else
-							{System.out.println("  Input outside of range.");}
+							{System.out.println("\nInput outside of range.");}
 					}
 					else if (param1 instanceof Double)
 					{
-						double ans = Double.parseDouble(inputstr); //can throw NumberFormatException
+						double ans = Double.parseDouble(inputstr);
 						if (ans>=(double)param1 && ans<=(double)param2)
-							{return (T)param1.getClass().cast(ans);} //can throw ClassCastException
+							{return (T)Double.class.cast(ans);}
 						else
-							{System.out.println("  Input outside of range.");}
+							{System.out.println("\nInput outside of range.");}
 					}
-					else {System.out.println("  Input type not accepted.");}
+					else {System.out.println("\nInput type not accepted.");}
 				}
+				else {System.out.println("\nNo input recognized.");}
 			}
-			catch (NumberFormatException e)	{System.out.println("  Input should be a number.");}
-			catch (ClassCastException e)	{System.out.println("  Input type not casted.");}
+			catch (NumberFormatException e)	{System.out.println("\nInput should be a number.");}
+			catch (ClassCastException e)	{System.out.println("\nInput type not casted.");}
 		} while(read);
 		return param1;
 	}
@@ -144,16 +153,16 @@ public class SlotMachines
 	
 	
 	
-	/*************** Game attributes ***************/
+	
+	/********** Game attributes **********/
 	
 	//All symbols that can appear on a machine
 	static final char[] all = {'7','A','H','K','T','*','@','^','|','%','&','\\'};
 	
 	static final double BETMIN = 20;	//Minimum amount of money the player can bet at a time.
 	static final double BETMAX = 100;	//Maximum amount of money the player can bet at a time.
-	static final int WINLIMIT = 10000;	//Maximum amount of money the player can win.
+	static final int WINLIMIT = 100000;	//Maximum amount of money the player can win.
 	static final int GAMELIMIT = 10;	//Maximum amount of times the player can spin the reels.
-	static final int TIMEWAIT = 400;	//Standard time to wait.
 	
 	static boolean gameEnter;	//Player input for stopping or continuing the game.
 	static char gameInput;		//Player input for reading a character within the game.
@@ -163,7 +172,7 @@ public class SlotMachines
 	
 	
 	
-	/*************** Class and interface implementation ***************/
+	/********** Class and interface implementation **********/
 	
 	//The player and their actions
 	public static class Player
@@ -199,14 +208,6 @@ public class SlotMachines
 			bet += inc;
 			spent += inc;
 			System.out.println("\nYour bet is now "+bet+" €.");
-//			try {
-//				output = new FileWriter(filename,true);
-//				output.write("    Bet increased by "+inc+"\n");
-//			    output.flush();
-//		    } catch (IOException e) {
-//				System.out.println("An error occurred.");
-//				e.printStackTrace();
-//		    }
 			pressAnyKeyTo("continue the game");
 		}
 		public void endMessage()			//Displays the money won or lost at the end of a game.
@@ -232,7 +233,6 @@ public class SlotMachines
 		
 	}
 	
-	
 	//The slot machines' characteristics and actions regardless of type.
 	abstract static class Machine
 	{
@@ -254,7 +254,7 @@ public class SlotMachines
 			this.arrResults = new char[rows][reels];
 			assignSymbols(syms);
 			assignSpinCost();
-			this.P = new Player();
+			this.P = new Player(readInput("What is your name?","",' ',""));
 		}
 		
 		public void assignSymbols(int size)	//Gives values to the array of available symbols.
@@ -271,11 +271,9 @@ public class SlotMachines
 		}
 		public void assignSpinCost()		//Gives value to the cost of spinning the reels.
 		{
-			double mod;
-			if (this instanceof SingleRow)	{mod = 0.4;} 
-			else							{mod = 0.1;}
+			double mod = ((this instanceof SingleRow)? 0.5 : 0.1);
 			
-			this.cost = Math.ceil( (double)reels * (double)rows * (double)arrSyms.length * mod );
+			this.cost = Math.ceil( (double)rows * (double)reels * (double)arrSyms.length * mod );
 		}
 		public void changeParameters()		//Changes the rows, reels and symbols of the machine.
 		{
@@ -305,7 +303,7 @@ public class SlotMachines
 			this.arrResults = new char[rows][reels];
 			assignSymbols(nSyms);
 			assignSpinCost();
-			if (this instanceof Multiway)	
+			if (this instanceof Multiway)
 				{((Multiway)this).limit = Integer.min(nReels, nRows);}
 		}
 		
@@ -457,7 +455,6 @@ public class SlotMachines
 		}
 		
 	}
-	
 	
 	//The actions that vary between the type of slot machine.
 	public static interface Actions
@@ -829,11 +826,11 @@ public class SlotMachines
 	
 	
 	
-	/*************** Database connection implementation ***************/
-
+	/********** Database connection implementation **********/
+	
 	static final String URL = "jdbc:mysql://localhost:3306/java_connect";
 	static final String USER = "root";
-	static final String PASS = "BasedAsFuck2024-";
+	static final String PASS = "root";
 	
 	//Inserts the values given into the database table
 	public static void insertDB(String name, int games, String results, double spent, double prize)
@@ -842,32 +839,25 @@ public class SlotMachines
 			Connection con = DriverManager.getConnection(URL, USER, PASS);
 			
 			//Read number of rows for insertion
-			int count=0;
-			Statement stmt3 = con.createStatement();
-			ResultSet rs3 = stmt3.executeQuery("SELECT COUNT(*) AS total FROM results");
-			while(rs3.next())	{count = rs3.getInt("total");}
+			ResultSet rs = con.createStatement().executeQuery("SELECT COUNT(*) AS total FROM results");
+			int count = 0;
+			while(rs.next())
+				{count = rs.getInt("total");}
 			
 			//Read date for insertion
 			String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 			
 			//Insert values
-			String sql = "INSERT INTO results(id,player,game,Result,endSpent,endPrize,fullDate) "
-					+ "VALUES ("+(count+1000)+",'"+name+"',"+games+","
-							+ "'"+results+"',"+spent+","+prize+",'"+date+"')";
+			String sql = "INSERT INTO results(id,player,spent,game,Result,endPrize,fullDate) "
+				+"VALUES ("+(count+1000)+",'"+name+"',"+spent+","
+				+games+","+ "'"+results+"',"+prize+",'"+date+"')";
 			
 			//Check insertion was successful
 			int m = con.createStatement().executeUpdate(sql);
-			if (m==1)
-			    {System.out.println("Results saved");}
-			else
-			    {System.out.println("Insertion failed");}
+			if (m==1)	{System.out.println("Results saved");}
+			else		{System.out.println("Insertion failed");}
 			
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace();
-			System.out.println("  Insertion error.");
-		}
+		} catch (SQLException e)	{e.printStackTrace();}
 	}
 	
 	//Displays the complete database table, regularly or with a script depending on the parameter
@@ -876,32 +866,25 @@ public class SlotMachines
 		try {
 			Connection con = DriverManager.getConnection(URL, USER, PASS);
 			
-			if (table)
-				{DBTablePrinter.printTable(con, "results");}
-			else
+			if (!table)
 			{
-				Statement st = con.createStatement();
-				ResultSet rs = st.executeQuery("SELECT * FROM results");
-				ResultSetMetaData rsmd = rs.getMetaData();
-				int colnum = rsmd.getColumnCount();                    
+				ResultSet rs = con.createStatement().executeQuery("SELECT * FROM results");
+				int colnum = rs.getMetaData().getColumnCount();                    
 				
 	    		System.out.println("\n-------------------------");
 		    	while (rs.next())
 		    	{
 		    		for(int i=1 ; i<=colnum; i++)
-		    		{
-		    			System.out.print(((i==1)?"- ":"")+rs.getString(i)+" | "); 
-		    		}
+		    			{System.out.print(((i==1)? " - ":" | ")+rs.getString(i)); }
 		    		System.out.println();
 		    	}
 			}
-	    }
-	    catch (SQLException e)
-	    {
-	    	e.printStackTrace();
-	    	System.out.println("  Display error.");
-	    }
+			else {DBTablePrinter.printTable(con, "results", 100);}
+			
+	    } catch (SQLException e) {e.printStackTrace();}
 	}
+	
+	
 	
 	
 	
@@ -916,6 +899,9 @@ public class SlotMachines
 	{
 		int opc1;
 		
+		//displayGrid d = new displayGrid();
+		//d.launch(args);
+		
 		do {
 			
 			System.out.println("\n\t\t ----- MAIN MENU ----- ");
@@ -924,9 +910,9 @@ public class SlotMachines
 			System.out.println(" 1. Play single row Slot Machine.");
 			System.out.println(" 2. Play multiway Slot Machine.");
 			System.out.println(" 3. Show machine differences.");
-			System.out.println(" 4. Show database.");
-			System.out.println(" 5. Show database with script.");
-			System.out.println(" 0. Exit.");
+			System.out.println(" 4. Display database plainly.");
+			System.out.println(" 5. Display database with script.");
+			System.out.println(" 0. Exit program.\n");
 			opc1 = readInput("Choose an option",0,' ',5);
 			
 			switch(opc1)
@@ -946,20 +932,20 @@ public class SlotMachines
 				break;
 				case 3:
 				{
-					System.out.println("\n· A \"singlerow\" slot machine\n"
+					System.out.println("\n - A \"singlerow\" slot machine\n"
 									 + "   has several reels and in one row.");
-					System.out.println("  Prizes are won after spinning the reels\n"
+					System.out.println("   Prizes are won after spinning the reels\n"
 									 + "   if along the reels there are\n"
 									 + "   at least two symbols matching.");
-					System.out.println("\n· A \"multiway\" slot machine\n"
+					System.out.println("\n - A \"multiway\" slot machine\n"
 									 + "   has several reels and rows, not always equal.");
-					System.out.println("  Prizes are won after spinning the reels\n"
+					System.out.println("   Prizes are won after spinning the reels\n"
 									 + "   if along the winning lines\n"
 									 + "   all symbols match.");
 				}
 				break;
-				case 4: {displayDB(false);} break;
-				case 5: {displayDB(true);}  break;
+				case 4: {displayDB(false);}	break;
+				case 5: {displayDB(true);}	break;
 			}
 			if (opc1!=0) 
 			{
@@ -972,12 +958,10 @@ public class SlotMachines
 		input.close();
 		System.out.println("\n\n\t\t ***** Game Over ***** ");
 	}
-
-
-
-
-
-
-
-
+	
+	
+	
+	
+	
+	
 }
