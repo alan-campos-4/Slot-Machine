@@ -1,8 +1,8 @@
-//General use
+//General functionality
 import java.util.Random;
 import java.util.Scanner;
 import java.util.ArrayList;
-import java.text.DecimalFormat;
+import java.text.DecimalFormat;	//For displaying percentages
 //Database implementation
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -15,13 +15,11 @@ import net.efabrika.util.DBTablePrinter; //Script for displaying tables
 
 
 
-
-
 /*
-TODO (3rd trimester):
+TODO (3rd tri-mester):
  * 
  * ----- Implement -----
- * JDBC management
+ * JDBC management ¬/
  * Graphic interface (JavaFX)
  * Event handling
  * 
@@ -30,6 +28,7 @@ TODO (3rd trimester):
  * Redesign Multi-way re-roll (test)
  * Free spins
  * ? Continue keyword instead of gameEnter variable
+ * ?? Pay-out corresponding with the symbol matched
  * 
 */
 
@@ -241,6 +240,7 @@ public class SlotMachines
 		protected int rows;				//Number of rows of the machine.
 		protected int reels;			//Number of columns or reels of the machine.
 		protected double cost;			//Cost of spinning the reels per game
+		protected boolean rerolled;		//True if a re-rolled has been done.
 		
 		protected int minSize, maxSize;	//Minimum and maximum amount of rows and reels allowed
 		protected int minSyms, maxSyms;	//Minimum and maximum number of symbols available allowed
@@ -438,6 +438,7 @@ public class SlotMachines
 		{
 			P.numGames++;
 			P.bet -= cost;
+			rerolled = false;
 			if (this instanceof SingleRow)
 			{
 				((SingleRow)this).spinReels();
@@ -616,30 +617,34 @@ public class SlotMachines
 		}
 		public void reroll()
 		{
-			System.out.println(" You are one reel away from the jackpot.\n");
-			System.out.println(" · You can leave it be and get the reward"
-							+"\n  for the "+MRcount+" matching reels.");
-			System.out.println(" · Or you can risk loosing all your money"
-							+"\n  for the chance of getting the jackpot.");
-			
-			gameInput = readInput("Do you want to reroll the "+(LRpos+1)+"º reel?",'y','/','n');
-			if (gameInput=='y' || gameInput=='Y')
+			if (!rerolled)
 			{
-				arrResults[0][LRpos] = arrSyms[rand.nextInt(arrSyms.length)];
-				displayReels();
+				System.out.println(" You are one reel away from the jackpot.\n");
+				System.out.println(" · You can leave it be and get the reward"
+								+"\n  for the "+MRcount+" matching reels.");
+				System.out.println(" · Or you can risk loosing all your money"
+								+"\n  for the chance of getting the jackpot.");
 				
-				if (arrResults[0][MRpos]==arrResults[0][LRpos])
+				gameInput = readInput("Do you want to reroll the "+(LRpos+1)+"º reel?",'y','/','n');
+				if (gameInput=='y' || gameInput=='Y')
 				{
-					System.out.println("The new symbol is a match.\n");
-					MRcount = reels;
+					arrResults[0][LRpos] = arrSyms[rand.nextInt(arrSyms.length)];
+					displayReels();
+					
+					if (arrResults[0][MRpos]==arrResults[0][LRpos])
+					{
+						System.out.println("The new symbol is a match.\n");
+						MRcount = reels;
+					}
+					else
+					{
+						System.out.println("The new symbol is still different.\n");
+						MRcount = 1;
+					}
 				}
-				else
-				{
-					System.out.println("The new symbol is still different.\n");
-					MRcount = 1;
-				}
+				System.out.println();
+				rerolled = true;
 			}
-			System.out.println();
 		}
 		
 	}
@@ -733,7 +738,18 @@ public class SlotMachines
 			horizontal = new int[rows];
 			for (int i=0; i<horizontal.length; i++) {horizontal[i]=0;}
 			
-			//Diagonal 1: top-left --> bottom-right
+			//Check horizontal lines: from top to bottom
+			for (int i=0; i<rows; i++)
+			{
+				checking = arrResults[i][0];
+				for (int j=0; j<reels; j++)
+				{
+					if (checking==arrResults[i][j])
+						{horizontal[i]++;}
+				}
+			}
+			
+			/*//Diagonal 1: top-left --> bottom-right
 			checking = arrResults[0][0];
 			for (int i=1; i<limit; i++)
 			{
@@ -747,32 +763,29 @@ public class SlotMachines
 			for (int i=1; i<limit; i++)
 			{
 				if (checking==arrResults[i][reels-1-i]) {diagonal2++;}
-			}
-			
-			//Horizontal lines: from top to bottom
-			for (int i=0; i<rows; i++)
-			{
-				checking = arrResults[i][0];
-				for (int j=1; j<reels; j++)
-				{
-					if (checking==arrResults[i][j]) {horizontal[i]++;}
-				}
-			}
+			}*/
 		}
 		public void calculatePrize()
 		{
-			boolean fullHorizontal = true;
+			//boolean fullHorizontal = true;
 			for (int i=0; i<horizontal.length; i++)	//Checks if all horizontal lines match
 			{
-				if (horizontal[i]!=reels)		
+				if (horizontal[i]==reels)		
 				{
-					fullHorizontal = false;		//If not, checks if the line being checked
+					System.out.println("J");
+					break;
+				}
+				else
+				{
 					if (horizontal[i]==reels-1)		//can be re-rolled
 						{reroll();}
 					else if (horizontal[i]==reels)	//or matches by itself, only once
-						{if (horiMatch==-1) {horiMatch = i;}}
+					{
+						if (horiMatch==-1)
+							{horiMatch = i;}
+					}
 				}
-			}
+			}/*
 			if (fullHorizontal)
 			{
 				P.bet *= 100;
@@ -801,21 +814,14 @@ public class SlotMachines
 			{
 				gameEnter = false;
 				System.out.println("You got no winning lines.");
-			}
+			}*/
 		}
-		public void reroll()	//... ...
+		public void reroll()
 		{
-			if (diagonal1==reels-1)
+			if (!rerolled)
 			{
-				//
-			}
-			if (diagonal2==reels-1)
-			{
-				//
-			}
-			if (horizontal[horiMatch]==reels-1)
-			{
-				//
+				System.out.println("reroll");
+				rerolled = true;
 			}
 		}
 		
