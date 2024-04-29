@@ -48,6 +48,7 @@ class SlotMachines_Test
 		
 		} while (op!=0);
 		System.out.println("\n\t ----- End ----- ");
+		assertTrue(op==0);
 	}
 	
 	
@@ -86,7 +87,7 @@ class SlotMachines_Test
 	void Reroll_Multiway_Test()
 	{
 		//Create the machine
-		SlotMachines.Multiway M2 = new SlotMachines.Multiway();
+		SlotMachines.Multiway M2 = new SlotMachines.Multiway(3, 4);
 		
 		//Generate the two positions for the different sets of symbols
 		int pos1, pos2;
