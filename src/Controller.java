@@ -1,29 +1,21 @@
-import javafx.event.ActionEvent;
-import javafx.fxml.FXMLLoader;
-import java.io.IOException;
-import javafx.scene.Node;
-import javafx.scene.Parent;
+import java.util.HashMap;
 import javafx.scene.Scene;
-import javafx.stage.Stage;
+import javafx.scene.layout.Pane;
+
+
 
 
 public class Controller
 {
-	private Stage stage;
-	private Scene scene;
-	private Parent root;
-	
-	public void switchToMenu(ActionEvent event, String name) throws IOException
-	{
-		String menu;
-		if (name=="main")			{menu = "MainMenu.fxml";}
-		else if (name=="single")	{menu = "SinglerowsMenu.fxml";}
-		else						{menu = "MultiwayMenu.fxml";}
-		
-		root = FXMLLoader.load(getClass().getResource(menu));
-		stage = (Stage)((Node)event.getSource()).getScene().getWindow();
-		scene = new Scene(root);
-		stage.setScene(scene);
-		stage.show();
-	}
+    private HashMap<String, Pane> screenMap = new HashMap<>();
+    private Scene main;
+
+    public Controller(Scene main)						{this.main = main;}
+
+    protected void addScreen(String name, Pane pane)	{screenMap.put(name, pane);}
+
+    protected void removeScreen(String name)			{screenMap.remove(name);}
+
+    protected void activate(String name)				{main.setRoot( screenMap.get(name) );}
 }
+

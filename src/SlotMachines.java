@@ -10,7 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;				//For storing the date
 import java.time.format.DateTimeFormatter;	//For storing the date
-import net.efabrika.util.DBTablePrinter; //Script for displaying tables
+import net.efabrika.util.DBTablePrinter;	//Script for displaying tables
 
 
 

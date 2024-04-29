@@ -18,7 +18,7 @@ public class JFX_SceneBuilder extends Application
         Parent root;
         try
         {
-			root = FXMLLoader.load(getClass().getResource("MainMenu.fxml"));
+			root = FXMLLoader.load(getClass().getResource("Menu.fxml"));
 			stage.setScene(new Scene(root));
 			stage.setTitle("Slot Machine");
 			stage.setMaximized(true);
