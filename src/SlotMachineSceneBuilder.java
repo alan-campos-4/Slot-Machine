@@ -8,7 +8,7 @@ import javafx.stage.Stage;
 
 
 
-public class JFX_SceneBuilder extends Application
+public class SlotMachineSceneBuilder extends Application
 {
 	
 	@Override

@@ -37,7 +37,7 @@ TODO (3rd tri-mester):
 
 
 
-public class SlotMachines
+public class SlotMachine
 {
 
 	/********** General classes and methods **********/
