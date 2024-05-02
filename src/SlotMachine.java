@@ -877,8 +877,7 @@ public class SlotMachine
 				ResultSet rs = con.createStatement().executeQuery("SELECT * FROM results");
 				int colnum = rs.getMetaData().getColumnCount();                    
 				
-	    		System.out.println("\n-------------------------");
-		    	while (rs.next())
+	    		while (rs.next())
 		    	{
 		    		for(int i=1 ; i<=colnum; i++)
 		    			{System.out.print(((i==1)? " - ":" | ")+rs.getString(i)); }

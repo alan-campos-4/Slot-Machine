@@ -23,47 +23,58 @@ public class SlotMachineFX extends Application
 {
 	public static void main(String args[])	{launch(args);}
 	
+	VBox root;
+	VBox MainMenu			= createMainMenu();
+    VBox MenuSingle			= createMenuSingle();
+    VBox MenuMultiw			= createMenuMultiw();
+    VBox SinglerowMachine	= createSinglerowMachine();
+    VBox MultiwayMachine	= createMultiwayMachine();
+    
+    VBox DBText				= createDisplayDB(false);
+    VBox DBTScript			= createDisplayDB(true);
 	
-    @Override public void start(Stage stage)
+    @Override public void start(Stage stage) throws Exception
     {
-    	try {
-	        //***** Declaration of scenes. *****
-	        Scene MainMenu			= createMainMenu();
-	        Scene MenuSingle		= createMenuSingle();
-	        Scene MenuMultiw		= createMenuMultiw();
-	        Scene SinglerowMachine	= createSinglerowMachine();
-	        Scene MultiwayMachine	= createMultiwayMachine();
-	        Scene DBText	= createDisplayDB(false);
-	        Scene DBTScript	= createDisplayDB(true);
-	        
-	        
-	        //***** Declaration of buttons for menu navigation. *****
-	    	exit.setOnAction((ActionEvent event) -> {Platform.exit();});
-	        openMenuSingle.setOnAction(e ->		stage.setScene(MenuSingle));
-	        openMenuMultiw.setOnAction(e ->		stage.setScene(MenuMultiw));
-	        openMachineSingle.setOnAction(e ->	stage.setScene(SinglerowMachine));
-	        openMachineMultiw.setOnAction(e -> 	stage.setScene(MultiwayMachine));
-	        backToMainMenu1.setOnAction(e ->	stage.setScene(MainMenu));
-	        backToMainMenu2.setOnAction(e ->	stage.setScene(MainMenu));
-	        backToMainMenu3.setOnAction(e ->	stage.setScene(MainMenu));
-	        backToMenuSingle.setOnAction(e ->	stage.setScene(MenuSingle));
-	        backToMenuMultiw.setOnAction(e ->	stage.setScene(MenuMultiw));
-	        
-	        
-	        //***** Declaration of buttons for different information displays. ******
-	        displayDBText.setOnAction(e ->		stage.setScene(DBText));
-	        displayDBTable.setOnAction(e ->		stage.setScene(DBTScript));
-	        
-	        
-	        
-	        //Setting the Stage 
-	        stage.setTitle("Slot Machine");
-	        stage.setScene(MainMenu);
-	        stage.setMaximized(true);
-	        stage.setFullScreen(true);
-	        stage.show();
-	    }
-        catch(Exception e) {e.printStackTrace();}
+        //* ***** Declaration of scenes. *****
+//        Scene MainMenu			= new Scene(createMainMenu());
+//        Scene MenuSingle		= new Scene(createMenuSingle());
+//        Scene MenuMultiw		= new Scene(createMenuMultiw());
+//        Scene SinglerowMachine	= new Scene(createSinglerowMachine());
+//        Scene MultiwayMachine	= new Scene(createMultiwayMachine());
+//        
+//        Scene DBText			= new Scene(createDisplayDB(false));
+//        Scene DBTScript			= new Scene(createDisplayDB(true));
+    	
+        
+        
+        //***** Declaration of buttons for menu navigation. *****
+    	exit.setOnAction((ActionEvent event) -> {Platform.exit();});
+    	openMenuSingle.setOnAction(new openSingleRow());
+    	openMenuMultiw.setOnAction(new openMultiway());
+    	
+    	backToMainMenu1.setOnAction(new returnMainMenu());
+    	backToMainMenu2.setOnAction(new returnMainMenu());
+    	
+//        openMenuMultiw.setOnAction(e ->		stage.setScene(MenuMultiw));
+//        openMachineSingle.setOnAction(e ->	stage.setScene(SinglerowMachine));
+//        openMachineMultiw.setOnAction(e -> 	stage.setScene(MultiwayMachine));
+//        backToMainMenu1.setOnAction(e ->	stage.setScene(MainMenu));
+//        backToMainMenu2.setOnAction(e ->	stage.setScene(MainMenu));
+//        backToMainMenu3.setOnAction(new returnMainMenu());
+//        backToMainMenu4.setOnAction(new returnMainMenu());
+//        backToMenuSingle.setOnAction(e ->	stage.setScene(MenuSingle));
+//        backToMenuMultiw.setOnAction(e ->	stage.setScene(MenuMultiw));
+        
+        
+        //***** Declaration of buttons for different information displays. ******
+//        displayDBText.setOnAction(e ->		stage.setScene(DBText));
+//        displayDBTable.setOnAction(e ->		stage.setScene(DBTScript));
+        
+        
+        stage.setTitle("Slot Machine");
+        stage.setScene(new Scene(root));
+        stage.setMaximized(true);
+        stage.show();
     }
 	
 	
@@ -75,7 +86,8 @@ public class SlotMachineFX extends Application
 	
 	//Buttons for menu navigation
     static Button openMenuSingle, openMenuMultiw, openMachineSingle, openMachineMultiw;
-    static Button backToMainMenu1, backToMainMenu2, backToMainMenu3, backToMenuSingle, backToMenuMultiw;
+    static Button backToMainMenu1, backToMainMenu2, backToMainMenu3, backToMainMenu4,
+    	backToMenuSingle, backToMenuMultiw;
     //Buttons for the Main Menu
     static Button displayDBText, displayDBTable, showDiff, exit;
 	//Buttons for the Single-row Menu
@@ -118,7 +130,7 @@ public class SlotMachineFX extends Application
     
     
     //Creates the scene for the Main Menu
-    public Scene createMainMenu()
+    public VBox createMainMenu()
     {
     	Label title0 = new Label("Main Menu");
     	GridPane grid0 = new GridPane();
@@ -137,12 +149,11 @@ public class SlotMachineFX extends Application
         menu0.setAlignment(Pos.CENTER);
         title0.setAlignment(Pos.CENTER);
         grid0.setAlignment(Pos.CENTER);
-        Scene scene0 = new Scene(menu0);
-    	return scene0;
+    	return menu0;
     }
     
     //Creates the scene for the Single-row Machine menu options
-    public Scene createMenuSingle()
+    public VBox createMenuSingle()
     {
     	Label title1 = new Label("Single-row Slot Machine");
     	GridPane grid1 = new GridPane();
@@ -159,12 +170,11 @@ public class SlotMachineFX extends Application
         menu1.setAlignment(Pos.CENTER);
         title1.setAlignment(Pos.CENTER);
         grid1.setAlignment(Pos.CENTER);
-        Scene scene1 = new Scene(menu1);
-    	return scene1;
+    	return menu1;
     }
     
     //Creates the scene for the Multi-way Machine menu options
-    public Scene createMenuMultiw()
+    public VBox createMenuMultiw()
     {
     	Label title2 = new Label("Multiwway Slot Machine");
         GridPane grid2 = new GridPane();
@@ -181,13 +191,12 @@ public class SlotMachineFX extends Application
     	menu2.setAlignment(Pos.CENTER);
     	title2.setAlignment(Pos.CENTER);
         grid2.setAlignment(Pos.CENTER);
-        Scene scene2 = new Scene(menu2);
-    	return scene2;
+    	return menu2;
     }
     
     
     //Creates the scene for Single-row Machine and its reels
-    public Scene createSinglerowMachine()
+    public VBox createSinglerowMachine()
     {
     	Label title1 = new Label("Single-row Slot Machine");
     	GridPane grid = new GridPane();
@@ -200,13 +209,12 @@ public class SlotMachineFX extends Application
     	menu1.setAlignment(Pos.CENTER);
         title1.setAlignment(Pos.CENTER);
         grid.setAlignment(Pos.CENTER);
-    	Scene singleMachine = new Scene(menu1);
-    	return singleMachine;
+    	return menu1;
     }
     
     
     //Creates the scene for Single-row Machine and its reels
-    public Scene createMultiwayMachine()
+    public VBox createMultiwayMachine()
     {
     	Label title2 = new Label("Multi-way Slot Machine");
     	GridPane grid = new GridPane();
@@ -219,21 +227,21 @@ public class SlotMachineFX extends Application
     	menu2.setAlignment(Pos.CENTER);
         title2.setAlignment(Pos.CENTER);
         grid.setAlignment(Pos.CENTER);
-    	Scene MultiwMachine = new Scene(menu2);
-    	return MultiwMachine;
+    	return menu2;
     }
     
     
     
     
     //
-    public Scene createDisplayDB(boolean script)
+    public VBox createDisplayDB(boolean script)
     {
-    	Label title = new Label("Database display\n"+(script? "in text":"with script" ));
+    	Label title = new Label("Database display\n"+(script? "with script":"as plain text" ));
     	TextArea text = new TextArea();
     	backToMainMenu3 = new Button("Return to the main menu");
+    	backToMainMenu4 = new Button("Return to the main menu");
     	
-    	VBox root = new VBox(title, text, backToMainMenu3);
+    	VBox root = new VBox(title, text, ((script)? backToMainMenu3 : backToMainMenu4));
     	
     	title.setAlignment(Pos.CENTER);
     	root.setAlignment(Pos.CENTER);
@@ -253,40 +261,26 @@ public class SlotMachineFX extends Application
 		
 		text.appendText(outStream.toString());
     	
-    	Scene scene = new Scene(root);
-    	return scene;
+    	return root;
     }
     
     
     
-    /*
-    public Scene creatdisplayDBText()
+    class returnMainMenu implements EventHandler<ActionEvent>
     {
-    	Label title = new Label("");
-    	TextArea text = new TextArea();
-    	VBox root = new VBox(title, text);
-    	
-    	Scene scene = new Scene(root);
-    	return scene;
+		@Override public void handle(ActionEvent e) {root.getScene().setRoot(MainMenu);}
     }
-    */
     
-    class PlaySingleRow implements EventHandler<ActionEvent>
+    class openSingleRow implements EventHandler<ActionEvent>
     {
-    	@Override
-    	public void handle(ActionEvent e) {System.out.println("Single-row");}
+    	@Override public void handle(ActionEvent e) {root.getScene().setRoot(MenuSingle);}
     }
-    
-    
-    class PlayMultiwway implements EventHandler<ActionEvent>
+    class openMultiway implements EventHandler<ActionEvent>
     {
-    	@Override
-    	public void handle(ActionEvent e) {System.out.println("Multiway");}
+    	@Override public void handle(ActionEvent e) {root.getScene().setRoot(MenuMultiw);}
     }
-	
-	
-	
-	
     
     
+    
+	    
 }
