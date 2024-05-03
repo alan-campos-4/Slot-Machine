@@ -353,10 +353,76 @@ public class SlotMachine
 			System.out.println("  - Every bet has to be between "+BETMIN+" and "+BETMAX+" €.");
 			System.out.println("  - You can't play more than "+GAMELIMIT+" games.");
 			System.out.println("  - There is a limit to how much you can win.");
+			System.out.println("\n  Prizes available:");
+			if (this instanceof SingleRow)
+			{
+				
+				System.out.println("  - All reels match : jackpot.");
+				System.out.println("  - Almost all reels match : chance at all or nothing.");
+				System.out.println("  - More than half the reels match : win some money.");
+				System.out.println("  - Less than half the reels match : lose some money.");
+				System.out.println("  - Half of the reels match : keep your bet.");
+				System.out.println("  - No matches : you lose.");
+			}
+			else
+			{
+				System.out.println("  - All lines match: jackpot");
+				System.out.println("  - Both diagonals match: win a lot of money.");
+				System.out.println("  - Any diagonal match: win some money.");
+				System.out.println("  - Any horizontal match: win some money");
+				System.out.println("  - No lines match: you lose.");
+			}
 		}
 		public void showProb()				//Shows the probability of each outcome.
 		{
+			DecimalFormat formatter = new DecimalFormat("#0.0000");
 			System.out.println("\n  Probability:");
+			if (this instanceof SingleRow)
+			{
+				double probAll;		//All of the reels match.
+				double probAlmost;	//All of the reels except one match.
+				double probMH=0; 	//More than half the reels match.
+				double probHalf;	//Half of the reels match.
+				double probLH=0;	//Less than half the reels match.
+				double probNone=1;	//Not a single match.
+				int half = (int)Math.ceil((double)reels/2);
+				
+				probAll		= Math.pow( ((double)1/arrSyms.length), reels );
+				probAlmost	= Math.pow( ((double)1/arrSyms.length), reels-1 );
+				probHalf	= Math.pow( ((double)1/arrSyms.length), half );
+				for (int i=half+1; i<=reels; i++)	{probMH += Math.pow( ((double)1/arrSyms.length), i );}
+				for (int i=2; i<half; i++)			{probLH += Math.pow( ((double)1/arrSyms.length), i );}
+				for (int i=0; i<reels; i++)			{probNone *= ((double)(reels-i)/arrSyms.length);}
+				
+				System.out.println("  - All reels \t"+formatter.format(probAll*100)+" %");
+				System.out.println("  - Almost all \t"+formatter.format(probAlmost*100)+" %");
+				System.out.println("  - > Half \t"+formatter.format(probMH*100)+" %");
+				System.out.println("  - = Half \t"+formatter.format(probHalf*100)+" %");
+				System.out.println("  - < Half \t"+formatter.format(probLH*100)+" %");
+				System.out.println("  - No match \t"+formatter.format(probNone*100)+" %");
+			}
+			else
+			{
+				double probAll=0;	//All lines match.
+				double probDiags=0;	//Both diagonals match.
+				double probDiag=0;	//One of the diagonals match.
+				double probHori=0;	//Any horizontal match.
+				double probNone=1;	//No lines match.
+				int limit = Integer.min(rows,reels);
+				
+				probDiag 	= Math.pow( ((double)1/arrSyms.length), limit );
+				probDiags	= probDiag*probDiag;
+				probHori	= Math.pow( ((double)1/arrSyms.length), reels );
+				probAll		= probHori*rows;
+				probNone	= (1-probDiag)*(1-probHori);
+				
+				System.out.println("\n  Probability:");
+				System.out.println("  - All lines    \t"+formatter.format(probAll*100)+" %");
+				System.out.println("  - Both diagonals \t"+formatter.format(probDiags*100)+" %");
+				System.out.println("  - One diagonal \t"+formatter.format(probDiag*100)+" %");
+				System.out.println("  - One horizontal \t"+formatter.format(probHori*100)+" %");
+				System.out.println("  - No lines     \t"+formatter.format(probNone*100)+" %");
+			}
 		}
 		
 		public void saveResults()			//Saves the results of spinning in the record file.
@@ -484,46 +550,6 @@ public class SlotMachine
 			minSyms = 4;	maxSyms = 8;
 		}
 		public SingleRow()	{this(4, 6);}
-		
-		@Override
-		public void showRules()
-		{
-			super.showRules();
-			System.out.println("\n  Prizes available:");
-			System.out.println("  - All reels match : jackpot.");
-			System.out.println("  - Almost all reels match : chance at all or nothing.");
-			System.out.println("  - More than half the reels match : win some money.");
-			System.out.println("  - Less than half the reels match : lose some money.");
-			System.out.println("  - Half of the reels match : keep your bet.");
-			System.out.println("  - No matches : you lose.");
-		}
-		@Override
-		public void showProb()
-		{
-			super.showProb();
-			double probAll;		//All of the reels match.
-			double probAlmost;	//All of the reels except one match.
-			double probMH=0; 	//More than half the reels match.
-			double probHalf;	//Half of the reels match.
-			double probLH=0;	//Less than half the reels match.
-			double probNone=1;	//Not a single match.
-			int half = (int)Math.ceil((double)reels/2);
-			DecimalFormat formatter = new DecimalFormat("#0.0000");
-			
-			probAll		= Math.pow( ((double)1/arrSyms.length), reels );
-			probAlmost	= Math.pow( ((double)1/arrSyms.length), reels-1 );
-			probHalf	= Math.pow( ((double)1/arrSyms.length), half );
-			for (int i=half+1; i<=reels; i++)	{probMH += Math.pow( ((double)1/arrSyms.length), i );}
-			for (int i=2; i<half; i++)			{probLH += Math.pow( ((double)1/arrSyms.length), i );}
-			for (int i=0; i<reels; i++)			{probNone *= ((double)(reels-i)/arrSyms.length);}
-			
-			System.out.println("  - All reels \t"+formatter.format(probAll*100)+" %");
-			System.out.println("  - Almost all \t"+formatter.format(probAlmost*100)+" %");
-			System.out.println("  - > Half \t"+formatter.format(probMH*100)+" %");
-			System.out.println("  - = Half \t"+formatter.format(probHalf*100)+" %");
-			System.out.println("  - < Half \t"+formatter.format(probLH*100)+" %");
-			System.out.println("  - No match \t"+formatter.format(probNone*100)+" %");
-		}
 		
 		public void spinReels()
 		{
@@ -674,41 +700,6 @@ public class SlotMachine
 		public Multiway(int size, int nSymbols)	{this(size, size, nSymbols);}
 		public Multiway()						{this(5, 5, 5);}
 		
-		@Override
-		public void showRules()
-		{
-			super.showRules();
-			System.out.println("\n  Prizes available:");
-			System.out.println("  - All lines match: jackpot");
-			System.out.println("  - Both diagonals match: win a lot of money.");
-			System.out.println("  - Any diagonal match: win some money.");
-			System.out.println("  - Any horizontal match: win some money");
-			System.out.println("  - No lines match: you lose.");
-		}
-		@Override
-		public void showProb()
-		{
-			double probAll=0;	//All lines match.
-			double probDiags=0;	//Both diagonals match.
-			double probDiag=0;	//One of the diagonals match.
-			double probHori=0;	//Any horizontal match.
-			double probNone=1;	//No lines match.
-			DecimalFormat formatter = new DecimalFormat("#0.0000");
-			
-			probDiag 	= Math.pow( ((double)1/arrSyms.length), limit );
-			probDiags	= probDiag*probDiag;
-			probHori	= Math.pow( ((double)1/arrSyms.length), reels );
-			probAll		= probHori*rows;
-			probNone	= (1-probDiag)*(1-probHori);
-			
-			System.out.println("\n  Probability:");
-			System.out.println("  - All lines    \t"+formatter.format(probAll*100)+" %");
-			System.out.println("  - Both diagonals \t"+formatter.format(probDiags*100)+" %");
-			System.out.println("  - One diagonal \t"+formatter.format(probDiag*100)+" %");
-			System.out.println("  - One horizontal \t"+formatter.format(probHori*100)+" %");
-			System.out.println("  - No lines     \t"+formatter.format(probNone*100)+" %");
-		}
-		
 		public void	spinReels()
 		{
 			int startPos=0, nextPos=0;
@@ -830,6 +821,23 @@ public class SlotMachine
 	
 	
 	
+	public static void showDiff()
+	{
+		System.out.println("\n - A \"singlerow\" slot machine\n"
+						 + "   has several reels and in one row.");
+		System.out.println("   Prizes are won after spinning the reels\n"
+						 + "   if along the reels there are\n"
+						 + "   at least two symbols matching.");
+		System.out.println("\n - A \"multiway\" slot machine\n"
+						 + "   has several reels and rows, not always equal.");
+		System.out.println("   Prizes are won after spinning the reels\n"
+				 		 + "   if along the winning lines\n"
+				 		 + "   all symbols match.");
+	}
+	
+	
+	
+	
 	
 	
 	/********** Database connection implementation **********/
@@ -935,20 +943,7 @@ public class SlotMachine
 					M2.menuSelect();
 				}
 				break;
-				case 3:
-				{
-					System.out.println("\n - A \"singlerow\" slot machine\n"
-									 + "   has several reels and in one row.");
-					System.out.println("   Prizes are won after spinning the reels\n"
-									 + "   if along the reels there are\n"
-									 + "   at least two symbols matching.");
-					System.out.println("\n - A \"multiway\" slot machine\n"
-									 + "   has several reels and rows, not always equal.");
-					System.out.println("   Prizes are won after spinning the reels\n"
-									 + "   if along the winning lines\n"
-									 + "   all symbols match.");
-				}
-				break;
+				case 3:	{showDiff();}		break;
 				case 4: {displayDB(false);}	break;
 				case 5: {displayDB(true);}	break;
 			}
