@@ -163,8 +163,10 @@ public class SlotMachine
 	static final int WINLIMIT = 100000;	//Maximum amount of money the player can win.
 	static final int GAMELIMIT = 10;	//Maximum amount of times the player can spin the reels.
 	
-	static boolean gameEnter;	//Player input for stopping or continuing the game.
-	static char gameInput;		//Player input for reading a character within the game.
+	static String def_name = "P1";		//Default name for the machine's player
+	static boolean gameEnter;			//Player input for stopping or continuing the game.
+	static char gameInput;				//Player input for reading a character within the game.
+	
 	
 	
 	
@@ -247,16 +249,21 @@ public class SlotMachine
 		
 		protected Player P;				//The machine's player
 		
-		public Machine(int ro, int re, int syms)
+		public Machine(int ro, int re, int syms, String name)
 		{
 			this.rows = ro;
 			this.reels = re;
 			this.arrResults = new char[rows][reels];
 			assignSymbols(syms);
 			assignSpinCost();
-			this.P = new Player(readInput("What is your name?","",' ',""));
+			this.P = new Player(name);
 		}
+		public Machine(int ro, int re, int syms)	{this(ro, re, syms, def_name);}
 		
+		public void assignName(String name)
+		{
+			P.name = name;
+		}
 		public void assignSymbols(int size)	//Gives values to the array of available symbols.
 		{
 			this.arrSyms = new char[size];
@@ -433,7 +440,7 @@ public class SlotMachine
 				for (int j=0; j<reels; j++)
 					{res += arrResults[i][j];}
 				if (i+1<rows)
-					{res += ',';}
+					{res += '-';}
 			}
 			
 			insertDB(P.name, P.numGames, res, P.spent, P.bet);
@@ -543,13 +550,15 @@ public class SlotMachine
 		protected int MRcount, LRcount;	//Times the symbol appears in the results
 		protected int MRpos, LRpos;		//Position the symbol is first found in the results
 		
-		public SingleRow(int nreels, int nsymbols)
+		public SingleRow(int nreels, int nsymbols, String name)
 		{
-			super(1, nreels, nsymbols);
+			super(1, nreels, nsymbols, name);
 			minSize = 4;	maxSize = 8;
 			minSyms = 4;	maxSyms = 8;
 		}
-		public SingleRow()	{this(4, 6);}
+		public SingleRow(int nreels, int nsymbols)	{this(4, 6, def_name);}
+		public SingleRow(String name)				{this(4, 6, name);}
+		public SingleRow()							{this(4, 6, def_name);}
 		
 		public void spinReels()
 		{
@@ -689,16 +698,17 @@ public class SlotMachine
 		protected int[] horizontal;	//Numbers of symbols matching along the horizontal lines.
 		protected int horiMatch;	//Position of the horizontal line with matching symbols.
 		
-		public Multiway(int nRows, int nReels, int nSymbols)
+		public Multiway(int nRows, int nReels, int nSymbols, String name)
 		{
-			super(nRows, nReels, nSymbols);
+			super(nRows, nReels, nSymbols, name);
 			minSize = 3;	maxSize = 7;
 			minSyms = 4;	maxSyms = 8;
 			horiMatch = missingPos = -1;
 			limit = Integer.min(rows,reels);
 		}
-		public Multiway(int size, int nSymbols)	{this(size, size, nSymbols);}
-		public Multiway()						{this(5, 5, 5);}
+		public Multiway(int size, int syms)		{this(size, size, syms, def_name);}
+		public Multiway(String name)			{this(5, 5, 5, name);}
+		public Multiway()						{this(5, 5, 5, def_name);}
 		
 		public void	spinReels()
 		{
