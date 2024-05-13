@@ -153,6 +153,7 @@ public class SlotMachine
 	
 	
 	
+	
 	/********** Game attributes **********/
 	
 	//All symbols that can appear on a machine
@@ -244,25 +245,30 @@ public class SlotMachine
 		protected double cost;			//Cost of spinning the reels per game
 		protected boolean rerolled;		//True if a re-rolled has been done.
 		
-		protected int minSize, maxSize;	//Minimum and maximum amount of rows and reels allowed
-		protected int minSyms, maxSyms;	//Minimum and maximum number of symbols available allowed
+		public int minSize, maxSize;	//Minimum and maximum amount of rows and reels allowed
+		public int minSyms, maxSyms;	//Minimum and maximum number of symbols available allowed
 		
 		protected Player P;				//The machine's player
 		
 		public Machine(int ro, int re, int syms, String name)
 		{
-			this.rows = ro;
-			this.reels = re;
-			this.arrResults = new char[rows][reels];
-			assignSymbols(syms);
-			assignSpinCost();
+			changeParameters(ro, re, syms);
 			this.P = new Player(name);
 		}
 		public Machine(int ro, int re, int syms)	{this(ro, re, syms, def_name);}
 		
-		public void assignName(String name)
+		public int getReels()	{return reels;}
+		public int getRows()	{return rows;}
+		public int getSyms()	{return arrSyms.length;}
+		public double getCost()	{return cost;}
+		public int getMinSize()	{return minSize;}
+		public int getMaxSize()	{return maxSize;}
+		public int getMinSyms()	{return minSyms;}
+		public int getMaxSyms()	{return maxSyms;}
+		
+		public void assignName(String playername)
 		{
-			P.name = name;
+			this.P.name = playername;
 		}
 		public void assignSymbols(int size)	//Gives values to the array of available symbols.
 		{
@@ -282,7 +288,7 @@ public class SlotMachine
 			
 			this.cost = Math.ceil( (double)rows * (double)reels * (double)arrSyms.length * mod );
 		}
-		public void changeParameters()		//Changes the rows, reels and symbols of the machine.
+		public void inputParameters()	//Changes the rows, reels and symbols of the machine.
 		{
 			int nRows, nReels, nSyms;
 			
@@ -305,13 +311,17 @@ public class SlotMachine
 				nSyms = readInput(" Number of symbols",minSyms,'-',all.length);
 			}
 			
-			this.rows = nRows;
-			this.reels = nReels;
-			this.arrResults = new char[rows][reels];
-			assignSymbols(nSyms);
-			assignSpinCost();
+			changeParameters(nRows, nReels, nSyms);
 			if (this instanceof Multiway)
 				{((Multiway)this).limit = Integer.min(nReels, nRows);}
+		}
+		public void changeParameters(int num_rows, int num_reels, int num_syms)
+		{
+			this.rows = num_rows;
+			this.reels = num_reels;
+			this.arrResults = new char[num_rows][num_reels];
+			assignSymbols(num_syms);
+			assignSpinCost();
 		}
 		
 		public void displayReels(int show)	//Displays the given number of reels of the machine.
@@ -470,7 +480,7 @@ public class SlotMachine
 				
 				switch(opc2)
 				{
-					case 3: {changeParameters();} break;
+					case 3: {inputParameters();} break;
 					case 2: {showRules();} break;
 					case 4: {showProb();} break;
 					case 0: {} break;
