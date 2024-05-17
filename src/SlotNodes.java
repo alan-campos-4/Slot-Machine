@@ -1,12 +1,12 @@
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Optional;
 
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -17,7 +17,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -30,15 +29,9 @@ import javafx.util.converter.IntegerStringConverter;
 
 
 /* TODO:
- * - Class Text instead of TextArea
- * - Implement Parameter change and view
- * - Implement Reel and spinning GUI
  * - Implement results GUI
- * 
- * 
- * - ¬/ Fix database display
- * - ¬/ Fix info display
- * 
+ * - Implement re-roll 
+ * - SlotMachine improvements
  * 
  * */
 
@@ -66,8 +59,8 @@ public class SlotNodes extends Application
 			ParamSingle param1	= new ParamSingle("Change the parameters\n of the machine", menu1);
 			ParamMulti param2	= new ParamMulti("Change the parameters\n of the machine", menu2);
 			
-			SingleMach	= new Machine1("Play the game", menu1);
-			MultiwMach	= new Machine2("Play the game", menu2);
+			Machine1 SingleMach	= new Machine1("Play the game", menu1);
+			Machine2 MultiwMach	= new Machine2("Play the game", menu2);
 			
 			main.addNext(menu1, menu2, DBText, DBScript);
 			menu1.addNext(SingleMach, param1);
@@ -75,12 +68,12 @@ public class SlotNodes extends Application
 	        
 	        
 			primaryStage.setTitle("Welcome to the Casino!");
-	        primaryStage.setScene(new Scene(main, sceneWidth, sceneHeight));
+	        primaryStage.setScene(new Scene(menu1, sceneWidth, sceneHeight));
 	        primaryStage.show();
     	}
         catch (Exception e) {e.printStackTrace();}
     }
-    
+	
 	
 	
 	
@@ -88,13 +81,11 @@ public class SlotNodes extends Application
 	
 	public static SlotMachine.SingleRow Single;
 	public static SlotMachine.Multiway Multi;
-	public static Machine1 SingleMach;
-	public static Machine2 MultiwMach;
 	public static String playername;
 	
-	public static int sceneWidth=800,	sceneHeight=600;
+	public static int sceneWidth=700,	sceneHeight=600;
 	public static int textWidth=600,	textHeight=350;
-	public static int alertWidth=500,	alertHeight=350;
+	public static int alertWidth=400,	alertHeight=200;
 	public static int buttonWidth=130,	buttonHeight=80;
 	
 	
@@ -167,55 +158,95 @@ public class SlotNodes extends Application
 	//Layout containing the main navigation menu.
 	public class MainMenu extends Layout
 	{
+		Alert openMach, wrong;
+		TextField inputName, inputBet;
+		
 		public MainMenu(String title)	{super(title, null);}
 		public void createGUI()
 		{
+			//***	Creates the button menu.	***
 			Button btn1 = new Button("Single-row\nSlot Machine");
 			Button btn2 = new Button("Multi-way\nSlot Machine");
 			Button btn3 = new Button("Display database\nas plain text");
 			Button btn4 = new Button("Display database\nwith script");
 			Button btn5 = new Button("Show\ndifferences");
 			Button btn6 = new Button("Exit");
-			
-			btn1.setOnAction((ActionEvent event) -> {openMachine(0);});
-			btn2.setOnAction((ActionEvent event) -> {openMachine(1);});
-			btn3.setOnAction((ActionEvent event) -> {callNext(2);});
-			btn4.setOnAction((ActionEvent event) -> {callNext(3);});
-			btn5.setOnAction((ActionEvent event) -> {showDiff();});
-			btn6.setOnAction((ActionEvent event) -> {logout();});
 			createButtonMenu(grid, btn1, btn2, btn5, btn3, btn4, btn6);
             getChildren().addAll(grid);
+            
+            //***	Creates the alert to access the slot machines.	***
+            Alert openMachine	= new Alert(AlertType.CONFIRMATION);
+            TextFormatter<Integer> form = new TextFormatter<Integer>(new IntegerStringConverter());
+            GridPane gridpane	= new GridPane();
+            TextField inputName	= new TextField();
+            TextField inputBet	= new TextField();
+        	Label labelName		= new Label("What is your name?: ");
+        	Label labelBet		= new Label("How much do you want to bet?    "
+        						+ "\n("+SlotMachine.BETMIN+" - "+SlotMachine.BETMAX+"): ");
+        	gridpane.add(labelName,	0, 0);
+        	gridpane.add(inputName,	1, 0);
+        	gridpane.add(labelBet,	0, 1);
+        	gridpane.add(inputBet,	1, 1);
+        	gridpane.setAlignment(Pos.CENTER);
+        	gridpane.setHgap(10);
+        	gridpane.setVgap(10);
+        	inputBet.setTextFormatter(form);
+        	openMachine.setTitle("Enter your name and bet"); 
+        	openMachine.setHeaderText("");
+        	openMachine.getDialogPane().setMinWidth(alertWidth);
+	    	openMachine.getDialogPane().setMinHeight(alertHeight);
+	    	openMachine.getDialogPane().setContent(gridpane);
+	    	
+	    	//***	Creates the alert to exit the program.	***
+	    	Alert logout = new Alert(AlertType.CONFIRMATION);
+	    	logout.setTitle("Logout");
+	    	logout.setHeaderText("You are about to logout.");
+	    	logout.setContentText("Are you sure you want\nto exit the program?");
+	    	
+	    	//***	Creates the alert that appears if an error occurs.	***
+	    	Alert wrong = new Alert(AlertType.ERROR);
+	    	wrong.setTitle("Error");
+	    	wrong.setHeaderText("Something went wrong.");
+	    	wrong.setContentText("The inputs are not valid.");
+	    	
+	    	
+	    	//***	Set the function of each button.	***
+	    	btn3.setOnAction((ActionEvent event) -> {callNext(2);});
+			btn4.setOnAction((ActionEvent event) -> {callNext(3);});
+			btn5.setOnAction((ActionEvent event) -> {new DiffAlert().getAlert();});
+			btn6.setOnAction((ActionEvent event) -> 
+			{
+				if (logout.showAndWait().get()==ButtonType.OK) {Platform.exit();}
+			});
+			btn1.setOnAction((ActionEvent event) -> 
+			{
+				if (openMachine.showAndWait().get()==ButtonType.OK)
+				{
+					if (!inputName.getText().isEmpty()
+						&& form.getValue()>=SlotMachine.BETMIN
+						&& form.getValue()<=SlotMachine.BETMAX)
+						{callNext(0);}
+					else 
+						{wrong.showAndWait();}
+				}
+			});
+			btn2.setOnAction((ActionEvent event) -> 
+			{
+				if (openMachine.showAndWait().get()==ButtonType.OK)
+				{
+					if (!inputName.getText().isEmpty()
+						&& form.getValue()>=SlotMachine.BETMIN
+						&& form.getValue()<=SlotMachine.BETMAX)
+						{callNext(1);}
+					else 
+						{wrong.showAndWait();}
+				}
+			});
 		}
 		
-		public void showDiff()	{new DiffAlert().getAlert();}
-        public void openMachine(int i)
-        {
-        	TextInputDialog dialog = new TextInputDialog(SlotMachine.def_name);
-        	dialog.setTitle("Enter your name");
-        	dialog.setHeaderText("");
-        	dialog.setContentText("What is your name?");
-        	
-        	Optional<String> result = dialog.showAndWait();
-        	
-        	if (result.isPresent() && result.get()!="")
-        	{
-        		playername = result.get();
-        		if (i==0)	{Single.assignName(playername);	SingleMach.resetMachine(); }
-        		else		{Multi.assignName(playername);	MultiwMach.resetMachine(); }
-        		
-        	    callNext(i);
-        	}
-        }
-        public void logout()
-        {
-        	Alert alert = new Alert(AlertType.CONFIRMATION);
-        	alert.setTitle("Logout");
-        	alert.setHeaderText("You are about to logout.");
-        	alert.setContentText("Are you sure you want\nto exit the program?");
-        	
-        	if (alert.showAndWait().get()==ButtonType.OK)	{Platform.exit();}
-        }
 	}
+	
+	
 	
 	
 	//Layout containing the sub-menus for each machine type.
@@ -274,21 +305,13 @@ public class SlotNodes extends Application
 	//Layout that allows for the change of a machine's parameters.
 	public abstract class Parameters extends Layout
 	{
-		protected TextFormatter<Integer> formatter1, formatter2, formatter3;
+		protected TextFormatter<Integer> form1, form2, form3;
 		protected TextField input1, input2, input3;
 		protected Label label1, label2, label3, limit1, limit2, limit3;
 		protected Button change, rtn;
 		protected Alert complete, wrong;
-		protected int minR, maxR, minS, maxS;
 		
-		public Parameters(String title, Layout prev, int min1, int max1, int min2, int max2)
-		{
-			super(title, prev);
-			this.minR = min1;
-			this.maxR = max1;
-			this.minS = min2;
-			this.maxS = max2;
-		}
+		public Parameters(String title, Layout prev)	{super(title, prev);}
 		abstract void changeParams();
 		void createGUI()
 		{
@@ -299,12 +322,12 @@ public class SlotNodes extends Application
 			input2 = new TextField();
 			input3 = new TextField();
 			
-			formatter1 = new TextFormatter<>(new IntegerStringConverter());
-	        formatter2 = new TextFormatter<>(new IntegerStringConverter());
-	        formatter3 = new TextFormatter<>(new IntegerStringConverter());
-	        input1.setTextFormatter(formatter1);
-	        input2.setTextFormatter(formatter2);
-	        input3.setTextFormatter(formatter3);
+			form1 = new TextFormatter<>(new IntegerStringConverter());
+	        form2 = new TextFormatter<>(new IntegerStringConverter());
+	        form3 = new TextFormatter<>(new IntegerStringConverter());
+	        input1.setTextFormatter(form1);
+	        input2.setTextFormatter(form2);
+	        input3.setTextFormatter(form3);
 			
 	        change = new Button("Establish the new parameters");
 			rtn = new Button("Return to the previous menu");
@@ -331,8 +354,7 @@ public class SlotNodes extends Application
 	//Layout for changing the parameters of the single-row slot machine.
 	public class ParamSingle extends Parameters
 	{
-		public ParamSingle(String title, Layout prev) 
-			{super(title, prev, Single.minSize, Single.maxSize, Single.minSyms, Single.maxSyms);}
+		public ParamSingle(String title, Layout prev)	{super(title, prev);}
 		void changeParams()
 		{
 			limit2 = new Label("("+Single.minSize+" - "+Single.maxSize+") ");
@@ -346,14 +368,15 @@ public class SlotNodes extends Application
 			
             change.setOnAction((ActionEvent e) -> 
             {
-            	Integer j = formatter2.getValue();
-                Integer k = formatter3.getValue();
+            	Integer j = form2.getValue();
+                Integer k = form3.getValue();
                 if (j==null || k==null) {return;}
                 
                 final int n2 = j;
                 final int n3 = k;
                 
-	            if ( (n2>=minR && n2<=maxR) && (n3>=minS && n3<=maxS) )
+	            if ((n2>=Single.minSize && n2<=Single.maxSize) 
+	            &&	(n3>=Single.minSyms && n3<=Single.maxSyms))
 	            {
 		            Single.changeParameters(1, n2, n3);
 		            complete.showAndWait();
@@ -367,8 +390,7 @@ public class SlotNodes extends Application
 	//Layout for changing the parameters of the multi-way slot machine.
 	public class ParamMulti extends Parameters
 	{
-		public ParamMulti(String title, Layout prev)
-			{super(title, prev, Multi.minSize, Multi.maxSize, Multi.minSyms, Multi.maxSyms);}
+		public ParamMulti(String title, Layout prev)	{super(title, prev);}
 		void changeParams()
 		{
 			limit1 = new Label("("+Multi.minSize+" - "+Multi.maxSize+") ");
@@ -386,16 +408,18 @@ public class SlotNodes extends Application
 			
             change.setOnAction((ActionEvent e) -> 
             {
-            	Integer i = formatter1.getValue();
-                Integer j = formatter2.getValue();
-                Integer k = formatter3.getValue();
+            	Integer i = form1.getValue();
+                Integer j = form2.getValue();
+                Integer k = form3.getValue();
                 if (i==null || j==null || k==null) {return;}
                 
                 final int n1 = i;
                 final int n2 = j;
                 final int n3 = k;
                 
-	            if ( (n1>=minR && n1<=maxR) && (n2>=minR && n2<=maxR) && (n3>=minS && n3<=maxS) )
+	            if ((n1>=Multi.minSize && n1<=Multi.maxSize) 
+	            &&	(n2>=Multi.minSize && n2<=Multi.maxSize)
+	            &&	(n3>=Multi.minSyms && n3<=Multi.maxSyms))
 	            {
 		            Multi.changeParameters(n1, n2, n3);
 		            complete.showAndWait();
@@ -414,119 +438,85 @@ public class SlotNodes extends Application
 	//Layout for representing the machines and their spinning reels
 	public abstract class Machine extends Layout
 	{
-		protected ArrayList<TextArea> MachineReels;
-		protected Button spin, rtn;
-		protected int Reels, Rows;
-		protected int reelsShown;
+		protected int reelsShown = 0;
 		
-		public Machine(String title, Layout prev)
-		{
-			super(title, prev);
-			this.reelsShown = 0;
-		}
+		public Machine(String title, Layout prev)	{super(title, prev);}
+		abstract void generateReelValue();
 		void createGUI()
 		{
-			MachineReels = new ArrayList<TextArea>(Reels);
-			machineUI();
-			
-			rtn = new Button("Return to the previous menu");
-			rtn.setOnAction((ActionEvent e) -> {callPrev();});
-			
+			Button spin = new Button("Spin the reels");
+			Button rtn = new Button("Return to the previous menu");
 			setSpacing(10);
 			getChildren().addAll(grid, spin, rtn);
-		}
-		void resetMachine()
-		{
-			reelsShown = 0;
 			
-			Single.spinReels();
-			Single.P.numGames++;
-			Single.P.bet -= Single.getCost();
-			Single.rerolled = false;
-			
-			Multi.spinReels();
-			Multi.P.numGames++;
-			Multi.P.bet -= Single.getCost();
-			Multi.rerolled = false;
+			spin.setOnAction((ActionEvent e) -> 
+			{
+				if (reelsShown==0)
+				{
+					hideReels();
+					generateReelValue();
+				}
+				if (reelsShown<Single.getReels())
+				{
+					grid.getChildren().get(reelsShown).setVisible(true);
+					reelsShown++;
+				}
+				else
+				{
+					hideReels();
+					reelsShown = 0;
+				}
+			});
+			rtn.setOnAction((ActionEvent e) -> 
+			{
+				grid.getChildren().clear();
+				reelsShown = 0;
+				callPrev();
+			});
 		}
-		abstract void machineUI();
+		void hideReels()	{ for (Node nd : grid.getChildren()) {nd.setVisible(false);} }
 	}
 	
 	//Layout for the playing on the single-row slot machine.
 	public class Machine1 extends Machine
 	{
-		public Machine1(String title, Layout prev)
+		public Machine1(String title, Layout prev)	{super(title, prev);}
+		void generateReelValue()
 		{
-			super(title, prev);
-			this.Rows = 1;
-			this.Reels = Single.getReels();
-			this.reelsShown = 0;
-		}
-		void machineUI()
-		{
-			Single.spinReels();
-			
-			for (int i=0; i<Single.getReels(); i++)
+			grid.getChildren().clear();
+			Single.generateValue();
+			for (int j=0; j<Single.getReels(); j++)
 			{
 				TextArea ta = new TextArea();
-				String add = String.valueOf(Single.arrResults[0][i]);
+				ta.setText( String.valueOf(Single.arrResults[0][j]) );
 				ta.setMaxSize(40, 40);
-				ta.setText(add);
-				
-				System.out.println(add);
-				grid.add(ta, i, 0);
-				MachineReels.add(ta);
+				ta.setVisible(false);
+				grid.add(ta, j, 0);
 			}
-			spin = new Button("Spin the reels");
-			spin.setOnAction((ActionEvent e) -> 
-			{
-				if (reelsShown<Single.getReels())
-				{
-					reelsShown++;
-					System.out.println(reelsShown);
-				}
-			});
+			
 		}
 		
 	}
-	
+
 	//Layout for the playing on the multi-way slot machine.
 	public class Machine2 extends Machine
 	{
-		public Machine2(String title, Layout prev)
+		public Machine2(String title, Layout prev)	{super(title, prev);}
+		void generateReelValue()
 		{
-			super(title, prev);
-			this.Rows = Multi.getRows();
-			this.Reels = Multi.getReels();
-			this.reelsShown = 0;
-		}
-		void machineUI()
-		{
-			Multi.spinReels();
-			
+			grid.getChildren().clear();
+			Multi.generateValue();
 			for (int i=0; i<Multi.getRows(); i++)
 			{
 				for (int j=0; j<Multi.getReels(); j++)
 				{
 					TextArea ta = new TextArea();
-					String add = String.valueOf(Multi.arrResults[i][j]);
+					ta.setText( String.valueOf(Multi.arrResults[i][j]) );
 					ta.setMaxSize(40, 40);
-					ta.setText(add);
-					
-					System.out.println(add);
-					grid.add(ta, i, j);
-					MachineReels.add(ta);
+					ta.setVisible(false);
+					grid.add(ta, j, i);
 				}
 			}
-			spin = new Button("Spin the reels");
-			spin.setOnAction((ActionEvent e) -> 
-			{
-				if (reelsShown<Single.getReels())
-				{
-					reelsShown++;
-					System.out.println(reelsShown);
-				}
-			});
 		}
 		
 	}

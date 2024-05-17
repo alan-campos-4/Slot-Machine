@@ -261,6 +261,7 @@ public class SlotMachine
 		public int getRows()	{return rows;}
 		public int getSyms()	{return arrSyms.length;}
 		public double getCost()	{return cost;}
+		public double getBet()	{return P.bet;}
 		public int getMinSize()	{return minSize;}
 		public int getMaxSize()	{return maxSize;}
 		public int getMinSyms()	{return minSyms;}
@@ -524,14 +525,14 @@ public class SlotMachine
 			rerolled = false;
 			if (this instanceof SingleRow)
 			{
-				((SingleRow)this).spinReels();
+				((SingleRow)this).generateValue();
 				displayAndSpin();
 				((SingleRow)this).checkResults();
 				((SingleRow)this).calculatePrize();
 			}
 			else
 			{
-				((Multiway)this).spinReels();
+				((Multiway)this).generateValue();
 				displayAndSpin();
 				((Multiway)this).checkResults();
 				((Multiway)this).calculatePrize();
@@ -543,11 +544,13 @@ public class SlotMachine
 	//The actions that vary between the type of slot machine.
 	public static interface Actions
 	{
-		public void spinReels();		//Spins the reels and gives value to the results
+		public void generateValue();		//Spins the reels and gives value to the results
 		public void checkResults();		//Checks the winning conditions of each machine
 		public void calculatePrize();	//Calculates the prize based on the conditions of each machine
 		public void reroll();			//Allow to re-calculate if close to the maximum prize
 	}
+	
+	
 	
 	
 	//Type of slot machine that shows one symbol of the reel at a time
@@ -570,7 +573,7 @@ public class SlotMachine
 		public SingleRow(String name)				{this(4, 6, name);}
 		public SingleRow()							{this(4, 6, def_name);}
 		
-		public void spinReels()
+		public void generateValue()
 		{
 			for (int i=0; i<reels; i++)
 				{arrResults[0][i] = arrSyms[rand.nextInt(arrSyms.length)];}
@@ -720,7 +723,7 @@ public class SlotMachine
 		public Multiway(String name)			{this(5, 5, 5, name);}
 		public Multiway()						{this(5, 5, 5, def_name);}
 		
-		public void	spinReels()
+		public void	generateValue()
 		{
 			int startPos=0, nextPos=0;
 			for (int i=0; i<reels; i++)
