@@ -6,7 +6,6 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -29,7 +28,7 @@ import javafx.util.converter.IntegerStringConverter;
 
 
 /* TODO:
- * - Implement results GUI
+ * - Implement results
  * - Implement re-roll 
  * - SlotMachine improvements
  * 
@@ -43,7 +42,7 @@ public class SlotNodes extends Application
 	public static void main(String[] args) {launch(args);}
 	
 	@Override
-    public void start(Stage primaryStage) throws Exception
+    public void start(Stage primaryStage)
     {
 		try {
 			Single	= new SlotMachine.SingleRow();
@@ -51,24 +50,23 @@ public class SlotNodes extends Application
 			
 			
 	        MainMenu main		= new MainMenu("----- MAIN MENU -----\n\n\n\n");
-			SingleSubMenu menu1	= new SingleSubMenu("-- SINGLE-ROW MENU --\n", main);
-			MultiSubMenu menu2	= new MultiSubMenu("-- MULTIWAY MENU --\n", main);
+			MenuSingle menu1	= new MenuSingle("-- SINGLE-ROW MENU --\n", main);
+			MenuMulti menu2		= new MenuMulti("-- MULTIWAY MENU --\n", main);
+			Machine1 SingleLay	= new Machine1("Play the game", menu1);
+			Machine2 MultiLay	= new Machine2("Play the game", menu2);
 			
-			DB1Layout DBText	= new DB1Layout("Display database\nas plain text", main);
-			DB2Layout DBScript	= new DB2Layout("Display database\nwith script", main);
+			DB1_Lay DBText		= new DB1_Lay("Display database\nas plain text", main);
+			DB2_Lay DBScript	= new DB2_Lay("Display database\nwith script", main);
 			ParamSingle param1	= new ParamSingle("Change the parameters\n of the machine", menu1);
 			ParamMulti param2	= new ParamMulti("Change the parameters\n of the machine", menu2);
 			
-			Machine1 SingleMach	= new Machine1("Play the game", menu1);
-			Machine2 MultiwMach	= new Machine2("Play the game", menu2);
-			
 			main.addNext(menu1, menu2, DBText, DBScript);
-			menu1.addNext(SingleMach, param1);
-			menu2.addNext(MultiwMach, param2);
+			menu1.addNext(SingleLay, param1);
+			menu2.addNext(MultiLay, param2);
 	        
 	        
 			primaryStage.setTitle("Welcome to the Casino!");
-	        primaryStage.setScene(new Scene(menu1, sceneWidth, sceneHeight));
+	        primaryStage.setScene(new Scene(menu2, sceneWidth, sceneHeight));
 	        primaryStage.show();
     	}
         catch (Exception e) {e.printStackTrace();}
@@ -77,16 +75,16 @@ public class SlotNodes extends Application
 	
 	
 	
-	
-	
 	public static SlotMachine.SingleRow Single;
 	public static SlotMachine.Multiway Multi;
 	public static String playername;
 	
-	public static int sceneWidth=700,	sceneHeight=600;
+	public static int sceneWidth=700,	sceneHeight=500;
 	public static int textWidth=600,	textHeight=350;
 	public static int alertWidth=400,	alertHeight=200;
 	public static int buttonWidth=130,	buttonHeight=80;
+	public static int alertFont=14;
+	public static int layoutFont=11;
 	
 	
 	
@@ -129,11 +127,11 @@ public class SlotNodes extends Application
 	
 	
 	//Applies the desired settings to the buttons and adds them to the pane.
-	public void createButtonMenu(GridPane grid, Button... args)
+	public void createButtonMenu(GridPane grid, Button... btns)
     {
 		int maxCols=3, col=0, row=0;
     	
-    	for (Button btn : args)
+    	for (Button btn : btns)
     	{
     		//Makes all the buttons look the same.
     		btn.setMinSize(buttonWidth, buttonHeight);
@@ -149,7 +147,7 @@ public class SlotNodes extends Application
     			col = 0;
     			row += 1;
     			//If there are 4 buttons, put the last one in the middle.
-    			if (args.length==4 && row==1) {col+=1;}
+    			if (btns.length==4 && row==1) {col+=1;}
     		}
     	}
     }
@@ -213,7 +211,7 @@ public class SlotNodes extends Application
 	    	//***	Set the function of each button.	***
 	    	btn3.setOnAction((ActionEvent event) -> {callNext(2);});
 			btn4.setOnAction((ActionEvent event) -> {callNext(3);});
-			btn5.setOnAction((ActionEvent event) -> {new DiffAlert().getAlert();});
+			btn5.setOnAction((ActionEvent event) -> {new Differ_Al().showAndWait();});
 			btn6.setOnAction((ActionEvent event) -> 
 			{
 				if (logout.showAndWait().get()==ButtonType.OK) {Platform.exit();}
@@ -249,6 +247,8 @@ public class SlotNodes extends Application
 	
 	
 	
+	
+	
 	//Layout containing the sub-menus for each machine type.
 	public abstract class SubMenu extends Layout
 	{
@@ -274,27 +274,27 @@ public class SlotNodes extends Application
 	}
 	
 	//Sub-menu for the single-row slot machine.
-	public class SingleSubMenu extends SubMenu
+	public class MenuSingle extends SubMenu
 	{
-		public SingleSubMenu(String title, Layout prev)
+		public MenuSingle(String title, Layout prev)
 		{
 			super(title, prev);
 			params.setText("This machine has "+Single.getReels()+" reels and "
 				+ Single.getSyms()+" symbols.\n and costs "+Single.getCost()+" € to spin per turn.\n");
 		}
-		void showRules()	{new Rules1Alert().getAlert();}
+		void showRules()	{new Rules1_Al().showAndWait();}
 	}
 	
 	//Sub-menu for the multi-row slot machine.
-	public class MultiSubMenu extends SubMenu
+	public class MenuMulti extends SubMenu
 	{
-		public MultiSubMenu(String title, Layout prev)
+		public MenuMulti(String title, Layout prev)
 		{
 			super(title, prev);
 			params.setText("This machine has "+Multi.getRows()+" rows, "+Multi.getReels()+" reels and "
 				+ Multi.getSyms()+" symbols.\n and costs "+Multi.getCost()+" € to spin per turn.\n");
 		}
-		void showRules()	{new Rules2Alert().getAlert();}
+		void showRules()	{new Rules2_Al().showAndWait();}
 	}
 	
 	
@@ -422,6 +422,7 @@ public class SlotNodes extends Application
 	            &&	(n3>=Multi.minSyms && n3<=Multi.maxSyms))
 	            {
 		            Multi.changeParameters(n1, n2, n3);
+		            //System.out.println("Ro: "+n1+", Re: "+n2+", Syms:"+n3);
 		            complete.showAndWait();
 		            callPrev();
 	            }
@@ -438,33 +439,55 @@ public class SlotNodes extends Application
 	//Layout for representing the machines and their spinning reels
 	public abstract class Machine extends Layout
 	{
-		protected int reelsShown = 0;
+		protected int reelsShown;
 		
 		public Machine(String title, Layout prev)	{super(title, prev);}
-		abstract void generateReelValue();
+		abstract void generateValue();		//Generates the value of the machine.
+		abstract void displayReel();		//Displays the number of columns equal to "reelsShown".
+		abstract char getSym(int r, int c);	//Returns a character in the machine's results array.
+		abstract int getRows();				//Returns the number of rows of the machine.
+		abstract int getReels();			//Returns the number of columns of the machine. 
+		
 		void createGUI()
 		{
-			Button spin = new Button("Spin the reels");
+			Button spin = new Button("Start game");
 			Button rtn = new Button("Return to the previous menu");
+			Alert results = new Alert(AlertType.CONFIRMATION);
+			
+			reelsShown = 0;
 			setSpacing(10);
 			getChildren().addAll(grid, spin, rtn);
 			
 			spin.setOnAction((ActionEvent e) -> 
 			{
+				System.out.println(reelsShown);
 				if (reelsShown==0)
 				{
-					hideReels();
-					generateReelValue();
-				}
-				if (reelsShown<Single.getReels())
-				{
-					grid.getChildren().get(reelsShown).setVisible(true);
+					createGrid();
 					reelsShown++;
+					spin.setText("Spin the reels");
+				}
+				else if (reelsShown<=getReels())
+				{
+					displayReel();
+					reelsShown++;
+					if (reelsShown>getReels()) {spin.setText("Get the results");}
 				}
 				else
 				{
-					hideReels();
-					reelsShown = 0;
+					Single.checkResults();
+					if (results.showAndWait().get()==ButtonType.OK)
+					{
+						createGrid();
+						reelsShown = 1;
+						spin.setText("Spin the reels");
+					}
+					else
+					{
+						grid.getChildren().clear();
+						reelsShown = 0;
+						callPrev();
+					}
 				}
 			});
 			rtn.setOnAction((ActionEvent e) -> 
@@ -474,45 +497,19 @@ public class SlotNodes extends Application
 				callPrev();
 			});
 		}
-		void hideReels()	{ for (Node nd : grid.getChildren()) {nd.setVisible(false);} }
-	}
-	
-	//Layout for the playing on the single-row slot machine.
-	public class Machine1 extends Machine
-	{
-		public Machine1(String title, Layout prev)	{super(title, prev);}
-		void generateReelValue()
+		void createGrid()			//Adds the results of spinning the machine to the grid.
 		{
-			grid.getChildren().clear();
-			Single.generateValue();
-			for (int j=0; j<Single.getReels(); j++)
+			if (!grid.getChildren().isEmpty())
+				{grid.getChildren().clear();}
+			generateValue();
+			for (int i=0; i<getRows(); i++)
 			{
-				TextArea ta = new TextArea();
-				ta.setText( String.valueOf(Single.arrResults[0][j]) );
-				ta.setMaxSize(40, 40);
-				ta.setVisible(false);
-				grid.add(ta, j, 0);
-			}
-			
-		}
-		
-	}
-
-	//Layout for the playing on the multi-way slot machine.
-	public class Machine2 extends Machine
-	{
-		public Machine2(String title, Layout prev)	{super(title, prev);}
-		void generateReelValue()
-		{
-			grid.getChildren().clear();
-			Multi.generateValue();
-			for (int i=0; i<Multi.getRows(); i++)
-			{
-				for (int j=0; j<Multi.getReels(); j++)
+				for (int j=0; j<getReels(); j++)
 				{
 					TextArea ta = new TextArea();
 					ta.setText( String.valueOf(Multi.arrResults[i][j]) );
 					ta.setMaxSize(40, 40);
+					ta.setEditable(false);
 					ta.setVisible(false);
 					grid.add(ta, j, i);
 				}
@@ -521,18 +518,55 @@ public class SlotNodes extends Application
 		
 	}
 	
+	//Layout for the playing on the single-row slot machine.
+	public class Machine1 extends Machine
+	{
+		public Machine1(String title, Layout prev)	{super(title, prev);}
+		void generateValue()		{Single.generateValue();}
+		char getSym(int r, int c)	{return Single.arrResults[r][c];}
+		int getRows()				{return Single.getRows();}
+		int getReels()				{return Single.getReels();}
+		
+		void displayReel()
+		{
+			grid.getChildren().get(reelsShown-1).setVisible(true);
+		}
+		
+	}
+	
+	//Layout for the playing on the multi-way slot machine.
+	public class Machine2 extends Machine
+	{
+		public Machine2(String title, Layout prev)	{super(title, prev);}
+		void generateValue()		{Multi.generateValue();}
+		char getSym(int r, int c)	{return Multi.arrResults[r][c];}
+		int getRows()				{return Multi.getRows();}
+		int getReels()				{return Multi.getReels();}
+		
+		void displayReel()
+		{
+			for (int i=0; i<Multi.getRows(); i++)
+				{grid.getChildren().get(reelsShown-1 + Multi.getReels()*i).setVisible(true);}
+		}
+		
+	}
 	
 	
 	
 	
 	
-	//Class that converts the console output of an external method into a Text object.
+	
+	
+	
+	
+	
+	//Class that converts and external method into a Text object.
 	public abstract class Display
 	{
 		Text text;
 		abstract void setDisplay();
 		public Text getText()		{return text;}
-		public Display()
+		public Display(int size)
 		{
 			text = new Text();
 			
@@ -544,45 +578,58 @@ public class SlotNodes extends Application
 			System.out.flush();
 			System.setOut(consolePrint);
 			
-			text.setFont(new Font("Courier New", 10));
+			text.setFont(new Font("Courier New", size));
 			text.setText(outStream.toString());
 		}
 	}
 	
-	//Class that formats a Display class Text as an alert. Requires a previous Display subclass.
+	//Class that formats a Display class Text as an alert. Contains a Display subclass.
 	public abstract class DisplayAlert
 	{
 		Alert alert;
-		abstract Text textToDisplay();
-		public void getAlert() {alert.showAndWait();} 
+		public void showAndWait() {alert.showAndWait();} 
+		abstract void textToDisplay();
+		public class Display1 extends Display
+		{
+			public Display1(int size)	{super(size);}
+			void setDisplay() {textToDisplay();}
+		}
 		public DisplayAlert(String title, String subtitle)
 		{
+			Text text = new Display1(alertFont).getText();
+			
 			alert = new Alert(AlertType.INFORMATION);
 			alert.setTitle(title);
 			alert.setHeaderText("");
 			alert.getDialogPane().setMinHeight(alertHeight);
 			alert.getDialogPane().setMinWidth(alertWidth);
-			alert.getDialogPane().setContent(new VBox(new Label(subtitle), textToDisplay()));
+			
+			alert.getDialogPane().setContent(new VBox(new Label(subtitle), text));
 		}
 	}
-
-	//Class that formats a Display class Text as a Layout. Requires a previous Display subclass.
+	
+	//Class that formats a Display class Text as a Layout. Contains a Display subclass.
 	public abstract class DisplayLayout extends Layout
 	{
 		public DisplayLayout(String title, Layout prev)	{super(title, prev);}
-		abstract Text textToDisplay();
+		abstract void textToDisplay();
+		public class Display1 extends Display
+		{
+			public Display1(int size)	{super(size);}
+			void setDisplay() {textToDisplay();}
+		}
 		public void createGUI()
 		{
+			Text text = new Display1(layoutFont).getText();
 			Button rtn = new Button("Return to the main menu");
 			ScrollPane content = new ScrollPane();
-			Text text = textToDisplay();
-//			text.maxWidth(textWidth);
-//			text.maxHeight(textHeight);
+			
 			content.setContent(text);
 			content.setFitToWidth(false);
 			content.setFitToHeight(false);
 			content.setPrefViewportWidth(textWidth);
 			content.setPrefViewportHeight(textHeight);
+			
 			rtn.setOnAction((ActionEvent event) -> {callPrev();});
 			
 			setSpacing(10);
@@ -591,52 +638,49 @@ public class SlotNodes extends Application
 	}
 	
 	
-	//Methods to Text.
-	public class DB1Display extends Display		{void setDisplay()	{SlotMachine.displayDB(false);}}
-	public class DB2Display extends Display		{void setDisplay()	{SlotMachine.displayDB(true);}}
-	public class DiffDisplay extends Display	{void setDisplay()	{SlotMachine.showDiff();}}
-	public class Rules1Display extends Display	{void setDisplay()	{Single.showRules();}}
-	public class Rules2Display extends Display	{void setDisplay()	{Multi.showRules();}}
-	
-	//Text to alerts.
-	public class DiffAlert extends DisplayAlert
+	//Methods to Text to alerts.
+	public class Differ_Al	extends DisplayAlert
 	{
-		public DiffAlert()
-			{super("Show differences", "These are the differences between the machine types.");}
-		Text textToDisplay()	{return new DiffDisplay().getText();}
+		void textToDisplay()	{SlotMachine.showDiff();}
+		public Differ_Al()
+			{super("Differences","These are the differences between the two machine types.");}
 	}
-	public class Rules1Alert extends DisplayAlert
+	public class Rules1_Al	extends DisplayAlert
 	{
-		public Rules1Alert()
-			{super("Show Rules", "These are the rules of the Single-row Slot Machine.");}
-		Text textToDisplay()	{return new Rules1Display().getText();}
+		void textToDisplay(){Single.showRules();}
+		public Rules1_Al()	{super("Show rules","These are the rules of the Single-row Slot Machine.");}
 	}
-	public class Rules2Alert extends DisplayAlert
+	public class Rules2_Al	extends DisplayAlert
 	{
-		public Rules2Alert()
-			{super("Show Rules", "These are the rules of the Multiway Slot Machine.");}
-		Text textToDisplay()	{return new Rules2Display().getText();}
+		void textToDisplay(){Multi.showRules();}
+		public Rules2_Al()	{super("Show Rules", "These are the rules of the Multiway Slot Machine.");}
 	}
-	
-	//Text to Layouts.
-	public class DB1Layout extends DisplayLayout
+	public class Prize1_Al	extends DisplayAlert
 	{
-		public DB1Layout(String title, SlotNodes.Layout prev)	{super(title, prev);}
-		Text textToDisplay()	{return new DB1Display().getText();}
+		void textToDisplay()	{Single.calculatePrize();}
+		public Prize1_Al()		{super("Show Results","This is your prize after spinning the reels.");}
 	}
-	public class DB2Layout extends DisplayLayout
+	public class Prize2_Al	extends DisplayAlert
 	{
-		public DB2Layout(String title, SlotNodes.Layout prev)	{super(title, prev);}
-		Text textToDisplay()	{return new DB2Display().getText();}
+		void textToDisplay()	{Multi.calculatePrize();}
+		public Prize2_Al()		{super("Show Results","This is your prize after spinning the reels.");}
 	}
 	
-	
-	
-	
+	//Methods to Text to Layouts.
+	public class DB1_Lay	extends DisplayLayout
+	{
+		void textToDisplay()	{SlotMachine.displayDB(false);}
+		public DB1_Lay(String title, SlotNodes.Layout prev)	{super(title, prev);}
+	}
+	public class DB2_Lay	extends DisplayLayout
+	{
+		void textToDisplay()	{SlotMachine.displayDB(true);}
+		public DB2_Lay(String title, SlotNodes.Layout prev)	{super(title, prev);}
+	}
 	
 	
 	
 	
     
-    
+	
 }

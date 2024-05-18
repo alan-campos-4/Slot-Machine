@@ -45,6 +45,13 @@ public class SlotMachine
 	static Random rand = new Random();
 	static Scanner input = new Scanner(System.in);
 	
+	// Delays the program for a given amount of milliseconds.
+	public static void wait(int mili)
+	{
+		try { Thread.sleep(mili); }
+        catch (InterruptedException e) {e.printStackTrace();}
+	}
+	
 	// Clears the terminal output.
 	public static void clear()
 	{
@@ -164,10 +171,9 @@ public class SlotMachine
 	static final int WINLIMIT = 100000;	//Maximum amount of money the player can win.
 	static final int GAMELIMIT = 10;	//Maximum amount of times the player can spin the reels.
 	
-	static String def_name = "P1";		//Default name for the machine's player
 	static boolean gameEnter;			//Player input for stopping or continuing the game.
 	static char gameInput;				//Player input for reading a character within the game.
-	
+	static String def_name = "P1";		//Default name for the machine's player
 	
 	
 	
@@ -720,8 +726,8 @@ public class SlotMachine
 			limit = Integer.min(rows,reels);
 		}
 		public Multiway(int size, int syms)		{this(size, size, syms, def_name);}
-		public Multiway(String name)			{this(5, 5, 5, name);}
-		public Multiway()						{this(5, 5, 5, def_name);}
+		public Multiway(String name)			{this(5, 5, 6, name);}
+		public Multiway()						{this(5, 5, 6, def_name);}
 		
 		public void	generateValue()
 		{
@@ -840,6 +846,8 @@ public class SlotMachine
 		}
 		
 	}
+	
+	
 	
 	
 	
