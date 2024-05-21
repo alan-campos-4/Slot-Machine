@@ -39,7 +39,7 @@ TODO (3rd tri-mester):
 
 public class SlotMachine
 {
-
+	
 	/********** General classes and methods **********/
 	
 	static Random rand = new Random();
@@ -48,7 +48,9 @@ public class SlotMachine
 	// Delays the program for a given amount of milliseconds.
 	public static void wait(int mili)
 	{
-		try { Thread.sleep(mili); }
+		try {
+			Thread.sleep(mili);
+		}
         catch (InterruptedException e) {e.printStackTrace();}
 	}
 	
@@ -251,8 +253,8 @@ public class SlotMachine
 		protected double cost;			//Cost of spinning the reels per game
 		protected boolean rerolled;		//True if a re-rolled has been done.
 		
-		public int minSize, maxSize;	//Minimum and maximum amount of rows and reels allowed
-		public int minSyms, maxSyms;	//Minimum and maximum number of symbols available allowed
+		protected int minSize, maxSize;	//Minimum and maximum amount of rows and reels allowed
+		protected int minSyms, maxSyms;	//Minimum and maximum number of symbols available allowed
 		
 		protected Player P;				//The machine's player
 		
@@ -371,7 +373,7 @@ public class SlotMachine
 		    }
 		}
 		
-		public void showRules()				//Shows the rules and outcomes of playing.
+		public void showRules()		//Shows the rules and outcomes of playing.
 		{
 			System.out.println("\n  Game Rules:");
 			System.out.println("  - Every bet has to be between "+BETMIN+" and "+BETMAX+" €.");
@@ -397,7 +399,7 @@ public class SlotMachine
 				System.out.println("  - No lines match: you lose.");
 			}
 		}
-		public void showProb()				//Shows the probability of each outcome.
+		public void showProb()		//Shows the probability of each outcome.
 		{
 			DecimalFormat formatter = new DecimalFormat("#0.0000");
 			System.out.println("\n  Probability:");
@@ -449,7 +451,7 @@ public class SlotMachine
 			}
 		}
 		
-		public void saveResults()			//Saves the results of spinning in the record file.
+		public void saveResults()	//Saves the results of spinning in the record file.
 		{
 			String res = "";
 			for (int i=0; i<rows; i++)

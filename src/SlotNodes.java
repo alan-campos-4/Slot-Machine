@@ -39,57 +39,62 @@ import javafx.util.converter.IntegerStringConverter;
 
 public class SlotNodes extends Application
 {
-	public static void main(String[] args) {launch(args);}
 	
-	@Override
-    public void start(Stage primaryStage)
+	//*************** MAIN ***************
+	
+	public static void main(String[] args)	{launch(args);}
+	@Override public void start(Stage stage)
     {
 		try {
+			
 			Single	= new SlotMachine.SingleRow();
 			Multi	= new SlotMachine.Multiway();
-			
 			
 	        MainMenu main		= new MainMenu("----- MAIN MENU -----\n\n\n\n");
 			MenuSingle menu1	= new MenuSingle("-- SINGLE-ROW MENU --\n", main);
 			MenuMulti menu2		= new MenuMulti("-- MULTIWAY MENU --\n", main);
-			Machine1 SingleLay	= new Machine1("Play the game", menu1);
-			Machine2 MultiLay	= new Machine2("Play the game", menu2);
-			
+			MachineSingle Mach1	= new MachineSingle("Play the game", menu1);
+			MachineMulti Mach2	= new MachineMulti("Play the game", menu2);
 			DB1_Lay DBText		= new DB1_Lay("Display database\nas plain text", main);
 			DB2_Lay DBScript	= new DB2_Lay("Display database\nwith script", main);
 			ParamSingle param1	= new ParamSingle("Change the parameters\n of the machine", menu1);
 			ParamMulti param2	= new ParamMulti("Change the parameters\n of the machine", menu2);
-			
 			main.addNext(menu1, menu2, DBText, DBScript);
-			menu1.addNext(SingleLay, param1);
-			menu2.addNext(MultiLay, param2);
+			menu1.addNext(Mach1, param1);
+			menu2.addNext(Mach2, param2);
 	        
+			stage.setTitle("Welcome to the Casino!");
+	        stage.setScene(new Scene(menu2, sceneWidth, sceneHeight));
+	        stage.show();
 	        
-			primaryStage.setTitle("Welcome to the Casino!");
-	        primaryStage.setScene(new Scene(menu2, sceneWidth, sceneHeight));
-	        primaryStage.show();
-    	}
-        catch (Exception e) {e.printStackTrace();}
+    	} catch (Exception e) {e.printStackTrace();}
     }
 	
 	
 	
 	
+	//********** Static variables **********
+	
+	// Machine objects that the UI will work with.
 	public static SlotMachine.SingleRow Single;
 	public static SlotMachine.Multiway Multi;
+	
+	// Name of the player.
 	public static String playername;
 	
+	// Established sizes for elements.
 	public static int sceneWidth=700,	sceneHeight=500;
 	public static int textWidth=600,	textHeight=350;
 	public static int alertWidth=400,	alertHeight=200;
 	public static int buttonWidth=130,	buttonHeight=80;
-	public static int alertFont=14;
-	public static int layoutFont=11;
+	public static int alertFont=14,		layoutFont=11;
 	
 	
 	
 	
 	
+	
+	//********** Base node **********
 	
 	//Class that allows for changing between "previous" and "next" scene roots.
 	private abstract class Layout extends VBox
@@ -126,6 +131,10 @@ public class SlotNodes extends Application
 	
 	
 	
+	
+	
+	//********** Menu options UI nodes **********
+	
 	//Applies the desired settings to the buttons and adds them to the pane.
 	public void createButtonMenu(GridPane grid, Button... btns)
     {
@@ -152,13 +161,9 @@ public class SlotNodes extends Application
     	}
     }
 	
-	
 	//Layout containing the main navigation menu.
 	public class MainMenu extends Layout
 	{
-		Alert openMach, wrong;
-		TextField inputName, inputBet;
-		
 		public MainMenu(String title)	{super(title, null);}
 		public void createGUI()
 		{
@@ -173,19 +178,19 @@ public class SlotNodes extends Application
             getChildren().addAll(grid);
             
             //***	Creates the alert to access the slot machines.	***
-            Alert openMachine	= new Alert(AlertType.CONFIRMATION);
             TextFormatter<Integer> form = new TextFormatter<Integer>(new IntegerStringConverter());
+            Alert openMachine	= new Alert(AlertType.CONFIRMATION);
             GridPane gridpane	= new GridPane();
             TextField inputName	= new TextField();
             TextField inputBet	= new TextField();
         	Label labelName		= new Label("What is your name?: ");
         	Label labelBet		= new Label("How much do you want to bet?    "
         						+ "\n("+SlotMachine.BETMIN+" - "+SlotMachine.BETMAX+"): ");
+        	gridpane.setAlignment(Pos.CENTER);
         	gridpane.add(labelName,	0, 0);
         	gridpane.add(inputName,	1, 0);
         	gridpane.add(labelBet,	0, 1);
         	gridpane.add(inputBet,	1, 1);
-        	gridpane.setAlignment(Pos.CENTER);
         	gridpane.setHgap(10);
         	gridpane.setVgap(10);
         	inputBet.setTextFormatter(form);
@@ -221,8 +226,8 @@ public class SlotNodes extends Application
 				if (openMachine.showAndWait().get()==ButtonType.OK)
 				{
 					if (!inputName.getText().isEmpty()
-						&& form.getValue()>=SlotMachine.BETMIN
-						&& form.getValue()<=SlotMachine.BETMAX)
+					&& form.getValue()>=SlotMachine.BETMIN
+					&& form.getValue()<=SlotMachine.BETMAX)
 						{callNext(0);}
 					else 
 						{wrong.showAndWait();}
@@ -233,8 +238,8 @@ public class SlotNodes extends Application
 				if (openMachine.showAndWait().get()==ButtonType.OK)
 				{
 					if (!inputName.getText().isEmpty()
-						&& form.getValue()>=SlotMachine.BETMIN
-						&& form.getValue()<=SlotMachine.BETMAX)
+					&& form.getValue()>=SlotMachine.BETMIN
+					&& form.getValue()<=SlotMachine.BETMAX)
 						{callNext(1);}
 					else 
 						{wrong.showAndWait();}
@@ -243,10 +248,6 @@ public class SlotNodes extends Application
 		}
 		
 	}
-	
-	
-	
-	
 	
 	
 	//Layout containing the sub-menus for each machine type.
@@ -301,6 +302,8 @@ public class SlotNodes extends Application
 	
 	
 	
+	
+	//********** Parameter change UI nodes **********
 	
 	//Layout that allows for the change of a machine's parameters.
 	public abstract class Parameters extends Layout
@@ -436,117 +439,151 @@ public class SlotNodes extends Application
 	
 	
 	
+	//********** Slot machine UI nodes **********
+	
 	//Layout for representing the machines and their spinning reels
 	public abstract class Machine extends Layout
 	{
 		protected int reelsShown;
+		protected Button spin, rtn;
 		
 		public Machine(String title, Layout prev)	{super(title, prev);}
-		abstract void generateValue();		//Generates the value of the machine.
-		abstract void displayReel();		//Displays the number of columns equal to "reelsShown".
+		abstract void generateValue();		//Calls the machine's method to generate value.
 		abstract char getSym(int r, int c);	//Returns a character in the machine's results array.
 		abstract int getRows();				//Returns the number of rows of the machine.
 		abstract int getReels();			//Returns the number of columns of the machine. 
+		abstract void checkValue();			//Calculates and displays the prize.
 		
 		void createGUI()
 		{
-			Button spin = new Button("Start game");
-			Button rtn = new Button("Return to the previous menu");
-			Alert results = new Alert(AlertType.CONFIRMATION);
-			
+			spin = new Button("Start game");
+			rtn = new Button("Return to the previous menu");
 			reelsShown = 0;
+			
 			setSpacing(10);
 			getChildren().addAll(grid, spin, rtn);
 			
 			spin.setOnAction((ActionEvent e) -> 
 			{
-				System.out.println(reelsShown);
+				//System.out.println(reelsShown);
 				if (reelsShown==0)
-				{
-					createGrid();
-					reelsShown++;
-					spin.setText("Spin the reels");
-				}
+					{start();}
 				else if (reelsShown<=getReels())
 				{
-					displayReel();
+					grid.getChildren().get(reelsShown-1).setVisible(true);
 					reelsShown++;
 					if (reelsShown>getReels()) {spin.setText("Get the results");}
 				}
 				else
-				{
-					Single.checkResults();
-					if (results.showAndWait().get()==ButtonType.OK)
-					{
-						createGrid();
-						reelsShown = 1;
-						spin.setText("Spin the reels");
-					}
-					else
-					{
-						grid.getChildren().clear();
-						reelsShown = 0;
-						callPrev();
-					}
-				}
+					{checkValue();}
 			});
-			rtn.setOnAction((ActionEvent e) -> 
-			{
-				grid.getChildren().clear();
-				reelsShown = 0;
-				callPrev();
-			});
+			rtn.setOnAction((ActionEvent e) -> {close();});
 		}
-		void createGrid()			//Adds the results of spinning the machine to the grid.
+		void createGrid()	//Adds the results of spinning the machine to the layout's grid.
 		{
+			//Adds the CSS file to this Java class.
+			grid.getStylesheets().add(SlotNodes.class.getResource("style.css").toString());
+			
+			//Make sure the grid is empty.
 			if (!grid.getChildren().isEmpty())
 				{grid.getChildren().clear();}
+			
 			generateValue();
+			for (int j=0; j<getReels(); j++)
+			{
+				VBox reel = new VBox();
+				reel.getStyleClass().add("reel-column-data");	//Applies the CSS class to the object.
+				
+				for (int i=0; i<getRows(); i++)
+				{
+					TextArea box = new TextArea( String.valueOf(getSym(i,j)) );
+					box.getStyleClass().add("reel-box-data");	//Applies the CSS class to the object.
+					box.setEditable(false);
+					box.setMaxSize(30, 30);
+					reel.getChildren().add(box);
+				}
+				
+				reel.setVisible(false);
+				grid.add(reel, j, 0);
+			}
+			
+			/*
 			for (int i=0; i<getRows(); i++)
 			{
 				for (int j=0; j<getReels(); j++)
 				{
-					TextArea ta = new TextArea();
-					ta.setText( String.valueOf(Multi.arrResults[i][j]) );
-					ta.setMaxSize(40, 40);
-					ta.setEditable(false);
-					ta.setVisible(false);
-					grid.add(ta, j, i);
+					TextArea box = new TextArea( String.valueOf(getSym(i,j)) );
+					box.getStyleClass().add("reel-box-data");	//Applies the CSS class to the object.
+					box.setVisible(false);
+					box.setEditable(false);
+					box.setMaxSize(40, 40);
+					grid.add(box, j, i);
 				}
-			}
+			}//*/
+		}
+		void start()		//Establishes the parameters and starts the spinning proper.
+		{
+			createGrid();
+			reelsShown = 1;
+			spin.setText("Spin the reels");
+		}
+		void close()		//Resets the parameters and closes the machine layout.
+		{
+			grid.getChildren().clear();
+			reelsShown = 0;
+			callPrev();
 		}
 		
 	}
 	
 	//Layout for the playing on the single-row slot machine.
-	public class Machine1 extends Machine
+	public class MachineSingle extends Machine
 	{
-		public Machine1(String title, Layout prev)	{super(title, prev);}
+		public MachineSingle(String title, Layout prev)	{super(title, prev);}
 		void generateValue()		{Single.generateValue();}
 		char getSym(int r, int c)	{return Single.arrResults[r][c];}
 		int getRows()				{return Single.getRows();}
 		int getReels()				{return Single.getReels();}
 		
-		void displayReel()
+		void checkValue()
 		{
-			grid.getChildren().get(reelsShown-1).setVisible(true);
+			Single.checkResults();
+			Prize1_Al results = new Prize1_Al();
+			
+			if (results.showAndWait().get()==ButtonType.OK)
+			{
+				start();
+			}
+			else
+			{
+				close();
+			}
 		}
 		
 	}
 	
 	//Layout for the playing on the multi-way slot machine.
-	public class Machine2 extends Machine
+	public class MachineMulti extends Machine
 	{
-		public Machine2(String title, Layout prev)	{super(title, prev);}
+		public MachineMulti(String title, Layout prev)	{super(title, prev);}
 		void generateValue()		{Multi.generateValue();}
 		char getSym(int r, int c)	{return Multi.arrResults[r][c];}
 		int getRows()				{return Multi.getRows();}
 		int getReels()				{return Multi.getReels();}
 		
-		void displayReel()
+		void checkValue()
 		{
-			for (int i=0; i<Multi.getRows(); i++)
-				{grid.getChildren().get(reelsShown-1 + Multi.getReels()*i).setVisible(true);}
+			Multi.checkResults();
+			Prize2_Al results = new Prize2_Al();
+			
+			if (results.showAndWait().get()==ButtonType.OK)
+			{
+				start();
+			}
+			else
+			{
+				close();
+			}
 		}
 		
 	}
@@ -556,9 +593,7 @@ public class SlotNodes extends Application
 	
 	
 	
-	
-	
-	
+	//********** Information display UI nodes **********
 	
 	//Class that converts and external method into a Text object.
 	public abstract class Display
@@ -584,27 +619,23 @@ public class SlotNodes extends Application
 	}
 	
 	//Class that formats a Display class Text as an alert. Contains a Display subclass.
-	public abstract class DisplayAlert
+	public abstract class DisplayAlert extends Alert
 	{
-		Alert alert;
-		public void showAndWait() {alert.showAndWait();} 
 		abstract void textToDisplay();
 		public class Display1 extends Display
 		{
 			public Display1(int size)	{super(size);}
-			void setDisplay() {textToDisplay();}
+			void setDisplay()			{textToDisplay();}
 		}
-		public DisplayAlert(String title, String subtitle)
+		public DisplayAlert(String title, String subtitle, AlertType type)
 		{
-			Text text = new Display1(alertFont).getText();
-			
-			alert = new Alert(AlertType.INFORMATION);
-			alert.setTitle(title);
-			alert.setHeaderText("");
-			alert.getDialogPane().setMinHeight(alertHeight);
-			alert.getDialogPane().setMinWidth(alertWidth);
-			
-			alert.getDialogPane().setContent(new VBox(new Label(subtitle), text));
+			super(type);
+			this.setTitle(title);
+			this.setHeaderText("");
+			this.getDialogPane().setMinHeight(alertHeight);
+			this.getDialogPane().setMinWidth(alertWidth);
+			this.getDialogPane().setContent(new VBox(
+					new Label(subtitle), new Display1(alertFont).getText() ));
 		}
 	}
 	
@@ -643,27 +674,46 @@ public class SlotNodes extends Application
 	{
 		void textToDisplay()	{SlotMachine.showDiff();}
 		public Differ_Al()
-			{super("Differences","These are the differences between the two machine types.");}
+		{
+			super("Differences", "These are the differences between the two machine types.", 
+			AlertType.INFORMATION);
+		}
 	}
 	public class Rules1_Al	extends DisplayAlert
 	{
-		void textToDisplay(){Single.showRules();}
-		public Rules1_Al()	{super("Show rules","These are the rules of the Single-row Slot Machine.");}
+		void textToDisplay()	{Single.showRules();}
+		public Rules1_Al()
+		{
+			super("Show rules", "These are the rules of the Single-row Slot Machine.",
+			AlertType.INFORMATION);
+		}
 	}
 	public class Rules2_Al	extends DisplayAlert
 	{
-		void textToDisplay(){Multi.showRules();}
-		public Rules2_Al()	{super("Show Rules", "These are the rules of the Multiway Slot Machine.");}
+		void textToDisplay()	{Multi.showRules();}
+		public Rules2_Al()
+		{
+			super("Show Rules", "These are the rules of the Multiway Slot Machine.",
+			AlertType.INFORMATION);
+		}
 	}
 	public class Prize1_Al	extends DisplayAlert
 	{
 		void textToDisplay()	{Single.calculatePrize();}
-		public Prize1_Al()		{super("Show Results","This is your prize after spinning the reels.");}
+		public Prize1_Al()
+		{
+			super("Show Results","This is your prize after spinning the reels.",
+			AlertType.CONFIRMATION);
+		}
 	}
 	public class Prize2_Al	extends DisplayAlert
 	{
 		void textToDisplay()	{Multi.calculatePrize();}
-		public Prize2_Al()		{super("Show Results","This is your prize after spinning the reels.");}
+		public Prize2_Al()
+		{
+			super("Show Results","This is your prize after spinning the reels.",
+			AlertType.CONFIRMATION);
+		}
 	}
 	
 	//Methods to Text to Layouts.
