@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 
 
-class SlotMachines_Test
+class SlotMachine_Test
 {
 	
 	@Test
@@ -21,18 +21,20 @@ class SlotMachines_Test
 	
 	
 	@Test
-	void Reroll_Test()
+	void Select_Test()
 	{
 		int op;
-		int methodNum = 1;
+		int methodNum = 0;
 		
 		do {
 			SlotMachine.clear();
 			System.out.println("\n\t ----- "+getMethodName(methodNum)+" ----- \n");
 			System.out.println(" 1. Test single row reroll.");
 			System.out.println(" 2. Test multiway reroll.");
+			System.out.println(" 3. Test multiway diagonal 1 check.");
+			System.out.println(" 4. Test multiway diagonal 2 check.");
 			System.out.println(" 0. Finish.");
-			op = SlotMachine.readInput("Choose an option",0,' ',2);
+			op = SlotMachine.readInput("Choose an option",0,' ',4);
 			
 			if (op!=0)
 			{
@@ -42,6 +44,8 @@ class SlotMachines_Test
 				{
 					case 1:	{Reroll_SingleRow_Test();}	break;
 					case 2:	{Reroll_Multiway_Test();}	break;
+					case 3:	{Diagonal_1_Multiway_Test();}	break;
+					case 4:	{Diagonal_2_Multiway_Test();}	break;
 				}
 				SlotMachine.pressAnyKeyTo("continue");
 			}
@@ -54,10 +58,7 @@ class SlotMachines_Test
 	
 	
 	
-	String getMethodName(int pos)
-	{
-		return SlotMachines_Test.class.getDeclaredMethods()[pos].getName();
-	}
+	String getMethodName(int pos)	{return SlotMachine_Test.class.getDeclaredMethods()[pos].getName();}
 	
 	
 	void Reroll_SingleRow_Test()
@@ -122,6 +123,69 @@ class SlotMachines_Test
 		M2.checkResults();
 		M2.calculatePrize();
 		
+		
+	}
+	
+	
+	void Diagonal_1_Multiway_Test()
+	{
+		//Create the machine
+		SlotMachine.Multiway M2 = new SlotMachine.Multiway(3, 4);
+		
+		//Generate the value of the reels.
+		int startPos=0, nextPos=0;
+		for (int i=0; i<M2.reels; i++)
+		{
+			startPos = M2.reels-1-i;
+			
+			M2.arrResults[0][i] = M2.arrSyms[startPos];
+			for (int j=1; j<M2.rows; j++)
+			{
+				if (startPos+j>=M2.arrSyms.length)
+					{nextPos = startPos+j-M2.arrSyms.length;}
+				else
+					{nextPos = startPos+j;}
+				
+				M2.arrResults[j][i] = M2.arrSyms[nextPos];
+			}
+		}
+		
+		//The rest of the program
+		M2.displayReels();
+		M2.checkResults();
+		M2.calculatePrize();
+		
+	}
+	
+	
+	
+	void Diagonal_2_Multiway_Test()
+	{
+		//Create the machine
+		SlotMachine.Multiway M2 = new SlotMachine.Multiway(5, 5);
+		
+		//Generate the value of the reels.
+		int startPos=0, nextPos=0;
+		for (int i=0; i<M2.reels; i++)
+		{
+			startPos = i;
+			
+			M2.arrResults[0][i] = M2.arrSyms[startPos];
+			for (int j=1; j<M2.rows; j++)
+			{
+				if (startPos+j>=M2.arrSyms.length)
+					{nextPos = startPos+j-M2.arrSyms.length;}
+				else
+					{nextPos = startPos+j;}
+				
+				M2.arrResults[j][i] = M2.arrSyms[nextPos];
+			}
+		}
+		
+		//The rest of the program
+		M2.displayReels();
+		M2.checkResults();
+		M2.calculatePrize();
 		
 	}
 	

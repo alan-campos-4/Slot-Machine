@@ -173,7 +173,6 @@ public class SlotMachine
 	static final int WINLIMIT = 100000;	//Maximum amount of money the player can win.
 	static final int GAMELIMIT = 10;	//Maximum amount of times the player can spin the reels.
 	
-	static boolean gameEnter;			//Player input for stopping or continuing the game.
 	static char gameInput;				//Player input for reading a character within the game.
 	static String def_name = "P1";		//Default name for the machine's player
 	
@@ -257,6 +256,7 @@ public class SlotMachine
 		protected int minSyms, maxSyms;	//Minimum and maximum number of symbols available allowed
 		
 		protected Player P;				//The machine's player
+		protected boolean gameEnter;	//Player input for stopping or continuing the game.
 		
 		public Machine(int ro, int re, int syms, String name)
 		{
@@ -268,12 +268,11 @@ public class SlotMachine
 		public int getReels()	{return reels;}
 		public int getRows()	{return rows;}
 		public int getSyms()	{return arrSyms.length;}
-		public double getCost()	{return cost;}
-		public double getBet()	{return P.bet;}
-		public int getMinSize()	{return minSize;}
-		public int getMaxSize()	{return maxSize;}
-		public int getMinSyms()	{return minSyms;}
-		public int getMaxSyms()	{return maxSyms;}
+		public int getGames()	{return P.numGames;}
+		public double getCost()		{return cost;}
+		public double getBet()		{return P.bet;}
+		public double getSpent()	{return P.spent;}
+		public boolean gameEnter()	{return gameEnter;}
 		
 		public void assignName(String playername)
 		{
@@ -495,13 +494,12 @@ public class SlotMachine
 					case 0: {} break;
 					case 1:
 					{
-						gameEnter = true;
+						//gameEnter = true;
 						P.betInit(readInput("Enter your bet",BETMIN,'-',BETMAX));
 						
 						do {
 							clear();
 							Game();
-							saveResults();
 							if (gameEnter)
 							{
 						        gameInput = readInput("Do you want to continue playing?",'y','/','n');
@@ -515,6 +513,7 @@ public class SlotMachine
 						    }
 							
 						} while ((gameEnter) && (P.bet<WINLIMIT) && (P.numGames<GAMELIMIT));
+						P.numGames = 0;
 						P.endMessage();
 					}
 					break;
@@ -523,7 +522,6 @@ public class SlotMachine
 				
 			} while (opc2!=0);
 			
-			
 		}
 		
 		public void Game()			//Playing one game of the slot machine.
@@ -531,6 +529,7 @@ public class SlotMachine
 			P.numGames++;
 			P.bet -= cost;
 			rerolled = false;
+			gameEnter = true;
 			if (this instanceof SingleRow)
 			{
 				((SingleRow)this).generateValue();
@@ -545,6 +544,7 @@ public class SlotMachine
 				((Multiway)this).checkResults();
 				((Multiway)this).calculatePrize();
 			}
+			saveResults();
 		}
 		
 	}
@@ -552,7 +552,7 @@ public class SlotMachine
 	//The actions that vary between the type of slot machine.
 	public static interface Actions
 	{
-		public void generateValue();		//Spins the reels and gives value to the results
+		public void generateValue();	//Spins the reels and gives value to the results
 		public void checkResults();		//Checks the winning conditions of each machine
 		public void calculatePrize();	//Calculates the prize based on the conditions of each machine
 		public void reroll();			//Allow to re-calculate if close to the maximum prize
@@ -711,12 +711,12 @@ public class SlotMachine
 	{
 		protected char checking;	//Character used to check for the winning lines.
 		protected int limit;		//Number of reels or rows, whichever one is smaller.
-		
+
+		protected int[] horizontal;	//Numbers of symbols matching along the horizontal lines.
 		protected int diagonal1;	//Number of symbols matching along the first diagonal line.
 		protected int diagonal2;	//Number of symbols matching along the second diagonal line.
-		protected int missingPos;	//Position of the symbol left to match whole line.
 		
-		protected int[] horizontal;	//Numbers of symbols matching along the horizontal lines.
+		protected int missingPos;	//Position of the symbol left to match whole line.
 		protected int horiMatch;	//Position of the horizontal line with matching symbols.
 		
 		public Multiway(int nRows, int nReels, int nSymbols, String name)
@@ -725,6 +725,7 @@ public class SlotMachine
 			minSize = 3;	maxSize = 7;
 			minSyms = 4;	maxSyms = 8;
 			horiMatch = missingPos = -1;
+			horizontal = new int[reels];
 			limit = Integer.min(rows,reels);
 		}
 		public Multiway(int size, int syms)		{this(size, size, syms, def_name);}
@@ -755,88 +756,88 @@ public class SlotMachine
 		}
 		public void checkResults()
 		{
+			limit = Integer.min(rows,reels);
 			diagonal1 = 0;
 			diagonal2 = 0;
 			horizontal = new int[rows];
 			for (int i=0; i<horizontal.length; i++) {horizontal[i]=0;}
 			
 			//Check horizontal lines: from top to bottom
-			for (int i=0; i<rows; i++)
+			for (int i=0; i<horizontal.length; i++)
 			{
-				checking = arrResults[i][0];
-				for (int j=0; j<reels; j++)
+				checking = arrResults[i][0]; 
+				for (int j=1; j<reels; j++)
 				{
-					if (checking==arrResults[i][j])
-						{horizontal[i]++;}
+					if (checking==arrResults[i][j])	{horizontal[i]++;}
 				}
 			}
 			
-			/*//Diagonal 1: top-left --> bottom-right
+			///Check Diagonal 1: top-left --> bottom-right
 			checking = arrResults[0][0];
 			for (int i=1; i<limit; i++)
 			{
 				if (checking==arrResults[i][i]) {diagonal1++;}
-				else {missingPos = i;}
 			}
-			if (diagonal1!=reels-1) {missingPos=-1;}
 			
-			//Diagonal 2: top-right --> bottom-left
+			//Check Diagonal 2: top-right --> bottom-left
 			checking = arrResults[0][reels-1];
 			for (int i=1; i<limit; i++)
 			{
 				if (checking==arrResults[i][reels-1-i]) {diagonal2++;}
-			}*/
+			}
+			
 		}
 		public void calculatePrize()
 		{
-			//boolean fullHorizontal = true;
-			for (int i=0; i<horizontal.length; i++)	//Checks if all horizontal lines match
+			boolean horiFull = true;	//True if there is a full match in all horizontal lines.
+			boolean horiFound = false;	//True if there is a full match in a horizontal line.
+			int horiMatch = 0;
+			
+			for (int i=0; i<horizontal.length; i++)
 			{
-				if (horizontal[i]==reels)		
+				if (horizontal[i]!=reels-1)
 				{
-					System.out.println("J");
-					break;
+					horiFull = false;
 				}
-				else
+				if (horizontal[i]==reels-1)
 				{
-					if (horizontal[i]==reels-1)		//can be re-rolled
-						{reroll();}
-					else if (horizontal[i]==reels)	//or matches by itself, only once
-					{
-						if (horiMatch==-1)
-							{horiMatch = i;}
-					}
+					horiFound = true;
+					horiMatch = i;
 				}
-			}/*
-			if (fullHorizontal)
-			{
-				P.bet *= 100;
-				System.out.println("You won the jackpot!!!");
 			}
-			else if (diagonal1==reels-1 || diagonal2==reels-1)
-			{
-				reroll();
-			}
-			else if (diagonal1==reels && diagonal2==reels)
+			
+			if (diagonal1==limit-1 && diagonal2==limit-1)
 			{
 				P.bet *= 10;
-				System.out.println("You got winning lines on both diagonals!");
+				System.out.println("Both diagonals are a match!");
 			}
-			else if (diagonal1==reels)
+			else if (diagonal1==limit-1)
 			{
-				P.bet *= 10;
-				System.out.println("You got a winning line on the first diagonal");
+				P.bet *= 2;
+				System.out.println("The first diagonal is a match.");
 			}
-			else if (diagonal2==reels)
+			else if (diagonal2==limit-1)
 			{
-				P.bet *= 10;
-				System.out.println("You got a winning line on the second diagonal");
+				P.bet *= 2;
+				System.out.println("The second diagonal is a match.");
+			}
+			else if (horiFound)
+			{
+				P.bet *= 2;
+				System.out.println("The "+(horiMatch+1)+" horizonal line is a match.");
+			}
+			else if (horiFull)
+			{
+				P.bet *= 20;
+				gameEnter = false;
+				System.out.println("You won the jackpot!!.");
 			}
 			else
 			{
+				P.bet *= 0;
 				gameEnter = false;
-				System.out.println("You got no winning lines.");
-			}*/
+				System.out.println("You got no matches.");
+			}
 		}
 		public void reroll()
 		{
@@ -848,7 +849,7 @@ public class SlotMachine
 		}
 		
 	}
-	
+ 	
 	
 	
 	
@@ -913,19 +914,21 @@ public class SlotMachine
 		try {
 			Connection con = DriverManager.getConnection(URL, USER, PASS);
 			
-			if (!table)
+			if (table)
+				{DBTablePrinter.printTable(con, "results", 100);}
+			else
 			{
-				ResultSet rs = con.createStatement().executeQuery("SELECT * FROM results");
-				int colnum = rs.getMetaData().getColumnCount();                    
+				ResultSet rs = con.createStatement().executeQuery
+						("SELECT * FROM results ORDER BY 1 DESC");
 				
+				int colnum = rs.getMetaData().getColumnCount();
 	    		while (rs.next())
 		    	{
-		    		for(int i=1 ; i<=colnum; i++)
+		    		for(int i=1; i<=colnum; i++)
 		    			{System.out.print(((i==1)? " - ":" | ")+rs.getString(i)); }
 		    		System.out.println();
 		    	}
 			}
-			else {DBTablePrinter.printTable(con, "results", 100);}
 			
 	    } catch (SQLException e) {e.printStackTrace();}
 	}
