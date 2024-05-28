@@ -63,97 +63,43 @@ class SlotMachine_Test
 	
 	void Reroll_SingleRow_Test()
 	{
-		//Create the machine
 		SlotMachine.SingleRow M1 = new SlotMachine.SingleRow(6, 4);
 		
-		//Create random symbols
-		char sym1, sym2;
-		sym1 = M1.arrSyms[SlotMachine.rand.nextInt(M1.arrSyms.length)];
-		do {sym2 = M1.arrSyms[SlotMachine.rand.nextInt(M1.arrSyms.length)];} 
-		while (sym2==sym1);
-		
-		//Assign the symbols
-		for (int i=0; i<M1.reels; i++)		{M1.arrResults[0][i] = sym1;}
-		M1.arrResults[0][SlotMachine.rand.nextInt(M1.arrSyms.length)] = sym2;
-		
-		//Calculate re-roll
+		M1.create_Reroll();
 		M1.displayReels();
 		M1.checkResults();
-		M1.calculatePrize();
-		
+		M1.generatePayout();
 		
 	}
 	
 	
 	void Reroll_Multiway_Test()
 	{
-		//Create the machine
 		SlotMachine.Multiway M2 = new SlotMachine.Multiway(3, 4);
 		
-		//Generate the two positions for the different sets of symbols
-		int pos1, pos2;
-		pos1 = SlotMachine.rand.nextInt(M2.arrSyms.length);
-		do {pos2 = SlotMachine.rand.nextInt(M2.arrSyms.length);} 
-		while (pos2==pos1);
-		
-		//Generate the position of the differing reel 
-		int differReel = SlotMachine.rand.nextInt(M2.reels);
-		
-		//Generate the value of all the reels
-		int startPos=0, nextPos=0;
-		for (int i=0; i<M2.reels; i++)
-		{
-			if (i==differReel)	{startPos = pos1;}
-			else				{startPos = pos2;}
-			
-			M2.arrResults[0][i] = M2.arrSyms[startPos];
-			for (int j=1; j<M2.rows; j++)
-			{
-				if (startPos+j>=M2.arrSyms.length)
-					{nextPos = startPos+j-M2.arrSyms.length;}
-				else
-					{nextPos = startPos+j;}
-				
-				M2.arrResults[j][i] = M2.arrSyms[nextPos];
-			}
-		}
-		
-		//The rest of the program
+		M2.create_Reroll();
 		M2.displayReels();
 		M2.checkResults();
-		M2.calculatePrize();
-		
+		M2.generatePayout();
 		
 	}
 	
 	
 	void Diagonal_1_Multiway_Test()
 	{
-		//Create the machine
 		SlotMachine.Multiway M2 = new SlotMachine.Multiway(3, 4);
 		
-		//Generate the value of the reels.
 		int startPos=0, nextPos=0;
 		for (int i=0; i<M2.reels; i++)
 		{
 			startPos = M2.reels-1-i;
 			
-			M2.arrResults[0][i] = M2.arrSyms[startPos];
-			for (int j=1; j<M2.rows; j++)
-			{
-				if (startPos+j>=M2.arrSyms.length)
-					{nextPos = startPos+j-M2.arrSyms.length;}
-				else
-					{nextPos = startPos+j;}
-				
-				M2.arrResults[j][i] = M2.arrSyms[nextPos];
-			}
+			M2.generateReelValue(i, startPos, nextPos);
 		}
 		
-		//The rest of the program
 		M2.displayReels();
 		M2.checkResults();
-		M2.calculatePrize();
+		M2.generatePayout();
 		
 	}
 	
@@ -161,31 +107,20 @@ class SlotMachine_Test
 	
 	void Diagonal_2_Multiway_Test()
 	{
-		//Create the machine
 		SlotMachine.Multiway M2 = new SlotMachine.Multiway(5, 5);
 		
-		//Generate the value of the reels.
 		int startPos=0, nextPos=0;
 		for (int i=0; i<M2.reels; i++)
 		{
 			startPos = i;
 			
-			M2.arrResults[0][i] = M2.arrSyms[startPos];
-			for (int j=1; j<M2.rows; j++)
-			{
-				if (startPos+j>=M2.arrSyms.length)
-					{nextPos = startPos+j-M2.arrSyms.length;}
-				else
-					{nextPos = startPos+j;}
-				
-				M2.arrResults[j][i] = M2.arrSyms[nextPos];
-			}
+			M2.generateReelValue(i, startPos, nextPos);
 		}
 		
 		//The rest of the program
 		M2.displayReels();
 		M2.checkResults();
-		M2.calculatePrize();
+		M2.generatePayout();
 		
 	}
 	

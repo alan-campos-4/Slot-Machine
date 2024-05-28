@@ -1,4 +1,3 @@
-//General functionality
 import java.util.Random;
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -15,22 +14,20 @@ import net.efabrika.util.DBTablePrinter;	//Script for displaying tables
 
 
 
-/*
-TODO (3rd tri-mester):
- * 
- * ----- Implement -----
- * JDBC management ¬/
- * Graphic interface (JavaFX)
- * Event handling
+/* TODO
  * 
  * ----- Improvements -----
- * Change results due to history	[teacher suggestion]
- * Redesign Multi-way re-roll (test)
- * Free spins
- * ? Continue keyword instead of gameEnter variable
- * ?? Pay-out corresponding with the symbol matched
+ * Redesign Multi-way check and re-roll.
+ * Pay-out depending on the symbol matched.
+ * Pay-out multipliers depending on the the number of columns.
+ * ?  Continue keyword instead of gameEnter variable.
+ * ?  Free spins.
  * 
-*/
+ * ----- Teacher suggestions ----- 
+ * Change results due to history, "Máquina caliente"
+ * SQL prepare statement
+ * 
+ */
 
 
 
@@ -163,6 +160,7 @@ public class SlotMachine
 	
 	
 	
+	
 	/********** Game attributes **********/
 	
 	//All symbols that can appear on a machine
@@ -260,7 +258,7 @@ public class SlotMachine
 		
 		public Machine(int ro, int re, int syms, String name)
 		{
-			changeParameters(ro, re, syms);
+			assignParameters(ro, re, syms);
 			this.P = new Player(name);
 		}
 		public Machine(int ro, int re, int syms)	{this(ro, re, syms, def_name);}
@@ -274,11 +272,15 @@ public class SlotMachine
 		public double getSpent()	{return P.spent;}
 		public boolean gameEnter()	{return gameEnter;}
 		
-		public void assignName(String playername)
+		public void assignParameters(int ro, int re, int sy)	//Assigns the parameters to the machine.
 		{
-			this.P.name = playername;
+			this.rows = ro;
+			this.reels = re;
+			this.arrResults = new char[ro][re];
+			assignSymbols(sy);
+			assignSpinCost();
 		}
-		public void assignSymbols(int size)	//Gives values to the array of available symbols.
+		public void assignSymbols(int size)		//Gives values to the array of available symbols.
 		{
 			this.arrSyms = new char[size];
 			char newsym;
@@ -290,13 +292,16 @@ public class SlotMachine
 				this.arrSyms[i] = newsym;
 			}
 		}
-		public void assignSpinCost()		//Gives value to the cost of spinning the reels.
+		public void assignSpinCost()			//Assigns the cost of spinning the reels.
 		{
-			double mod = ((this instanceof SingleRow)? 0.5 : 0.1);
-			
-			this.cost = Math.ceil( (double)rows * (double)reels * (double)arrSyms.length * mod );
+			double mod = ((this instanceof SingleRow)? 5 : 1.5);
+			this.cost = Math.ceil( ((double)rows * (double)reels) / (double)arrSyms.length )*mod;
 		}
-		public void inputParameters()	//Changes the rows, reels and symbols of the machine.
+		public void assignName(String pname)	//Assigns a new name to the player.
+		{
+			this.P.name = pname;
+		}
+		public void inputParameters()			//Changes the rows, reels and symbols of the machine.
 		{
 			int nRows, nReels, nSyms;
 			
@@ -319,17 +324,9 @@ public class SlotMachine
 				nSyms = readInput(" Number of symbols",minSyms,'-',all.length);
 			}
 			
-			changeParameters(nRows, nReels, nSyms);
+			assignParameters(nRows, nReels, nSyms);
 			if (this instanceof Multiway)
 				{((Multiway)this).limit = Integer.min(nReels, nRows);}
-		}
-		public void changeParameters(int num_rows, int num_reels, int num_syms)
-		{
-			this.rows = num_rows;
-			this.reels = num_reels;
-			this.arrResults = new char[num_rows][num_reels];
-			assignSymbols(num_syms);
-			assignSpinCost();
 		}
 		
 		public void displayReels(int show)	//Displays the given number of reels of the machine.
@@ -372,7 +369,7 @@ public class SlotMachine
 		    }
 		}
 		
-		public void showRules()		//Shows the rules and outcomes of playing.
+		public void showRules()				//Shows the rules and outcomes of playing.
 		{
 			System.out.println("\n  Game Rules:");
 			System.out.println("  - Every bet has to be between "+BETMIN+" and "+BETMAX+" €.");
@@ -398,7 +395,7 @@ public class SlotMachine
 				System.out.println("  - No lines match: you lose.");
 			}
 		}
-		public void showProb()		//Shows the probability of each outcome.
+		public void showProb()				//Shows the probability of each outcome.
 		{
 			DecimalFormat formatter = new DecimalFormat("#0.0000");
 			System.out.println("\n  Probability:");
@@ -450,18 +447,23 @@ public class SlotMachine
 			}
 		}
 		
-		public void saveResults()	//Saves the results of spinning in the record file.
+		public void saveResults(int type)	//Saves the results of spinning in the record file.
 		{
-			String res = "";
+			String res = "", typeS = "";
 			for (int i=0; i<rows; i++)
 			{
 				for (int j=0; j<reels; j++)
 					{res += arrResults[i][j];}
 				if (i+1<rows)
-					{res += '-';}
+					{res += '|';}
+			}
+			switch(type)
+			{
+				case 1: typeS = "Terminal"; break;
+				case 2: typeS = "JavaFx"; break;
 			}
 			
-			insertDB(P.name, P.numGames, res, P.spent, P.bet);
+			insertDB(P.name, P.numGames, res, P.spent, P.bet, typeS);
 		}
 		
 		public void menuSelect()	//Menu and options for every action of a machine
@@ -535,16 +537,16 @@ public class SlotMachine
 				((SingleRow)this).generateValue();
 				displayAndSpin();
 				((SingleRow)this).checkResults();
-				((SingleRow)this).calculatePrize();
+				((SingleRow)this).generatePayout();
 			}
 			else
 			{
 				((Multiway)this).generateValue();
 				displayAndSpin();
 				((Multiway)this).checkResults();
-				((Multiway)this).calculatePrize();
+				((Multiway)this).generatePayout();
 			}
-			saveResults();
+			saveResults(1);
 		}
 		
 	}
@@ -552,12 +554,12 @@ public class SlotMachine
 	//The actions that vary between the type of slot machine.
 	public static interface Actions
 	{
-		public void generateValue();	//Spins the reels and gives value to the results
-		public void checkResults();		//Checks the winning conditions of each machine
-		public void calculatePrize();	//Calculates the prize based on the conditions of each machine
-		public void reroll();			//Allow to re-calculate if close to the maximum prize
+		public void generateValue();	//Spins the reels and gives value to the results.
+		public void checkResults();		//Checks for the win conditions of each machine.
+		public void generatePayout();	//Calculates the prize based on the conditions of each machine.
+		public void create_Reroll();	//Changes the reels to ensure a re-roll opportunity. 
+		public void reroll();			//Gives opportunity to re-spin if close to the maximum prize.
 	}
-	
 	
 	
 	
@@ -624,7 +626,7 @@ public class SlotMachine
 	            }
 			}
 		}	
-		public void calculatePrize()
+		public void generatePayout()
 		{
 			if (MRcount==reels-1) {reroll();}
 			
@@ -670,6 +672,17 @@ public class SlotMachine
 				System.out.println("\t of money that can be awarded.");
 				System.out.println("\t You will recieve that instead.");
 			}
+		}
+		public void create_Reroll()
+		{
+			char sym2;
+			char sym1 = arrSyms[rand.nextInt(arrSyms.length)];
+			do {sym2 = arrSyms[rand.nextInt(arrSyms.length)];} 
+			while (sym2==sym1);
+			
+			for (int i=0; i<reels; i++)	{arrResults[0][i] = sym1;}
+			
+			arrResults[0][rand.nextInt(arrSyms.length)] = sym2;
 		}
 		public void reroll()
 		{
@@ -719,41 +732,45 @@ public class SlotMachine
 		protected int missingPos;	//Position of the symbol left to match whole line.
 		protected int horiMatch;	//Position of the horizontal line with matching symbols.
 		
-		public Multiway(int nRows, int nReels, int nSymbols, String name)
+		public Multiway(int size, int nSymbols, String name)
 		{
-			super(nRows, nReels, nSymbols, name);
+			super(size, size, nSymbols, name);
 			minSize = 3;	maxSize = 7;
 			minSyms = 4;	maxSyms = 8;
 			horiMatch = missingPos = -1;
 			horizontal = new int[reels];
 			limit = Integer.min(rows,reels);
 		}
-		public Multiway(int size, int syms)		{this(size, size, syms, def_name);}
-		public Multiway(String name)			{this(5, 5, 6, name);}
-		public Multiway()						{this(5, 5, 6, def_name);}
+		public Multiway(int size, int syms)		{this(size, syms, def_name);}
+		public Multiway(String name)			{this(5, 6, name);}
+		public Multiway()						{this(5, 6, def_name);}
 		
 		public void	generateValue()
 		{
 			int startPos=0, nextPos=0;
 			for (int i=0; i<reels; i++)
 			{
-				//Every column/reel starts with a random symbol.
 				startPos = rand.nextInt(arrSyms.length);
-				arrResults[0][i] = arrSyms[startPos];	
 				
-				//As it goes through the reel vertically,
-				//each following square is assigned the symbol following the random one.
-				for (int j=1; j<rows; j++)				
-				{
-					if (startPos+j>=arrSyms.length)
-						{nextPos = startPos+j-arrSyms.length;}
-					else
-						{nextPos = startPos+j;}
-					
-					arrResults[j][i] = arrSyms[nextPos];
-				}
+				generateReelValue(i, startPos, nextPos);
 			}
 		}
+		//As it goes through the reel vertically,
+		//each following square is assigned the symbol following the random one.
+		public void generateReelValue(int i, int startPos, int nextPos)
+		{
+			arrResults[0][i] = arrSyms[startPos];
+			for (int j=1; j<rows; j++)				
+			{
+				if (startPos+j>=arrSyms.length)
+					{nextPos = startPos+j-arrSyms.length;}
+				else
+					{nextPos = startPos+j;}
+				
+				arrResults[j][i] = arrSyms[nextPos];
+			}
+		}
+		
 		public void checkResults()
 		{
 			limit = Integer.min(rows,reels);
@@ -787,7 +804,7 @@ public class SlotMachine
 			}
 			
 		}
-		public void calculatePrize()
+		public void generatePayout()
 		{
 			boolean horiFull = true;	//True if there is a full match in all horizontal lines.
 			boolean horiFound = false;	//True if there is a full match in a horizontal line.
@@ -839,6 +856,26 @@ public class SlotMachine
 				System.out.println("You got no matches.");
 			}
 		}
+		public void create_Reroll()
+		{
+			int pos2;
+			int pos1 = rand.nextInt(arrSyms.length);
+			do {pos2 = rand.nextInt(arrSyms.length);} 
+			while (pos2==pos1);
+			
+			//Generate the position of the differing reel 
+			int differReel = rand.nextInt(reels);
+			
+			//Generate the value of all the reels
+			int startPos=0, nextPos=0;
+			for (int i=0; i<reels; i++)
+			{
+				if (i==differReel)	{startPos = pos1;}
+				else				{startPos = pos2;}
+				
+				generateReelValue(i, startPos, nextPos);
+			}
+		}
 		public void reroll()
 		{
 			if (!rerolled)
@@ -855,23 +892,6 @@ public class SlotMachine
 	
 	
 	
-	public static void showDiff()
-	{
-		System.out.println("\n - A \"singlerow\" slot machine\n"
-						 + "   has several reels and in one row.");
-		System.out.println("   Prizes are won after spinning the reels\n"
-						 + "   if along the reels there are\n"
-						 + "   at least two symbols matching.");
-		System.out.println("\n - A \"multiway\" slot machine\n"
-						 + "   has several reels and rows, not always equal.");
-		System.out.println("   Prizes are won after spinning the reels\n"
-				 		 + "   if along the winning lines\n"
-				 		 + "   all symbols match.");
-	}
-	
-	
-	
-	
 	
 	
 	/********** Database connection implementation **********/
@@ -881,7 +901,8 @@ public class SlotMachine
 	static final String PASS = "root";
 	
 	//Inserts the values given into the database table
-	public static void insertDB(String name, int games, String results, double spent, double prize)
+	public static void insertDB
+	(String name, int games, String results, double spent, double prize, String type)
 	{
 		try {
 			Connection con = DriverManager.getConnection(URL, USER, PASS);
@@ -896,9 +917,9 @@ public class SlotMachine
 			String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 			
 			//Insert values
-			String sql = "INSERT INTO results(id,player,spent,game,Result,endPrize,fullDate) "
+			String sql = "INSERT INTO results(id,player,spent,game,Result,endPrize,fullDate,type) "
 				+"VALUES ("+(count+1000)+",'"+name+"',"+spent+","
-				+games+","+ "'"+results+"',"+prize+",'"+date+"')";
+				+games+","+ "'"+results+"',"+prize+",'"+date+"','"+type+"')";
 			
 			//Check insertion was successful
 			int m = con.createStatement().executeUpdate(sql);
@@ -993,6 +1014,21 @@ public class SlotMachine
 		
 		input.close();
 		System.out.println("\n\n\t\t ***** Game Over ***** ");
+	}
+	
+
+	public static void showDiff()
+	{
+		System.out.println("\n - A \"singlerow\" slot machine\n"
+						 + "   has several reels and in one row.");
+		System.out.println("   Prizes are won after spinning the reels\n"
+						 + "   if along the reels there are\n"
+						 + "   at least two symbols matching.");
+		System.out.println("\n - A \"multiway\" slot machine\n"
+						 + "   has several reels and rows, not always equal.");
+		System.out.println("   Prizes are won after spinning the reels\n"
+				 		 + "   if along the winning lines\n"
+				 		 + "   all symbols match.");
 	}
 	
 	

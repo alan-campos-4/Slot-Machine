@@ -2,7 +2,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Optional;
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -29,15 +28,15 @@ import javafx.util.converter.IntegerStringConverter;
 
 
 /* TODO:
- * - Implement re-roll 
- * - SlotMachine improvements
+ * - Implement bet increase. 
+ * - Implement re-roll.
  * 
  * */
 
 
 
 
-public class SlotNodes_1 extends Application
+public class SlotsLayout extends Application
 {
 	
 	//*************** MAIN ***************
@@ -47,18 +46,20 @@ public class SlotNodes_1 extends Application
     {
 		try {
 			
-			Single	= new SlotMachine.SingleRow();
-			Multi	= new SlotMachine.Multiway();
+			Single	= new SingleRow1();
+			Multi	= new Multiway1();
 			
 	        MainMenu main		= new MainMenu("----- MAIN MENU -----\n\n\n\n");
 			MenuSingle menu1	= new MenuSingle("-- SINGLE-ROW MENU --\n", main);
 			MenuMulti menu2		= new MenuMulti("-- MULTIWAY MENU --\n", main);
 			MachineSingle Mach1	= new MachineSingle("Play the game", menu1);
 			MachineMulti Mach2	= new MachineMulti("Play the game", menu2);
+			
 			DB1_Lay DBText		= new DB1_Lay("Display database\nas plain text", main);
 			DB2_Lay DBScript	= new DB2_Lay("Display database\nwith script", main);
 			ParamSingle param1	= new ParamSingle("Change the parameters\n of the machine", menu1);
 			ParamMulti param2	= new ParamMulti("Change the parameters\n of the machine", menu2);
+			
 			main.addNext(menu1, menu2, DBText, DBScript);
 			menu1.addNext(Mach1, param1);
 			menu2.addNext(Mach2, param2);
@@ -75,9 +76,34 @@ public class SlotNodes_1 extends Application
 	
 	//********** Static variables **********
 	
+	// Classes with overriding methods.
+	public static class SingleRow1 extends SlotMachine.SingleRow
+	{
+		public SingleRow1()	{super();}
+		public SingleRow1(SlotMachine.SingleRow Base)
+		{
+			super(Base.getReels(), Base.getSyms());
+			Base.generateValue();
+			this.arrResults = Base.arrResults;
+		}
+		@Override public void reroll() {System.out.println("Reeeeerollll");}
+	}
+	public static class Multiway1 extends SlotMachine.Multiway
+	{
+		public Multiway1()	{super();}
+		public Multiway1(SlotMachine.SingleRow Base)
+		{
+			super(Base.getReels(), Base.getSyms());
+			Base.generateValue();
+			this.arrResults = Base.arrResults;
+		}
+		@Override public void reroll() {System.out.println("Reeeeerollll");}
+	}
+	
 	// Machine objects that the UI will work with.
-	public static SlotMachine.SingleRow Single;
-	public static SlotMachine.Multiway Multi;
+	public static SingleRow1 Single;
+	public static Multiway1 Multi;
+	
 	
 	// Established sizes for elements.
 	public static int sceneWidth=600,	sceneHeight=500;
@@ -95,10 +121,10 @@ public class SlotNodes_1 extends Application
 	//Class that allows for changing between "previous" and "next" scene roots.
 	private abstract class Layout extends VBox
     {
-		protected Layout prev;
-    	protected ArrayList<Layout> next;
-    	protected Label title;
-    	protected GridPane grid;
+		protected ArrayList<Layout> next;	//List of nodes it can access.
+		protected Layout prev;				//Previous node.
+    	protected Label title;				//Title of the layout.
+    	protected GridPane grid;			//Main content of the layout.
     	
     	public Layout(String titletext, Layout prevNode)
         {
@@ -115,7 +141,7 @@ public class SlotNodes_1 extends Application
             this.getChildren().addAll(title);
             createGUI();
         }
-
+    	
         protected void addNext(Layout... args)	{for (Layout node : args) {next.add(node);}}
         protected void callNext(int i)			{getScene().setRoot(next.get(i));}
         protected void callPrev()				{getScene().setRoot(prev);}
@@ -239,6 +265,8 @@ public class SlotNodes_1 extends Application
 	}
 	
 	
+	
+	
 	//Layout containing the sub-menus for each machine type.
 	public abstract class SubMenu extends Layout
 	{
@@ -289,7 +317,8 @@ public class SlotNodes_1 extends Application
 			{
 				if (openMachine.showAndWait().get()==ButtonType.OK)
 				{
-					if (form.getValue()>=SlotMachine.BETMIN
+					if (form.getValue()!=null
+					&& form.getValue()>=SlotMachine.BETMIN
 					&& form.getValue()<=SlotMachine.BETMAX)
 					{
 						callNext(0);
@@ -414,9 +443,9 @@ public class SlotNodes_1 extends Application
 	            if ((n2>=Single.minSize && n2<=Single.maxSize) 
 	            &&	(n3>=Single.minSyms && n3<=Single.maxSyms))
 	            {
-		            Single.changeParameters(1, n2, n3);
+		            Single.assignParameters(1, n2, n3);
 		            complete.showAndWait();
-		            if (this.prev instanceof MenuSingle)	{((MenuSingle)this.prev).setParamText();}
+		            {((MenuSingle)this.prev).setParamText();}
 		            callPrev();
 	            }
 	            else {wrong.showAndWait();}
@@ -458,7 +487,7 @@ public class SlotNodes_1 extends Application
 	            &&	(n2>=Multi.minSize && n2<=Multi.maxSize)
 	            &&	(n3>=Multi.minSyms && n3<=Multi.maxSyms))
 	            {
-		            Multi.changeParameters(n1, n2, n3);
+		            Multi.assignParameters(n1, n2, n3);
 		            complete.showAndWait();
 		            if (this.prev instanceof MenuMulti)	{((MenuMulti)this.prev).setParamText();}
 		            callPrev();
@@ -476,28 +505,28 @@ public class SlotNodes_1 extends Application
 	//********** Slot machine UI nodes **********
 	
 	//Layout for representing the machines and their spinning reels
-	public abstract class Machine extends Layout
+	public abstract class MachineLayout extends Layout
 	{
 		protected int reelsShown;	//Amount of reels of the machine that are being shown.
 		protected Button spin, rtn;	//Buttons to spin the reels and return to the machine menu.
 		protected Label games;		//Label that displays the game being played.
+		protected Alert wrong;		//Is shown if the player's inputs are not valid.
+		protected Alert limitB;		//Is shown if the prize limit is exceeded.
+		protected Alert limitG;		//Is shown if the number of games limit is exceeded.
+		protected Alert incAlert;	//Shows the bet if has been increased. 
 		
-		public Machine(String title, Layout prev)	{super(title, prev);}
-		abstract void GameStart();			//Actions of the Game() method before the display.
-		abstract void GameComplete();		//Actions of the Game() method after the display.
-		abstract void resetMach();			//Actions to reset the machine object's values.
-		abstract void generateValue();		//Calls the machine obejct's method to generate value.
-		abstract void checkResults();		//Calls the machine obejct's method to check the results.
-		abstract void betIncrease(double b);//Calls the machine obejct's method to increase the bet.
-		abstract Text calculatePrize();		//Calls the machine obejct's method to calculate the prize,
-											//  and returns the output.
-		abstract Text endMessage();			//Calls the machine obejct's method to show the end message,
-											//  and returns the output.
-		abstract int getRows();				//Returns the machine obejct's number of rows.
-		abstract int getReels();			//Returns the machine obejct's number of reels or columns.
+		public MachineLayout(String title, Layout prev)	{super(title, prev);}
+		abstract void SpinStart();			//Starts the process of spinning the reels.
+		abstract void SpinComplete();		//Actions of the Game() method After the display.
+		abstract void resetPlayer();		//Resets the player's values when the machine is exited.
+		abstract void betIncrease(double b);//Increases the player's bet and displays it.
+		abstract Text generatePayout();		//Returns the output of the method with the same name.
+		abstract Text endMessage();			//Returns the output of the method with the same name.
 		abstract int getGames();			//Returns the number of games that have been played.
+		abstract int getRows();				//Returns the machine's number of rows.
+		abstract int getReels();			//Returns the machine's number of reels.
+		abstract boolean gameEnter();		//Returns the machine's gameEnter value.
 		abstract char getSym(int r, int c);	//Returns a character in the machine's results array.
-		abstract boolean gameEnter();		//Returns the gameEnter value from the machine object.
 		
 		void createGUI()
 		{
@@ -506,23 +535,34 @@ public class SlotNodes_1 extends Application
 			rtn = new Button("Return to the previous menu");
 			games = new Label();
 			games.setAlignment(Pos.CENTER);
-			
 			setSpacing(10);
 			getChildren().addAll(games, grid, spin, rtn);
 			
-			//Creating the alerts.
-			Alert gameLimit = new Alert(AlertType.INFORMATION);
-			gameLimit.getDialogPane().setMinWidth(alertWidth);
-			gameLimit.getDialogPane().setMinHeight(alertHeight/2);
-			gameLimit.getDialogPane().setContent
+			
+			//Creating the preset alerts.
+			limitG = new Alert(AlertType.INFORMATION);
+			limitG.getDialogPane().setMinWidth(alertWidth);
+			limitG.getDialogPane().setMinHeight(alertHeight/2);
+			limitG.getDialogPane().setContent
 				(new Text("You have reached the limit of games.\nYou will return to the menu."));
 			
-			Alert winLimit = new Alert(AlertType.INFORMATION);
-			winLimit.getDialogPane().setMinWidth(alertWidth);
-			winLimit.getDialogPane().setMinHeight(alertHeight/2);
-			gameLimit.getDialogPane().setContent
+			limitB = new Alert(AlertType.INFORMATION);
+			limitB.getDialogPane().setMinWidth(alertWidth);
+			limitB.getDialogPane().setMinHeight(alertHeight/2);
+			limitG.getDialogPane().setContent
 				(new Text("You have exceeded the bet amount allowed.\nYou will return to the menu."));
 			
+			incAlert = new Alert(AlertType.INFORMATION);
+			incAlert.getDialogPane().setMinWidth(alertWidth);
+			incAlert.getDialogPane().setMinHeight(alertHeight/2);
+			
+			wrong = new Alert(AlertType.ERROR);
+	    	wrong.setTitle("Error");
+	    	wrong.setHeaderText("Something went wrong.");
+	    	wrong.setContentText("The inputs are outside the range.");
+			
+	    	
+	    	//Creating the custom alerts.
 			Alert endMessage = new Alert(AlertType.CONFIRMATION);
 			endMessage.getDialogPane().setMinWidth(alertWidth);
 			endMessage.getDialogPane().setMinHeight(alertHeight/2);
@@ -533,20 +573,24 @@ public class SlotNodes_1 extends Application
 			
 			
 			//Creating the grid containing an input that can increase the current bet.
-			GridPane increase = new GridPane();
-			TextField betInc = new TextField();
+			GridPane increase	= new GridPane();
+			TextField betInc	= new TextField();
+			Label add	= new Label("The amount you enter will be added to your current bet.");
+			Label enter	= new Label("Do you want to bet more money? "
+								+ "("+SlotMachine.BETMIN+" - "+SlotMachine.BETMAX+"): ");
 			TextFormatter<Integer> form = new TextFormatter<Integer>(new IntegerStringConverter());
 			betInc.setTextFormatter(form);
-			increase.add(new Label("Do you want to bet more money?: "), 0, 1);
-			increase.add(betInc, 1, 1);
-			increase.add(new Label("The amount you enter will be added to your current bet."), 0, 2);
+			increase.add(enter,	0, 1);
+			increase.add(betInc,1, 1);
+			increase.add(add,	0, 2);
 			
 			rtn.setOnAction((ActionEvent e) -> {closeLayout();});
 			spin.setOnAction((ActionEvent e) -> 
 			{
 				if (reelsShown==0)
 				{
-					GameStart();
+					resetPlayer();
+					SpinStart();
 					createGrid();
 				}
 				else if (reelsShown<=getReels())
@@ -557,9 +601,9 @@ public class SlotNodes_1 extends Application
 				}
 				else
 				{
-					GameComplete();
-					Text result = calculatePrize();
-					Label again = new Label("Do you want to play again? ");
+					SpinComplete();
+					Text result	= generatePayout();
+					Label again	= new Label("Do you want to play again? ");
 					VBox content;
 					
 					if (gameEnter())	{content = new VBox(result, increase, again);}
@@ -570,12 +614,12 @@ public class SlotNodes_1 extends Application
 					
 					if (getGames()>=SlotMachine.GAMELIMIT)
 					{
-						gameLimit.showAndWait();
+						limitG.showAndWait();
 						closeLayout();
 					}
-					else if (getGames()>=SlotMachine.GAMELIMIT)
+					else if (getGames()>=SlotMachine.WINLIMIT)
 					{
-						winLimit.showAndWait();
+						limitB.showAndWait();
 						closeLayout();
 					}
 					else
@@ -585,8 +629,15 @@ public class SlotNodes_1 extends Application
 						{
 							if (gameEnter())
 							{
-								if (form.getValue()!=null)	{betIncrease( form.getValue() );}
-								GameStart();
+								if (form.getValue()!=null
+								&&	form.getValue()>=SlotMachine.BETMIN 
+								&&	form.getValue()<=SlotMachine.BETMAX)
+								{
+									betIncrease( form.getValue() );
+									betInc.clear();
+								}
+								
+								SpinStart();
 								createGrid();
 							}
 							else {closeLayout();}
@@ -610,7 +661,7 @@ public class SlotNodes_1 extends Application
 			if (!grid.getChildren().isEmpty())
 				{grid.getChildren().clear();}
 			//Adds the CSS file to this Java class.
-			grid.getStylesheets().add(SlotNodes_1.class.getResource("style.css").toString());
+			grid.getStylesheets().add(SlotsLayout.class.getResource("style.css").toString());
 			
 			for (int j=0; j<getReels(); j++)
 			{
@@ -635,21 +686,18 @@ public class SlotNodes_1 extends Application
 		{
 			grid.getChildren().clear();
 			reelsShown = 0;
-			resetMach();
+			resetPlayer();
 			callPrev();
 		}
 		
 	}
 	
 	//Layout for the playing on the single-row slot machine.
-	public class MachineSingle extends Machine
+	public class MachineSingle extends MachineLayout
 	{
 		public MachineSingle(String title, Layout prev)	{super(title, prev);}
 		
-		void generateValue()		{Single.generateValue();}
-		void checkResults()			{Single.checkResults();}
-		void betIncrease(double b)	{Single.P.betIncrease(b);}
-		Text calculatePrize()		{return new Results1_T();}
+		Text generatePayout()		{return new Results1_T();}
 		Text endMessage()			{return new EndMssg1_T();}
 		int getRows()				{return Single.getRows();}
 		int getReels()				{return Single.getReels();}
@@ -657,7 +705,7 @@ public class SlotNodes_1 extends Application
 		char getSym(int r, int c)	{return Single.arrResults[r][c];}
 		boolean gameEnter()			{return Single.gameEnter();}
 		
-		void GameStart()
+		void SpinStart()
 		{
 			Single.P.numGames++;
 			Single.P.bet -= Single.getCost();
@@ -665,29 +713,33 @@ public class SlotNodes_1 extends Application
 			Single.rerolled = false;
 			Single.generateValue();
 		}
-		void GameComplete()
+		void SpinComplete()
 		{
 			Single.checkResults();
-			Single.saveResults();
+			Single.saveResults(2);
 		}
-		void resetMach()
+		void resetPlayer()
 		{
 			Single.P.bet = 0;
 			Single.P.spent = 0;
 			Single.P.numGames = 0;
 		}
+		void betIncrease(double inc)
+		{
+			Single.P.bet += inc;
+			Single.P.spent += inc;
+			incAlert.getDialogPane().setContent(new Text("Your bet is now "+Single.getBet()+" €."));
+			incAlert.showAndWait();
+		}
 		
 	}
 	
 	//Layout for the playing on the multi-way slot machine.
-	public class MachineMulti extends Machine
+	public class MachineMulti extends MachineLayout
 	{
 		public MachineMulti(String title, Layout prev)	{super(title, prev);}
 		
-		void generateValue()		{Multi.generateValue();}
-		void checkResults()			{Multi.checkResults();}
-		void betIncrease(double b)	{Multi.P.betIncrease(b);}
-		Text calculatePrize()		{return new Results2_T();}
+		Text generatePayout()		{return new Results2_T();}
 		Text endMessage()			{return new EndMssg2_T();}
 		int getRows()				{return Multi.getRows();}
 		int getReels()				{return Multi.getReels();}
@@ -695,7 +747,7 @@ public class SlotNodes_1 extends Application
 		char getSym(int r, int c)	{return Multi.arrResults[r][c];}
 		boolean gameEnter()			{return Multi.gameEnter();}
 		
-		void GameStart()
+		void SpinStart()
 		{
 			Multi.P.numGames++;
 			Multi.P.bet -= Single.getCost();
@@ -703,19 +755,28 @@ public class SlotNodes_1 extends Application
 			Multi.rerolled = false;
 			Multi.generateValue();
 		}
-		void GameComplete()
+		void SpinComplete()
 		{
 			Multi.checkResults();
-			Multi.saveResults();
+			Multi.saveResults(2);
 		}
-		void resetMach()
+		void resetPlayer()
 		{
 			Multi.P.bet = 0;
 			Multi.P.spent = 0;
 			Multi.P.numGames = 0;
 		}
+		void betIncrease(double inc)
+		{
+			Multi.P.bet += inc;
+			Multi.P.spent += inc;
+			incAlert.getDialogPane().setContent(new Text("Your bet is now "+Multi.getBet()+" €."));
+			incAlert.showAndWait();
+		}
 		
 	}
+	
+	
 	
 	
 	
@@ -802,12 +863,12 @@ public class SlotNodes_1 extends Application
 	public class Results1_T	extends MethodText
 	{
 		public Results1_T()	{super();}
-		void toDisplay()	{Single.calculatePrize();}
+		void toDisplay()	{Single.generatePayout();}
 	}
 	public class Results2_T	extends MethodText
 	{
 		public Results2_T()	{super();}
-		void toDisplay()	{Multi.calculatePrize();}
+		void toDisplay()	{Multi.generatePayout();}
 	}
 	public class EndMssg1_T	extends MethodText
 	{
@@ -860,6 +921,7 @@ public class SlotNodes_1 extends Application
 		void textToDisplay()	{SlotMachine.displayDB(true);}
 		public DB2_Lay(String title, Layout prev)	{super(title, prev);}
 	}
+	//Connect AGAIN
 	
 	
 	
