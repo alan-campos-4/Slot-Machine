@@ -1,4 +1,7 @@
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.Scanner;
+
 import org.junit.jupiter.api.Test;
 
 
@@ -7,51 +10,42 @@ import org.junit.jupiter.api.Test;
 class SlotMachine_Test
 {
 	
-	@Test
-	void exists_test()
-	{
-		char[] arr = {'a','B','P','7','@',',','.'};
-		assertTrue(SlotMachine.exists(arr,'P'));
-		assertFalse(SlotMachine.exists(arr,'p'));
-	}
-	
-	
-	
-	
-	
 	
 	@Test
 	void Select_Test()
 	{
 		int op;
-		int methodNum = 0;
+		SlotMachine.input = new Scanner(System.in);
 		
 		do {
 			SlotMachine.clear();
-			System.out.println("\n\t ----- "+getMethodName(methodNum)+" ----- \n");
-			System.out.println(" 1. Test single row reroll.");
-			System.out.println(" 2. Test multiway reroll.");
-			System.out.println(" 3. Test multiway diagonal 1 check.");
-			System.out.println(" 4. Test multiway diagonal 2 check.");
+			System.out.println("\n\t ----- Select the Test ----- \n");
+			System.out.println(" 1. Test exists.");
+			System.out.println(" 2. Test single row reroll.");
+			System.out.println(" 3. Test multiway reroll.");
+			System.out.println(" 4. Test multiway diagonal 1 check.");
+			System.out.println(" 5. Test multiway diagonal 2 check.");
 			System.out.println(" 0. Finish.");
-			op = SlotMachine.readInput("Choose an option",0,' ',4);
+			op = SlotMachine.readInput("Choose an option",0,' ',5);
 			
 			if (op!=0)
 			{
 				SlotMachine.clear();
-				System.out.println("\t----- "+getMethodName(methodNum+op)+" -----");
+				System.out.println("\t----- "+getMethodName(op)+" -----");
 				switch(op)
 				{
-					case 1:	{Reroll_SingleRow_Test();}	break;
-					case 2:	{Reroll_Multiway_Test();}	break;
-					case 3:	{Diagonal_1_Multiway_Test();}	break;
-					case 4:	{Diagonal_2_Multiway_Test();}	break;
+					case 1: {exists_test();}				break;
+					case 2:	{Reroll_SingleRow_Test();}		break;
+					case 3:	{Reroll_Multiway_Test();}		break;
+					case 4:	{Diagonal_1_Multiway_Test();}	break;
+					case 5:	{Diagonal_2_Multiway_Test();}	break;
 				}
 				SlotMachine.pressAnyKeyTo("continue");
 			}
 		
 		} while (op!=0);
 		System.out.println("\n\t ----- End ----- ");
+		SlotMachine.input.close();
 		assertTrue(op==0);
 	}
 	
@@ -61,9 +55,17 @@ class SlotMachine_Test
 	String getMethodName(int pos)	{return SlotMachine_Test.class.getDeclaredMethods()[pos].getName();}
 	
 	
+	void exists_test()
+	{
+		char[] arr = {'a','B','P','7','@',',','.'};
+		assertTrue(SlotMachine.exists(arr,'P'));
+		assertFalse(SlotMachine.exists(arr,'p'));
+	}
+	
+	
 	void Reroll_SingleRow_Test()
 	{
-		SlotMachine.SingleRow M1 = new SlotMachine.SingleRow(6, 4);
+		SlotMachine.SingleRow M1 = new SlotMachine.SingleRow(6, 5);
 		
 		M1.create_Reroll();
 		M1.displayReels();
@@ -117,7 +119,6 @@ class SlotMachine_Test
 			M2.generateReelValue(i, startPos, nextPos);
 		}
 		
-		//The rest of the program
 		M2.displayReels();
 		M2.checkResults();
 		M2.generatePayout();

@@ -1,0 +1,19 @@
+
+TODO
+
+----- Functionality -----
+- Redesign Multi-way machine's check and re-roll.
+- Pay-out multipliers depending on the the number of columns (probability).
+- Implement re-roll GUI.
+
+
+----- Teacher suggestions ----- 
+- Change results due to accumulated spending on record, "Máquina caliente"
+
+
+----- Possible Improvements -----
+- Continue keyword instead of gameEnter variable.
+- Pay-out depending on the symbol matched.
+- Free spins.
+
+

@@ -1,33 +1,15 @@
 import java.util.Random;
 import java.util.Scanner;
 import java.util.ArrayList;
-import java.text.DecimalFormat;	//For displaying percentages
-//Database implementation
+import java.text.DecimalFormat;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDateTime;				//For storing the date
-import java.time.format.DateTimeFormatter;	//For storing the date
-import net.efabrika.util.DBTablePrinter;	//Script for displaying tables
-
-
-
-
-/* TODO
- * 
- * ----- Improvements -----
- * Redesign Multi-way check and re-roll.
- * Pay-out depending on the symbol matched.
- * Pay-out multipliers depending on the the number of columns.
- * ?  Continue keyword instead of gameEnter variable.
- * ?  Free spins.
- * 
- * ----- Teacher suggestions ----- 
- * Change results due to history, "Máquina caliente"
- * SQL prepare statement
- * 
- */
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import net.efabrika.util.DBTablePrinter;
 
 
 
@@ -39,8 +21,8 @@ public class SlotMachine
 	
 	/********** General classes and methods **********/
 	
+	static Scanner input;
 	static Random rand = new Random();
-	static Scanner input = new Scanner(System.in);
 	
 	// Delays the program for a given amount of milliseconds.
 	public static void wait(int mili)
@@ -79,18 +61,6 @@ public class SlotMachine
 		}
 	}
 	
-	// Stops the program until the player presses a key.
-	public static void pressAnyKeyTo(String message)
-	{
-		System.out.println("\nPress any key to "+message+".");
-        try {
-            System.in.read();
-            input.nextLine();
-        } 
-        catch(Exception e)
-        	{e.printStackTrace();}
-	}
-	
 	// Returns true if the value given exists in the array
 	public static boolean exists(char[] arr, char value)
 	{
@@ -101,6 +71,20 @@ public class SlotMachine
 		return false;
 	}
 	
+	// Stops the program until the player presses a key.
+	public static void pressAnyKeyTo(String message)
+	{
+		System.out.println("\nPress any key to "+message+".");
+		//Scanner input1 = new Scanner(System.in);
+        try
+        {
+            System.in.read();
+            input.nextLine();
+        }
+        catch(Exception e) {e.printStackTrace();}
+        //input1.close();
+	}
+	
 	// Loops until the input and type returned are valid.
 	@SuppressWarnings("unchecked")
 	public static <T> T readInput(String message, T param1, char dif, T param2)
@@ -109,6 +93,7 @@ public class SlotMachine
 		else if (dif=='/')	{message += " ("+param1+"/"+param2+"): ";}
 		else				{message += ": ";}
 		
+		//input = new Scanner(System.in);
 		String inputstr;
 		boolean read = true;
 		do {
@@ -151,7 +136,8 @@ public class SlotMachine
 			catch (NumberFormatException e)	{System.out.println("\nInput should be a number.");}
 			catch (ClassCastException e)	{System.out.println("\nInput type not casted.");}
 		} while(read);
-		return param1;
+		//input.close();
+		return null;
 	}
 	
 	
@@ -166,13 +152,14 @@ public class SlotMachine
 	//All symbols that can appear on a machine
 	static final char[] all = {'7','A','H','K','T','*','@','^','|','%','&','\\'};
 	
+	static final String def_name = "P1";//Default name for the machine's player
 	static final double BETMIN = 20;	//Minimum amount of money the player can bet at a time.
 	static final double BETMAX = 100;	//Maximum amount of money the player can bet at a time.
 	static final int WINLIMIT = 100000;	//Maximum amount of money the player can win.
 	static final int GAMELIMIT = 10;	//Maximum amount of times the player can spin the reels.
 	
 	static char gameInput;				//Player input for reading a character within the game.
-	static String def_name = "P1";		//Default name for the machine's player
+	
 	
 	
 	
@@ -682,7 +669,7 @@ public class SlotMachine
 			
 			for (int i=0; i<reels; i++)	{arrResults[0][i] = sym1;}
 			
-			arrResults[0][rand.nextInt(arrSyms.length)] = sym2;
+			arrResults[0][rand.nextInt(reels)] = sym2;
 		}
 		public void reroll()
 		{
@@ -902,46 +889,58 @@ public class SlotMachine
 	
 	//Inserts the values given into the database table
 	public static void insertDB
-	(String name, int games, String results, double spent, double prize, String type)
+		(String name, int games, String results, double spent, double prize, String type)
 	{
-		try {
-			Connection con = DriverManager.getConnection(URL, USER, PASS);
-			
-			//Read number of rows for insertion
-			ResultSet rs = con.createStatement().executeQuery("SELECT COUNT(*) AS total FROM results");
+		//Obtains the number of rows.
+		String countQuery = "SELECT COUNT(*) AS total FROM results";
+		
+		//Inserts the values given into the database.
+		String insertQuery = "INSERT INTO results(id,player,spent,game,Result,endPrize,fullDate,type) "
+							+"VALUES (?,?,?,?,?,?,?,?)";
+		
+		//Read date to store it.
+		String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+		
+		//All these resources will be closed after the try catch.
+		try (
+			Connection conn = DriverManager.getConnection(URL, USER, PASS);	//Connection to the database.
+			ResultSet rs = conn.createStatement().executeQuery(countQuery);	//Executes the query.
+			PreparedStatement ps = conn.prepareStatement(insertQuery);		//Prepares the query.
+		){
+			//Read number of rows to create the id.	
 			int count = 0;
-			while(rs.next())
-				{count = rs.getInt("total");}
+			while(rs.next())	{count = rs.getInt("total");}
 			
-			//Read date for insertion
-			String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+			//Complete prepared statement.
+			ps.setInt(		1, (count+1000));
+			ps.setString(	2, name);
+			ps.setDouble(	3, spent);
+	    	ps.setInt(		4, games);
+	    	ps.setString(	5, results);
+	    	ps.setDouble(	6, prize);
+	    	ps.setString(	7, date);
+	    	ps.setString(	8, type);
 			
-			//Insert values
-			String sql = "INSERT INTO results(id,player,spent,game,Result,endPrize,fullDate,type) "
-				+"VALUES ("+(count+1000)+",'"+name+"',"+spent+","
-				+games+","+ "'"+results+"',"+prize+",'"+date+"','"+type+"')";
-			
-			//Check insertion was successful
-			int m = con.createStatement().executeUpdate(sql);
+			//Check insertion was successful.
+			int m = ps.executeUpdate();
 			if (m==1)	{System.out.println("Results saved");}
 			else		{System.out.println("Insertion failed");}
-			
-		} catch (SQLException e)	{e.printStackTrace();}
+		}
+		catch (SQLException e)	{e.printStackTrace();}
+		
 	}
 	
 	//Displays the complete database table, regularly or with a script depending on the parameter
 	public static void displayDB(boolean table)
 	{
-		try {
+		try (
 			Connection con = DriverManager.getConnection(URL, USER, PASS);
-			
-			if (table)
-				{DBTablePrinter.printTable(con, "results", 100);}
+			ResultSet rs = con.createStatement().executeQuery
+				("SELECT * FROM results ORDER BY 1 DESC LIMIT 100");
+		){
+			if (table)	{DBTablePrinter.printResultSet(rs);}
 			else
 			{
-				ResultSet rs = con.createStatement().executeQuery
-						("SELECT * FROM results ORDER BY 1 DESC");
-				
 				int colnum = rs.getMetaData().getColumnCount();
 	    		while (rs.next())
 		    	{
@@ -961,16 +960,12 @@ public class SlotMachine
 	
 	
 	
-	
-	
 	/*************** MAIN ***************/
 	
 	public static void main(String[] args)
 	{
 		int opc1;
-		
-		//displayGrid d = new displayGrid();
-		//d.launch(args);
+		input = new Scanner(System.in);
 		
 		do {
 			
@@ -1011,12 +1006,11 @@ public class SlotMachine
 			}
 			
 		} while (opc1!=0);
-		
 		input.close();
 		System.out.println("\n\n\t\t ***** Game Over ***** ");
 	}
 	
-
+	
 	public static void showDiff()
 	{
 		System.out.println("\n - A \"singlerow\" slot machine\n"
@@ -1030,6 +1024,8 @@ public class SlotMachine
 				 		 + "   if along the winning lines\n"
 				 		 + "   all symbols match.");
 	}
+	
+	
 	
 	
 	
